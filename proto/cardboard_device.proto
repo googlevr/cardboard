@@ -1,0 +1,123 @@
+/*
+ * Copyright 2019 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+syntax = "proto2";
+
+package cardboard;
+
+option java_package = "com.google.cardboard.proto";
+option java_outer_classname = "CardboardDevice";
+option optimize_for = LITE_RUNTIME;
+
+/**
+ * Message describing properties of a VR head mount device (HMD) which uses an
+ * interchangeable smartphone as a display (e.g. Google Cardboard).
+ *
+ * While some properties are certain (e.g. inter_lens_distance), others
+ * represent nominal values which may be refined depending on context (e.g.
+ * viewport_angles).
+ *
+ * Lengths are in meters unless noted otherwise.  Fields are _required_
+ * unless noted otherwise.
+ *
+ * Some context on why this set of parameters are deemed necessary and
+ * sufficient:
+ *    * FOV scale can be reasonably approximated from lens-to-screen distance
+ *      and display size (i.e. knowing lens focal length isn't crucial).
+ *    * Lenses are assumed to be horizontally centered with respect to
+ *      display.
+ *    * The display is not necessarily vertically centered.  For interchangeable
+ *      phones where the device rests against a tray, we can derive
+ *      the vertical offset from tray-to-lens height along with phone-specific
+ *      bezel and screen sizes (supplied separately).
+ */
+message DeviceParams {
+  // String identifying the device's vendor (e.g. "Google, Inc.").
+  // A device's [vendor, model] pair is expected to be globally unique.
+  optional string vendor = 1;
+
+  // String identifying the device's model, including revision info if
+  // needed (e.g. "Cardboard v1").  A device's [vendor, model] pair is
+  // expected to be globally unique.
+  optional string model = 2;
+
+  // Distance from the display screen to the optical center of lenses.
+  // This is a required field for distortion rendering, and must be positive.
+  optional float screen_to_lens_distance = 3;
+
+  // Horizontal distance between optical center of the lenses.
+  // This is a required field for distortion rendering, and must be positive.
+  optional float inter_lens_distance = 4;
+
+  // Four-element tuple (left, right, bottom, top) of left eye's view extent
+  // angles relative to center, assuming the following:
+  //     * eye is aligned with optical center of lens
+  //     * display screen is equal or larger than extents viewable through lens
+  //     * nominal eye-to-lens distance
+  //     * mirrored field of view will be applied to the right eye
+  // These values are essentially used as an optimization to avoid rendering
+  // pixels which can't be seen.
+  // This is a required field for distortion rendering, and angles must be
+  // positive.
+  repeated float left_eye_field_of_view_angles = 5 [packed = true];
+
+  enum VerticalAlignmentType {
+    BOTTOM = 0;  // phone rests against a fixed bottom tray
+    CENTER = 1;  // phone screen assumed to be centered w.r.t. lenses
+    TOP = 2;     // phone rests against a fixed top tray
+  }
+
+  // Set according to vertical alignment strategy-- see enum comments above.
+  // NOTE: If you set this to CENTER, see special instructions for the
+  // tray_to_lens_distance field below.
+  optional VerticalAlignmentType vertical_alignment = 11 [default = BOTTOM];
+
+  // If the phone is aligned vertically within the device by resting against
+  // a fixed top or bottom tray, this is the distance from the tray to
+  // optical center of the lenses.
+  // This is a required field for distortion rendering, and must be positive.
+  // NOTE: Due to a bug in initial versions of the SDK's, this field
+  // must be set explicitly to .035 when vertical_alignment = CENTER.
+  optional float tray_to_lens_distance = 6;
+
+  // Coefficients Ki for pincushion distortion function which maps
+  // from position on real screen to virtual screen (i.e. texture) relative
+  // to optical center:
+  //
+  //    p' = p (1 + K1 r^2 + K2 r^4 + ... + Kn r^(2n))
+  //
+  // where r is the distance in tan-angle units from the optical center,
+  // p the input point, and p' the output point.  Tan-angle units can be
+  // computed as distance on the screen divided by distance from the
+  // virtual eye to the screen.
+  repeated float distortion_coefficients = 7 [packed = true];
+
+  enum ButtonType {
+    // No physical button, and touch screen is not easily accessible.
+    NONE = 0;
+    // HMD has integrated magnet switch similar to original Cardboard.
+    MAGNET = 1;
+    // At least a portion of touch screen is easily accessible to user for taps.
+    TOUCH = 2;
+    // Touch screen is triggered indirectly via integrated button on the HMD.
+    INDIRECT_TOUCH = 3;
+  }
+
+  // Specify primary input mechanism of the HMD.  Intended for advisory
+  // purposes only, to address simple questions such as "can HMD
+  // be used with apps requiring a physical button event?" or "what icon
+  // should be used to represent button action to the user?".
+  optional ButtonType primary_button = 12 [default = MAGNET];
+}

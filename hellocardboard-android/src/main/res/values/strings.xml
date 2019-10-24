@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name"
+            description="Application name. [CHAR_LIMIT=30]">
+            Hello Cardboard</string>
+
+    <!-- Strings present in 'VR' activity -->
+    <string name="title_activity_vr"
+            description="VR activity title. [CHAR_LIMIT=30]">
+            Hello Cardboard</string>
+    <string name="no_permissions"
+            description="Text shown on Android Toast when permissions are not granted.
+                         [CHAR_LIMIT=30]">
+            Permissions not granted</string>
+    <string name="low_storage_error"
+            description="Text shown on Android Toast when detector dependencies can not be
+                         downloaded due to low storage. [CHAR_LIMIT=70]">
+            Detector dependencies cannot be downloaded due to low device storage</string>
+
+    <!-- Strings present in 'Settings' menu -->
+    <string name="switch_viewer"
+            description="Short text shown on the settings menu to let the user switch viewer.
+                         [CHAR_LIMIT=30]">
+            Switch Cardboard viewer</string>
+</resources>

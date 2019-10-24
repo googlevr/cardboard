@@ -1,0 +1,561 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F8D4FDF2361F86A00E7C48D /* libprotobuf-lite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */; };
+		0FD2023E23575F3B00B3C342 /* screen_params.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FA23575F3A00B3C342 /* screen_params.mm */; };
+		0FD2023F23575F3B00B3C342 /* rotation.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FD23575F3A00B3C342 /* rotation.cc */; };
+		0FD2024023575F3B00B3C342 /* vectorutils.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FE23575F3A00B3C342 /* vectorutils.cc */; };
+		0FD2024123575F3B00B3C342 /* matrix_4x4.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020023575F3A00B3C342 /* matrix_4x4.cc */; };
+		0FD2024223575F3B00B3C342 /* matrixutils.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020723575F3A00B3C342 /* matrixutils.cc */; };
+		0FD2024323575F3B00B3C342 /* matrix_3x3.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020823575F3A00B3C342 /* matrix_3x3.cc */; };
+		0FD2024423575F3B00B3C342 /* lens_distortion.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020A23575F3B00B3C342 /* lens_distortion.cc */; };
+		0FD2024523575F3B00B3C342 /* head_tracker.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020B23575F3B00B3C342 /* head_tracker.cc */; };
+		0FD2024623575F3B00B3C342 /* lowpass_filter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020E23575F3B00B3C342 /* lowpass_filter.cc */; };
+		0FD2024723575F3B00B3C342 /* median_filter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020F23575F3B00B3C342 /* median_filter.cc */; };
+		0FD2024823575F3B00B3C342 /* neck_model.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021023575F3B00B3C342 /* neck_model.cc */; };
+		0FD2024923575F3B00B3C342 /* pose_prediction.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021123575F3B00B3C342 /* pose_prediction.cc */; };
+		0FD2024A23575F3B00B3C342 /* sensor_fusion_ekf.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021323575F3B00B3C342 /* sensor_fusion_ekf.cc */; };
+		0FD2024B23575F3B00B3C342 /* device_gyroscope_sensor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021723575F3B00B3C342 /* device_gyroscope_sensor.mm */; };
+		0FD2024C23575F3B00B3C342 /* device_accelerometer_sensor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021923575F3B00B3C342 /* device_accelerometer_sensor.mm */; };
+		0FD2024D23575F3B00B3C342 /* sensor_event_producer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021A23575F3B00B3C342 /* sensor_event_producer.mm */; };
+		0FD2024E23575F3B00B3C342 /* sensor_helper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021B23575F3B00B3C342 /* sensor_helper.mm */; };
+		0FD2024F23575F3B00B3C342 /* gyroscope_bias_estimator.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2022123575F3B00B3C342 /* gyroscope_bias_estimator.cc */; };
+		0FD2025023575F3B00B3C342 /* mean_filter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2022623575F3B00B3C342 /* mean_filter.cc */; };
+		0FD2025123575F3B00B3C342 /* cardboard.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2022723575F3B00B3C342 /* cardboard.cc */; };
+		0FD2025223575F3B00B3C342 /* distortion_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2022823575F3B00B3C342 /* distortion_renderer.cc */; };
+		0FD2025323575F3B00B3C342 /* polynomial_radial_distortion.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023023575F3B00B3C342 /* polynomial_radial_distortion.cc */; };
+		0FD2025423575F3B00B3C342 /* qr_scan_view_controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023323575F3B00B3C342 /* qr_scan_view_controller.mm */; };
+		0FD2025523575F3B00B3C342 /* qr_code.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023423575F3B00B3C342 /* qr_code.mm */; };
+		0FD2025623575F3B00B3C342 /* nsurl_connection_data_handler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023723575F3B00B3C342 /* nsurl_connection_data_handler.mm */; };
+		0FD2025723575F3B00B3C342 /* device_params_helper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023823575F3B00B3C342 /* device_params_helper.mm */; };
+		0FD2025823575F3B00B3C342 /* cardboard_v1.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023B23575F3B00B3C342 /* cardboard_v1.cc */; };
+		0FD2025923575F3B00B3C342 /* distortion_mesh.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023D23575F3B00B3C342 /* distortion_mesh.cc */; };
+		0FD2025F2357613600B3C342 /* cardboard_device.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2025E2357613600B3C342 /* cardboard_device.pb.cc */; };
+		0FD2027C235766E800B3C342 /* cardboard.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0FD2022B23575F3B00B3C342 /* cardboard.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0FD200832357511E00B3C342 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				0FD2027C235766E800B3C342 /* cardboard.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../proto/libprotobuf/ios/lib/libprotobuf-lite.a"; sourceTree = "<group>"; };
+		0FD200852357511E00B3C342 /* libsdk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsdk.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		0FD201FA23575F3A00B3C342 /* screen_params.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = screen_params.mm; sourceTree = "<group>"; };
+		0FD201FB23575F3A00B3C342 /* lens_distortion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lens_distortion.h; sourceTree = "<group>"; };
+		0FD201FD23575F3A00B3C342 /* rotation.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rotation.cc; sourceTree = "<group>"; };
+		0FD201FE23575F3A00B3C342 /* vectorutils.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vectorutils.cc; sourceTree = "<group>"; };
+		0FD201FF23575F3A00B3C342 /* rotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rotation.h; sourceTree = "<group>"; };
+		0FD2020023575F3A00B3C342 /* matrix_4x4.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = matrix_4x4.cc; sourceTree = "<group>"; };
+		0FD2020123575F3A00B3C342 /* logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logging.h; sourceTree = "<group>"; };
+		0FD2020223575F3A00B3C342 /* matrixutils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = matrixutils.h; sourceTree = "<group>"; };
+		0FD2020323575F3A00B3C342 /* vectorutils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vectorutils.h; sourceTree = "<group>"; };
+		0FD2020423575F3A00B3C342 /* matrix_3x3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = matrix_3x3.h; sourceTree = "<group>"; };
+		0FD2020523575F3A00B3C342 /* matrix_4x4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = matrix_4x4.h; sourceTree = "<group>"; };
+		0FD2020623575F3A00B3C342 /* vector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vector.h; sourceTree = "<group>"; };
+		0FD2020723575F3A00B3C342 /* matrixutils.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = matrixutils.cc; sourceTree = "<group>"; };
+		0FD2020823575F3A00B3C342 /* matrix_3x3.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = matrix_3x3.cc; sourceTree = "<group>"; };
+		0FD2020923575F3B00B3C342 /* distortion_renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = distortion_renderer.h; sourceTree = "<group>"; };
+		0FD2020A23575F3B00B3C342 /* lens_distortion.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lens_distortion.cc; sourceTree = "<group>"; };
+		0FD2020B23575F3B00B3C342 /* head_tracker.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = head_tracker.cc; sourceTree = "<group>"; };
+		0FD2020D23575F3B00B3C342 /* device_accelerometer_sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = device_accelerometer_sensor.h; sourceTree = "<group>"; };
+		0FD2020E23575F3B00B3C342 /* lowpass_filter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lowpass_filter.cc; sourceTree = "<group>"; };
+		0FD2020F23575F3B00B3C342 /* median_filter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = median_filter.cc; sourceTree = "<group>"; };
+		0FD2021023575F3B00B3C342 /* neck_model.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = neck_model.cc; sourceTree = "<group>"; };
+		0FD2021123575F3B00B3C342 /* pose_prediction.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pose_prediction.cc; sourceTree = "<group>"; };
+		0FD2021223575F3B00B3C342 /* pose_prediction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pose_prediction.h; sourceTree = "<group>"; };
+		0FD2021323575F3B00B3C342 /* sensor_fusion_ekf.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sensor_fusion_ekf.cc; sourceTree = "<group>"; };
+		0FD2021423575F3B00B3C342 /* lowpass_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lowpass_filter.h; sourceTree = "<group>"; };
+		0FD2021523575F3B00B3C342 /* sensor_fusion_ekf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sensor_fusion_ekf.h; sourceTree = "<group>"; };
+		0FD2021723575F3B00B3C342 /* device_gyroscope_sensor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = device_gyroscope_sensor.mm; sourceTree = "<group>"; };
+		0FD2021823575F3B00B3C342 /* sensor_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sensor_helper.h; sourceTree = "<group>"; };
+		0FD2021923575F3B00B3C342 /* device_accelerometer_sensor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = device_accelerometer_sensor.mm; sourceTree = "<group>"; };
+		0FD2021A23575F3B00B3C342 /* sensor_event_producer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = sensor_event_producer.mm; sourceTree = "<group>"; };
+		0FD2021B23575F3B00B3C342 /* sensor_helper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = sensor_helper.mm; sourceTree = "<group>"; };
+		0FD2021C23575F3B00B3C342 /* gyroscope_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gyroscope_data.h; sourceTree = "<group>"; };
+		0FD2021D23575F3B00B3C342 /* accelerometer_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = accelerometer_data.h; sourceTree = "<group>"; };
+		0FD2021E23575F3B00B3C342 /* device_gyroscope_sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = device_gyroscope_sensor.h; sourceTree = "<group>"; };
+		0FD2021F23575F3B00B3C342 /* neck_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = neck_model.h; sourceTree = "<group>"; };
+		0FD2022023575F3B00B3C342 /* mean_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mean_filter.h; sourceTree = "<group>"; };
+		0FD2022123575F3B00B3C342 /* gyroscope_bias_estimator.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gyroscope_bias_estimator.cc; sourceTree = "<group>"; };
+		0FD2022223575F3B00B3C342 /* gyroscope_bias_estimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gyroscope_bias_estimator.h; sourceTree = "<group>"; };
+		0FD2022323575F3B00B3C342 /* pose_state.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pose_state.h; sourceTree = "<group>"; };
+		0FD2022423575F3B00B3C342 /* sensor_event_producer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sensor_event_producer.h; sourceTree = "<group>"; };
+		0FD2022523575F3B00B3C342 /* median_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = median_filter.h; sourceTree = "<group>"; };
+		0FD2022623575F3B00B3C342 /* mean_filter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mean_filter.cc; sourceTree = "<group>"; };
+		0FD2022723575F3B00B3C342 /* cardboard.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cardboard.cc; sourceTree = "<group>"; };
+		0FD2022823575F3B00B3C342 /* distortion_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = distortion_renderer.cc; sourceTree = "<group>"; };
+		0FD2022923575F3B00B3C342 /* screen_params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screen_params.h; sourceTree = "<group>"; };
+		0FD2022B23575F3B00B3C342 /* cardboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard.h; sourceTree = "<group>"; };
+		0FD2022C23575F3B00B3C342 /* distortion_mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = distortion_mesh.h; sourceTree = "<group>"; };
+		0FD2022D23575F3B00B3C342 /* head_tracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = head_tracker.h; sourceTree = "<group>"; };
+		0FD2022E23575F3B00B3C342 /* qr_code.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qr_code.h; sourceTree = "<group>"; };
+		0FD2022F23575F3B00B3C342 /* polynomial_radial_distortion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = polynomial_radial_distortion.h; sourceTree = "<group>"; };
+		0FD2023023575F3B00B3C342 /* polynomial_radial_distortion.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = polynomial_radial_distortion.cc; sourceTree = "<group>"; };
+		0FD2023323575F3B00B3C342 /* qr_scan_view_controller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = qr_scan_view_controller.mm; sourceTree = "<group>"; };
+		0FD2023423575F3B00B3C342 /* qr_code.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = qr_code.mm; sourceTree = "<group>"; };
+		0FD2023523575F3B00B3C342 /* device_params_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = device_params_helper.h; sourceTree = "<group>"; };
+		0FD2023623575F3B00B3C342 /* nsurl_connection_data_handler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nsurl_connection_data_handler.h; sourceTree = "<group>"; };
+		0FD2023723575F3B00B3C342 /* nsurl_connection_data_handler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = nsurl_connection_data_handler.mm; sourceTree = "<group>"; };
+		0FD2023823575F3B00B3C342 /* device_params_helper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = device_params_helper.mm; sourceTree = "<group>"; };
+		0FD2023923575F3B00B3C342 /* qr_scan_view_controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qr_scan_view_controller.h; sourceTree = "<group>"; };
+		0FD2023B23575F3B00B3C342 /* cardboard_v1.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cardboard_v1.cc; sourceTree = "<group>"; };
+		0FD2023C23575F3B00B3C342 /* cardboard_v1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard_v1.h; sourceTree = "<group>"; };
+		0FD2023D23575F3B00B3C342 /* distortion_mesh.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = distortion_mesh.cc; sourceTree = "<group>"; };
+		0FD2025E2357613600B3C342 /* cardboard_device.pb.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = cardboard_device.pb.cc; path = ../proto/cardboard_device.pb.cc; sourceTree = "<group>"; };
+		0FD20260235761ED00B3C342 /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../proto/libprotobuf/universal/libprotobuf-lite.a"; sourceTree = "<group>"; };
+		0FD202B92357C0F200B3C342 /* sdk.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = sdk.bundle; path = qrcode/ios/sdk.bundle; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0FD200822357511E00B3C342 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F8D4FDF2361F86A00E7C48D /* libprotobuf-lite.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0FD2007C2357511D00B3C342 = {
+			isa = PBXGroup;
+			children = (
+				0FD202B92357C0F200B3C342 /* sdk.bundle */,
+				0FD2025E2357613600B3C342 /* cardboard_device.pb.cc */,
+				0FD2022723575F3B00B3C342 /* cardboard.cc */,
+				0FD2023D23575F3B00B3C342 /* distortion_mesh.cc */,
+				0FD2022C23575F3B00B3C342 /* distortion_mesh.h */,
+				0FD2022823575F3B00B3C342 /* distortion_renderer.cc */,
+				0FD2020923575F3B00B3C342 /* distortion_renderer.h */,
+				0FD2020B23575F3B00B3C342 /* head_tracker.cc */,
+				0FD2022D23575F3B00B3C342 /* head_tracker.h */,
+				0FD2022A23575F3B00B3C342 /* include */,
+				0FD2020A23575F3B00B3C342 /* lens_distortion.cc */,
+				0FD201FB23575F3A00B3C342 /* lens_distortion.h */,
+				0FD2023023575F3B00B3C342 /* polynomial_radial_distortion.cc */,
+				0FD2022F23575F3B00B3C342 /* polynomial_radial_distortion.h */,
+				0FD2022E23575F3B00B3C342 /* qr_code.h */,
+				0FD2023123575F3B00B3C342 /* qrcode */,
+				0FD201F823575F3A00B3C342 /* screen_params */,
+				0FD2022923575F3B00B3C342 /* screen_params.h */,
+				0FD2020C23575F3B00B3C342 /* sensors */,
+				0FD201FC23575F3A00B3C342 /* util */,
+				0FD200862357511E00B3C342 /* Products */,
+				0FD201F223575B8000B3C342 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		0FD200862357511E00B3C342 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0FD200852357511E00B3C342 /* libsdk.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0FD201F223575B8000B3C342 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */,
+				0FD20260235761ED00B3C342 /* libprotobuf-lite.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0FD201F823575F3A00B3C342 /* screen_params */ = {
+			isa = PBXGroup;
+			children = (
+				0FD201F923575F3A00B3C342 /* ios */,
+			);
+			path = screen_params;
+			sourceTree = "<group>";
+		};
+		0FD201F923575F3A00B3C342 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				0FD201FA23575F3A00B3C342 /* screen_params.mm */,
+			);
+			path = ios;
+			sourceTree = "<group>";
+		};
+		0FD201FC23575F3A00B3C342 /* util */ = {
+			isa = PBXGroup;
+			children = (
+				0FD201FD23575F3A00B3C342 /* rotation.cc */,
+				0FD201FE23575F3A00B3C342 /* vectorutils.cc */,
+				0FD201FF23575F3A00B3C342 /* rotation.h */,
+				0FD2020023575F3A00B3C342 /* matrix_4x4.cc */,
+				0FD2020123575F3A00B3C342 /* logging.h */,
+				0FD2020223575F3A00B3C342 /* matrixutils.h */,
+				0FD2020323575F3A00B3C342 /* vectorutils.h */,
+				0FD2020423575F3A00B3C342 /* matrix_3x3.h */,
+				0FD2020523575F3A00B3C342 /* matrix_4x4.h */,
+				0FD2020623575F3A00B3C342 /* vector.h */,
+				0FD2020723575F3A00B3C342 /* matrixutils.cc */,
+				0FD2020823575F3A00B3C342 /* matrix_3x3.cc */,
+			);
+			path = util;
+			sourceTree = "<group>";
+		};
+		0FD2020C23575F3B00B3C342 /* sensors */ = {
+			isa = PBXGroup;
+			children = (
+				0FD2020D23575F3B00B3C342 /* device_accelerometer_sensor.h */,
+				0FD2020E23575F3B00B3C342 /* lowpass_filter.cc */,
+				0FD2020F23575F3B00B3C342 /* median_filter.cc */,
+				0FD2021023575F3B00B3C342 /* neck_model.cc */,
+				0FD2021123575F3B00B3C342 /* pose_prediction.cc */,
+				0FD2021223575F3B00B3C342 /* pose_prediction.h */,
+				0FD2021323575F3B00B3C342 /* sensor_fusion_ekf.cc */,
+				0FD2021423575F3B00B3C342 /* lowpass_filter.h */,
+				0FD2021523575F3B00B3C342 /* sensor_fusion_ekf.h */,
+				0FD2021623575F3B00B3C342 /* ios */,
+				0FD2021C23575F3B00B3C342 /* gyroscope_data.h */,
+				0FD2021D23575F3B00B3C342 /* accelerometer_data.h */,
+				0FD2021E23575F3B00B3C342 /* device_gyroscope_sensor.h */,
+				0FD2021F23575F3B00B3C342 /* neck_model.h */,
+				0FD2022023575F3B00B3C342 /* mean_filter.h */,
+				0FD2022123575F3B00B3C342 /* gyroscope_bias_estimator.cc */,
+				0FD2022223575F3B00B3C342 /* gyroscope_bias_estimator.h */,
+				0FD2022323575F3B00B3C342 /* pose_state.h */,
+				0FD2022423575F3B00B3C342 /* sensor_event_producer.h */,
+				0FD2022523575F3B00B3C342 /* median_filter.h */,
+				0FD2022623575F3B00B3C342 /* mean_filter.cc */,
+			);
+			path = sensors;
+			sourceTree = "<group>";
+		};
+		0FD2021623575F3B00B3C342 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				0FD2021723575F3B00B3C342 /* device_gyroscope_sensor.mm */,
+				0FD2021823575F3B00B3C342 /* sensor_helper.h */,
+				0FD2021923575F3B00B3C342 /* device_accelerometer_sensor.mm */,
+				0FD2021A23575F3B00B3C342 /* sensor_event_producer.mm */,
+				0FD2021B23575F3B00B3C342 /* sensor_helper.mm */,
+			);
+			path = ios;
+			sourceTree = "<group>";
+		};
+		0FD2022A23575F3B00B3C342 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				0FD2022B23575F3B00B3C342 /* cardboard.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		0FD2023123575F3B00B3C342 /* qrcode */ = {
+			isa = PBXGroup;
+			children = (
+				0FD2023223575F3B00B3C342 /* ios */,
+				0FD2023A23575F3B00B3C342 /* cardboard_v1 */,
+			);
+			path = qrcode;
+			sourceTree = "<group>";
+		};
+		0FD2023223575F3B00B3C342 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				0FD2023323575F3B00B3C342 /* qr_scan_view_controller.mm */,
+				0FD2023423575F3B00B3C342 /* qr_code.mm */,
+				0FD2023523575F3B00B3C342 /* device_params_helper.h */,
+				0FD2023623575F3B00B3C342 /* nsurl_connection_data_handler.h */,
+				0FD2023723575F3B00B3C342 /* nsurl_connection_data_handler.mm */,
+				0FD2023823575F3B00B3C342 /* device_params_helper.mm */,
+				0FD2023923575F3B00B3C342 /* qr_scan_view_controller.h */,
+			);
+			path = ios;
+			sourceTree = "<group>";
+		};
+		0FD2023A23575F3B00B3C342 /* cardboard_v1 */ = {
+			isa = PBXGroup;
+			children = (
+				0FD2023B23575F3B00B3C342 /* cardboard_v1.cc */,
+				0FD2023C23575F3B00B3C342 /* cardboard_v1.h */,
+			);
+			path = cardboard_v1;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0FD200842357511E00B3C342 /* sdk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0FD2008E2357511E00B3C342 /* Build configuration list for PBXNativeTarget "sdk" */;
+			buildPhases = (
+				0FD200812357511E00B3C342 /* Sources */,
+				0FD200822357511E00B3C342 /* Frameworks */,
+				0FD200832357511E00B3C342 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = sdk;
+			productName = sdk;
+			productReference = 0FD200852357511E00B3C342 /* libsdk.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0FD2007D2357511D00B3C342 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				TargetAttributes = {
+					0FD200842357511E00B3C342 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 0FD200802357511E00B3C342 /* Build configuration list for PBXProject "sdk" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 0FD2007C2357511D00B3C342;
+			productRefGroup = 0FD200862357511E00B3C342 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0FD200842357511E00B3C342 /* sdk */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0FD200812357511E00B3C342 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0FD2025323575F3B00B3C342 /* polynomial_radial_distortion.cc in Sources */,
+				0FD2025923575F3B00B3C342 /* distortion_mesh.cc in Sources */,
+				0FD2024623575F3B00B3C342 /* lowpass_filter.cc in Sources */,
+				0FD2024823575F3B00B3C342 /* neck_model.cc in Sources */,
+				0FD2024D23575F3B00B3C342 /* sensor_event_producer.mm in Sources */,
+				0FD2025023575F3B00B3C342 /* mean_filter.cc in Sources */,
+				0FD2025623575F3B00B3C342 /* nsurl_connection_data_handler.mm in Sources */,
+				0FD2024F23575F3B00B3C342 /* gyroscope_bias_estimator.cc in Sources */,
+				0FD2023E23575F3B00B3C342 /* screen_params.mm in Sources */,
+				0FD2024B23575F3B00B3C342 /* device_gyroscope_sensor.mm in Sources */,
+				0FD2024223575F3B00B3C342 /* matrixutils.cc in Sources */,
+				0FD2025F2357613600B3C342 /* cardboard_device.pb.cc in Sources */,
+				0FD2024723575F3B00B3C342 /* median_filter.cc in Sources */,
+				0FD2024523575F3B00B3C342 /* head_tracker.cc in Sources */,
+				0FD2024123575F3B00B3C342 /* matrix_4x4.cc in Sources */,
+				0FD2024C23575F3B00B3C342 /* device_accelerometer_sensor.mm in Sources */,
+				0FD2025423575F3B00B3C342 /* qr_scan_view_controller.mm in Sources */,
+				0FD2025123575F3B00B3C342 /* cardboard.cc in Sources */,
+				0FD2025723575F3B00B3C342 /* device_params_helper.mm in Sources */,
+				0FD2024023575F3B00B3C342 /* vectorutils.cc in Sources */,
+				0FD2025823575F3B00B3C342 /* cardboard_v1.cc in Sources */,
+				0FD2024923575F3B00B3C342 /* pose_prediction.cc in Sources */,
+				0FD2024E23575F3B00B3C342 /* sensor_helper.mm in Sources */,
+				0FD2025223575F3B00B3C342 /* distortion_renderer.cc in Sources */,
+				0FD2024A23575F3B00B3C342 /* sensor_fusion_ekf.cc in Sources */,
+				0FD2024323575F3B00B3C342 /* matrix_3x3.cc in Sources */,
+				0FD2024423575F3B00B3C342 /* lens_distortion.cc in Sources */,
+				0FD2025523575F3B00B3C342 /* qr_code.mm in Sources */,
+				0FD2023F23575F3B00B3C342 /* rotation.cc in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0FD2008C2357511E00B3C342 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		0FD2008D2357511E00B3C342 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0FD2008F2357511E00B3C342 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = C5M9TX4B3U;
+				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)",
+					"$(PROJECT_DIR)/../proto",
+					"$(PROJECT_DIR)/../proto/libprotobuf/ios/include",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../proto/libprotobuf/ios/lib";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0FD200902357511E00B3C342 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = C5M9TX4B3U;
+				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)",
+					"$(PROJECT_DIR)/../proto",
+					"$(PROJECT_DIR)/../proto/libprotobuf/ios/include",
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../proto/libprotobuf/ios/lib";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0FD200802357511E00B3C342 /* Build configuration list for PBXProject "sdk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0FD2008C2357511E00B3C342 /* Debug */,
+				0FD2008D2357511E00B3C342 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0FD2008E2357511E00B3C342 /* Build configuration list for PBXNativeTarget "sdk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0FD2008F2357511E00B3C342 /* Debug */,
+				0FD200902357511E00B3C342 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0FD2007D2357511D00B3C342 /* Project object */;
+}

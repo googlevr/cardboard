@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/surface_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="top"/>
+
+    <!-- Default UiLayer layout that assumes landscape orientation !-->
+    <!-- The ui and settings button holders are 84dp. This is twice the size -->
+    <!-- of the button itself after padding (24dp image, 9dp padding twice). -->
+    <FrameLayout
+        android:id="@+id/ui_back_button_holder"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_width="84dp"
+        android:layout_height="84dp">
+        <ImageButton
+            style="@style/UiButton"
+            android:id="@+id/ui_back_button"
+            android:contentDescription="back"
+            android:src="@drawable/quantum_ic_close_white_24"
+            android:layout_gravity="start|top"
+            android:onClick="closeSample"/>
+    </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/ui_alignment_marker"
+        android:layout_width="@dimen/alignment_marker_thickness"
+        android:layout_height="@dimen/alignment_marker_height"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:background="@color/alignment_marker_color">
+    </RelativeLayout>
+
+    <FrameLayout
+        android:id="@+id/ui_settings_button_holder"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_width="42dp"
+        android:layout_height="42dp">
+        <ImageButton
+            style="@style/UiButton"
+            android:id="@+id/ui_settings_button"
+            android:contentDescription="settings"
+            android:src="@drawable/quantum_ic_settings_white_24"
+            android:layout_gravity="end|top"
+            android:onClick="showSettings"/>
+    </FrameLayout>
+</RelativeLayout>

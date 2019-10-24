@@ -1,0 +1,410 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F46145F23635C1B00BDF427 /* HelloCardboardAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F46145323635C1A00BDF427 /* HelloCardboardAppDelegate.m */; };
+		0F46146023635C1B00BDF427 /* HelloCardboardFileUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0F46145423635C1A00BDF427 /* HelloCardboardFileUtils.mm */; };
+		0F46146123635C1B00BDF427 /* HelloCardboardViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0F46145923635C1B00BDF427 /* HelloCardboardViewController.mm */; };
+		0F46146223635C1B00BDF427 /* HelloCardboardGlUtils.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0F46145A23635C1B00BDF427 /* HelloCardboardGlUtils.cc */; };
+		0F46146323635C1B00BDF427 /* HelloCardboardOverlayView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0F46145C23635C1B00BDF427 /* HelloCardboardOverlayView.mm */; };
+		0F46146423635C1B00BDF427 /* HelloCardboardRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0F46145E23635C1B00BDF427 /* HelloCardboardRenderer.mm */; };
+		0F46146823635D8600BDF427 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FD20269235764AD00B3C342 /* main.m */; };
+		0F4614762363635500BDF427 /* sdk.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0F4614752363635500BDF427 /* sdk.bundle */; };
+		0F4614782363636800BDF427 /* HelloCardboard.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0F4614772363636800BDF427 /* HelloCardboard.bundle */; };
+		0FD20275235764AD00B3C342 /* launch.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0FD20265235764AD00B3C342 /* launch.xib */; };
+		0FD2028D23576AC200B3C342 /* libsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD20284235768A000B3C342 /* libsdk.a */; };
+		0FD2029323576FAB00B3C342 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD2029223576FAB00B3C342 /* AVFoundation.framework */; };
+		0FD2029523576FBC00B3C342 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD2029423576FBC00B3C342 /* CoreMotion.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0FD20283235768A000B3C342 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0FD2027E235767E100B3C342 /* sdk.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0FD200852357511E00B3C342;
+			remoteInfo = sdk;
+		};
+		0FD2028B23576A9C00B3C342 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0FD2027E235767E100B3C342 /* sdk.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 0FD200842357511E00B3C342;
+			remoteInfo = sdk;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0F46145323635C1A00BDF427 /* HelloCardboardAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HelloCardboardAppDelegate.m; sourceTree = "<group>"; };
+		0F46145423635C1A00BDF427 /* HelloCardboardFileUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HelloCardboardFileUtils.mm; sourceTree = "<group>"; };
+		0F46145523635C1A00BDF427 /* HelloCardboardRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelloCardboardRenderer.h; sourceTree = "<group>"; };
+		0F46145623635C1B00BDF427 /* HelloCardboardAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelloCardboardAppDelegate.h; sourceTree = "<group>"; };
+		0F46145723635C1B00BDF427 /* HelloCardboardGlUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelloCardboardGlUtils.h; sourceTree = "<group>"; };
+		0F46145823635C1B00BDF427 /* HelloCardboardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelloCardboardViewController.h; sourceTree = "<group>"; };
+		0F46145923635C1B00BDF427 /* HelloCardboardViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HelloCardboardViewController.mm; sourceTree = "<group>"; };
+		0F46145A23635C1B00BDF427 /* HelloCardboardGlUtils.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HelloCardboardGlUtils.cc; sourceTree = "<group>"; };
+		0F46145B23635C1B00BDF427 /* HelloCardboardFileUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelloCardboardFileUtils.h; sourceTree = "<group>"; };
+		0F46145C23635C1B00BDF427 /* HelloCardboardOverlayView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HelloCardboardOverlayView.mm; sourceTree = "<group>"; };
+		0F46145D23635C1B00BDF427 /* HelloCardboardOverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelloCardboardOverlayView.h; sourceTree = "<group>"; };
+		0F46145E23635C1B00BDF427 /* HelloCardboardRenderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HelloCardboardRenderer.mm; sourceTree = "<group>"; };
+		0F4614752363635500BDF427 /* sdk.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = sdk.bundle; path = ../sdk/qrcode/ios/sdk.bundle; sourceTree = "<group>"; };
+		0F4614772363636800BDF427 /* HelloCardboard.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = HelloCardboard.bundle; sourceTree = "<group>"; };
+		0FD2009A235751D600B3C342 /* HelloCardboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloCardboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0FD20265235764AD00B3C342 /* launch.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = launch.xib; sourceTree = "<group>"; };
+		0FD20269235764AD00B3C342 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		0FD2027E235767E100B3C342 /* sdk.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = sdk.xcodeproj; path = ../sdk/sdk.xcodeproj; sourceTree = "<group>"; };
+		0FD2029223576FAB00B3C342 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		0FD2029423576FBC00B3C342 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0FD20097235751D600B3C342 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0FD2028D23576AC200B3C342 /* libsdk.a in Frameworks */,
+				0FD2029523576FBC00B3C342 /* CoreMotion.framework in Frameworks */,
+				0FD2029323576FAB00B3C342 /* AVFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0FD20091235751D600B3C342 = {
+			isa = PBXGroup;
+			children = (
+				0F4614772363636800BDF427 /* HelloCardboard.bundle */,
+				0F4614752363635500BDF427 /* sdk.bundle */,
+				0F46145623635C1B00BDF427 /* HelloCardboardAppDelegate.h */,
+				0F46145323635C1A00BDF427 /* HelloCardboardAppDelegate.m */,
+				0F46145B23635C1B00BDF427 /* HelloCardboardFileUtils.h */,
+				0F46145423635C1A00BDF427 /* HelloCardboardFileUtils.mm */,
+				0F46145A23635C1B00BDF427 /* HelloCardboardGlUtils.cc */,
+				0F46145723635C1B00BDF427 /* HelloCardboardGlUtils.h */,
+				0F46145D23635C1B00BDF427 /* HelloCardboardOverlayView.h */,
+				0F46145C23635C1B00BDF427 /* HelloCardboardOverlayView.mm */,
+				0F46145523635C1A00BDF427 /* HelloCardboardRenderer.h */,
+				0F46145E23635C1B00BDF427 /* HelloCardboardRenderer.mm */,
+				0F46145823635C1B00BDF427 /* HelloCardboardViewController.h */,
+				0F46145923635C1B00BDF427 /* HelloCardboardViewController.mm */,
+				0FD20265235764AD00B3C342 /* launch.xib */,
+				0FD20269235764AD00B3C342 /* main.m */,
+				0FD2009B235751D600B3C342 /* Products */,
+				0FD2027D235767E100B3C342 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		0FD2009B235751D600B3C342 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0FD2009A235751D600B3C342 /* HelloCardboard.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0FD2027D235767E100B3C342 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0FD2029423576FBC00B3C342 /* CoreMotion.framework */,
+				0FD2029223576FAB00B3C342 /* AVFoundation.framework */,
+				0FD2027E235767E100B3C342 /* sdk.xcodeproj */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0FD20280235768A000B3C342 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0FD20284235768A000B3C342 /* libsdk.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0FD20099235751D600B3C342 /* HelloCardboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0FD200B0235751D800B3C342 /* Build configuration list for PBXNativeTarget "HelloCardboard" */;
+			buildPhases = (
+				0FD20096235751D600B3C342 /* Sources */,
+				0FD20097235751D600B3C342 /* Frameworks */,
+				0FD20098235751D600B3C342 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0FD2028C23576A9C00B3C342 /* PBXTargetDependency */,
+			);
+			name = HelloCardboard;
+			productName = HelloCardboard;
+			productReference = 0FD2009A235751D600B3C342 /* HelloCardboard.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0FD20092235751D600B3C342 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				TargetAttributes = {
+					0FD20099235751D600B3C342 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 0FD20095235751D600B3C342 /* Build configuration list for PBXProject "HelloCardboard" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0FD20091235751D600B3C342;
+			productRefGroup = 0FD2009B235751D600B3C342 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 0FD20280235768A000B3C342 /* Products */;
+					ProjectRef = 0FD2027E235767E100B3C342 /* sdk.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				0FD20099235751D600B3C342 /* HelloCardboard */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		0FD20284235768A000B3C342 /* libsdk.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libsdk.a;
+			remoteRef = 0FD20283235768A000B3C342 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0FD20098235751D600B3C342 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F4614782363636800BDF427 /* HelloCardboard.bundle in Resources */,
+				0F4614762363635500BDF427 /* sdk.bundle in Resources */,
+				0FD20275235764AD00B3C342 /* launch.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0FD20096235751D600B3C342 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F46146823635D8600BDF427 /* main.m in Sources */,
+				0F46146123635C1B00BDF427 /* HelloCardboardViewController.mm in Sources */,
+				0F46146323635C1B00BDF427 /* HelloCardboardOverlayView.mm in Sources */,
+				0F46146423635C1B00BDF427 /* HelloCardboardRenderer.mm in Sources */,
+				0F46145F23635C1B00BDF427 /* HelloCardboardAppDelegate.m in Sources */,
+				0F46146223635C1B00BDF427 /* HelloCardboardGlUtils.cc in Sources */,
+				0F46146023635C1B00BDF427 /* HelloCardboardFileUtils.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0FD2028C23576A9C00B3C342 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = sdk;
+			targetProxy = 0FD2028B23576A9C00B3C342 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0FD200AE235751D800B3C342 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		0FD200AF235751D800B3C342 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0FD200B1235751D800B3C342 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = C5M9TX4B3U;
+				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				INFOPLIST_FILE = "$(SRCROOT)/HelloCardboard-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.HelloCardboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0FD200B2235751D800B3C342 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = C5M9TX4B3U;
+				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				INFOPLIST_FILE = "$(SRCROOT)/HelloCardboard-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.HelloCardboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0FD20095235751D600B3C342 /* Build configuration list for PBXProject "HelloCardboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0FD200AE235751D800B3C342 /* Debug */,
+				0FD200AF235751D800B3C342 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0FD200B0235751D800B3C342 /* Build configuration list for PBXNativeTarget "HelloCardboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0FD200B1235751D800B3C342 /* Debug */,
+				0FD200B2235751D800B3C342 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0FD20092235751D600B3C342 /* Project object */;
+}

@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <Group
+      location = "group:proto"
+      name = "proto">
+      <FileRef
+         location = "group:cardboard_device.pb.h">
+      </FileRef>
+      <FileRef
+         location = "group:cardboard_device.pb.cc">
+      </FileRef>
+      <Group
+         location = "group:libprotobuf"
+         name = "libprotobuf">
+         <Group
+            location = "group:universal"
+            name = "universal">
+            <FileRef
+               location = "group:libprotobuf.a">
+            </FileRef>
+            <FileRef
+               location = "group:libprotobuf-lite.a">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:include"
+            name = "include">
+            <Group
+               location = "group:google"
+               name = "google">
+               <Group
+                  location = "group:protobuf"
+                  name = "protobuf">
+                  <FileRef
+                     location = "group:source_context.pb.h">
+                  </FileRef>
+                  <Group
+                     location = "group:stubs"
+                     name = "stubs">
+                     <FileRef
+                        location = "group:stringpiece.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:stl_util.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:port.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:status.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:template_util.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:map_util.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:casts.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:logging.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:bytestream.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:common.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:macros.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:platform_macros.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:once.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:fastmem.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:mutex.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:callback.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:strutil.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:hash.h">
+                     </FileRef>
+                  </Group>
+                  <FileRef
+                     location = "group:timestamp.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:repeated_field.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:field_mask.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:port_undef.inc">
+                  </FileRef>
+                  <FileRef
+                     location = "group:port.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:wire_format.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:inlined_string_field.h">
+                  </FileRef>
+                  <Group
+                     location = "group:util"
+                     name = "util">
+                     <FileRef
+                        location = "group:time_util.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:field_mask_util.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:json_util.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:type_resolver.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:field_comparator.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:type_resolver_util.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:message_differencer.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:delimited_message_util.h">
+                     </FileRef>
+                  </Group>
+                  <FileRef
+                     location = "group:map.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:arenastring.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:map_entry_lite.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:service.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:struct.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:empty.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:api.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:descriptor.h">
+                  </FileRef>
+                  <Group
+                     location = "group:io"
+                     name = "io">
+                     <FileRef
+                        location = "group:zero_copy_stream_impl.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:printer.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:gzip_stream.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:zero_copy_stream_impl_lite.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:strtod.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:tokenizer.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:zero_copy_stream.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:coded_stream.h">
+                     </FileRef>
+                  </Group>
+                  <FileRef
+                     location = "group:message.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:duration.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:wrappers.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:text_format.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:has_bits.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:struct.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:arena_impl.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:api.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:metadata.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:extension_set.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:reflection_ops.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:generated_message_table_driven.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:duration.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:wrappers.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:source_context.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:generated_message_reflection.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:any.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:unknown_field_set.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:type.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:map_field_inl.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:timestamp.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:field_mask.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:descriptor.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:map_entry.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:message_lite.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:generated_message_util.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:descriptor_database.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:map_field.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:generated_enum_reflection.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:generated_enum_util.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:any.pb.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:map_type_handler.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:parse_context.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:extension_set_inl.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:map_field_lite.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:type.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:metadata_lite.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:empty.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:implicit_weak_message.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:arena.h">
+                  </FileRef>
+                  <Group
+                     location = "group:compiler"
+                     name = "compiler">
+                     <FileRef
+                        location = "group:code_generator.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:plugin.pb.h">
+                     </FileRef>
+                     <FileRef
+                        location = "group:plugin.h">
+                     </FileRef>
+                     <Group
+                        location = "group:python"
+                        name = "python">
+                        <FileRef
+                           location = "group:python_generator.h">
+                        </FileRef>
+                     </Group>
+                     <FileRef
+                        location = "group:parser.h">
+                     </FileRef>
+                     <Group
+                        location = "group:js"
+                        name = "js">
+                        <FileRef
+                           location = "group:well_known_types_embed.h">
+                        </FileRef>
+                        <FileRef
+                           location = "group:js_generator.h">
+                        </FileRef>
+                     </Group>
+                     <FileRef
+                        location = "group:plugin.proto">
+                     </FileRef>
+                     <Group
+                        location = "group:java"
+                        name = "java">
+                        <FileRef
+                           location = "group:java_generator.h">
+                        </FileRef>
+                        <FileRef
+                           location = "group:java_names.h">
+                        </FileRef>
+                     </Group>
+                     <Group
+                        location = "group:php"
+                        name = "php">
+                        <FileRef
+                           location = "group:php_generator.h">
+                        </FileRef>
+                     </Group>
+                     <FileRef
+                        location = "group:command_line_interface.h">
+                     </FileRef>
+                     <Group
+                        location = "group:cpp"
+                        name = "cpp">
+                        <FileRef
+                           location = "group:cpp_generator.h">
+                        </FileRef>
+                     </Group>
+                     <FileRef
+                        location = "group:importer.h">
+                     </FileRef>
+                     <Group
+                        location = "group:csharp"
+                        name = "csharp">
+                        <FileRef
+                           location = "group:csharp_names.h">
+                        </FileRef>
+                        <FileRef
+                           location = "group:csharp_generator.h">
+                        </FileRef>
+                     </Group>
+                     <Group
+                        location = "group:ruby"
+                        name = "ruby">
+                        <FileRef
+                           location = "group:ruby_generator.h">
+                        </FileRef>
+                     </Group>
+                     <Group
+                        location = "group:objectivec"
+                        name = "objectivec">
+                        <FileRef
+                           location = "group:objectivec_helpers.h">
+                        </FileRef>
+                        <FileRef
+                           location = "group:objectivec_generator.h">
+                        </FileRef>
+                     </Group>
+                  </Group>
+                  <FileRef
+                     location = "group:descriptor.proto">
+                  </FileRef>
+                  <FileRef
+                     location = "group:any.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:reflection.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:dynamic_message.h">
+                  </FileRef>
+                  <FileRef
+                     location = "group:port_def.inc">
+                  </FileRef>
+                  <FileRef
+                     location = "group:wire_format_lite.h">
+                  </FileRef>
+               </Group>
+            </Group>
+         </Group>
+         <Group
+            location = "group:platform"
+            name = "platform">
+            <Group
+               location = "group:x86_64-simulator"
+               name = "x86_64-simulator">
+               <Group
+                  location = "group:bin"
+                  name = "bin">
+                  <FileRef
+                     location = "group:protoc">
+                  </FileRef>
+               </Group>
+               <Group
+                  location = "group:lib"
+                  name = "lib">
+                  <Group
+                     location = "group:pkgconfig"
+                     name = "pkgconfig">
+                     <FileRef
+                        location = "group:protobuf-lite.pc">
+                     </FileRef>
+                     <FileRef
+                        location = "group:protobuf.pc">
+                     </FileRef>
+                  </Group>
+                  <FileRef
+                     location = "group:libprotobuf-lite.la">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotoc.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf-lite.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotoc.la">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf.la">
+                  </FileRef>
+               </Group>
+            </Group>
+            <Group
+               location = "group:armv7"
+               name = "armv7">
+               <Group
+                  location = "group:bin"
+                  name = "bin">
+                  <FileRef
+                     location = "group:protoc">
+                  </FileRef>
+               </Group>
+               <Group
+                  location = "group:lib"
+                  name = "lib">
+                  <Group
+                     location = "group:pkgconfig"
+                     name = "pkgconfig">
+                     <FileRef
+                        location = "group:protobuf-lite.pc">
+                     </FileRef>
+                     <FileRef
+                        location = "group:protobuf.pc">
+                     </FileRef>
+                  </Group>
+                  <FileRef
+                     location = "group:libprotobuf-lite.la">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotoc.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf-lite.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotoc.la">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf.la">
+                  </FileRef>
+               </Group>
+            </Group>
+            <Group
+               location = "group:i386-simulator"
+               name = "i386-simulator">
+               <Group
+                  location = "group:bin"
+                  name = "bin">
+                  <FileRef
+                     location = "group:protoc">
+                  </FileRef>
+               </Group>
+               <Group
+                  location = "group:lib"
+                  name = "lib">
+                  <Group
+                     location = "group:pkgconfig"
+                     name = "pkgconfig">
+                     <FileRef
+                        location = "group:protobuf-lite.pc">
+                     </FileRef>
+                     <FileRef
+                        location = "group:protobuf.pc">
+                     </FileRef>
+                  </Group>
+                  <FileRef
+                     location = "group:libprotobuf-lite.la">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotoc.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf-lite.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotoc.la">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf.la">
+                  </FileRef>
+               </Group>
+            </Group>
+            <Group
+               location = "group:arm64"
+               name = "arm64">
+               <Group
+                  location = "group:bin"
+                  name = "bin">
+                  <FileRef
+                     location = "group:protoc">
+                  </FileRef>
+               </Group>
+               <Group
+                  location = "group:lib"
+                  name = "lib">
+                  <Group
+                     location = "group:pkgconfig"
+                     name = "pkgconfig">
+                     <FileRef
+                        location = "group:protobuf-lite.pc">
+                     </FileRef>
+                     <FileRef
+                        location = "group:protobuf.pc">
+                     </FileRef>
+                  </Group>
+                  <FileRef
+                     location = "group:libprotobuf-lite.la">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotoc.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf-lite.a">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotoc.la">
+                  </FileRef>
+                  <FileRef
+                     location = "group:libprotobuf.la">
+                  </FileRef>
+               </Group>
+            </Group>
+         </Group>
+      </Group>
+   </Group>
+   <FileRef
+      location = "group:hellocardboard-ios/HelloCardboard.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:sdk/sdk.xcodeproj">
+   </FileRef>
+</Workspace>

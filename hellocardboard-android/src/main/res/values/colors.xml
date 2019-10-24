@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="color_accent">#2979ff</color>
+    <color name="color_primary">#2979ff</color>
+    <color name="color_primary_dark">#2962ff</color>
+    <color name="darker_gray">#555</color>
+    <color name="alignment_marker_color">#b4b4b4</color>
+    <color name="white_transparent">#4cFFFFFF</color>
+</resources>
