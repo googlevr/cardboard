@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,44 +17,53 @@
 
 #include <jni.h>
 
+#include "jni_utils/android/jni_utils.h"
+
 namespace cardboard {
 namespace screen_params {
 
 namespace {
 JavaVM* vm_;
 jobject context_;
+jclass display_metrics_class_;
+jclass activity_class_;
+jclass window_manager_class_;
+jclass display_class_;
 
 struct DisplayMetrics {
   float xdpi;
   float ydpi;
 };
 
+void LoadJNIResources(JNIEnv* env) {
+  display_metrics_class_ = cardboard::jni::LoadJClass(env, "android/util/DisplayMetrics");
+  activity_class_ = cardboard::jni::LoadJClass(env, "android/app/Activity");
+  window_manager_class_ = cardboard::jni::LoadJClass(env, "android/view/WindowManager");
+  display_class_ = cardboard::jni::LoadJClass(env, "android/view/Display");
+}
+
 DisplayMetrics getDisplayMetrics() {
   JNIEnv* env;
-  vm_->GetEnv((void**)&env, JNI_VERSION_1_6);
+  cardboard::jni::LoadJNIEnv(vm_, &env);
 
-  jclass display_metrics_cls = env->FindClass("android/util/DisplayMetrics");
   jmethodID display_metrics_constructor =
-      env->GetMethodID(display_metrics_cls, "<init>", "()V");
-  jclass activity_cls = env->FindClass("android/app/Activity");
+      env->GetMethodID(display_metrics_class_, "<init>", "()V");
   jmethodID get_window_manager = env->GetMethodID(
-      activity_cls, "getWindowManager", "()Landroid/view/WindowManager;");
-  jclass window_manager_cls = env->FindClass("android/view/WindowManager");
+      activity_class_, "getWindowManager", "()Landroid/view/WindowManager;");
   jmethodID get_default_display = env->GetMethodID(
-      window_manager_cls, "getDefaultDisplay", "()Landroid/view/Display;");
-  jclass display_cls = env->FindClass("android/view/Display");
-  jmethodID get_metrics = env->GetMethodID(display_cls, "getRealMetrics",
+      window_manager_class_, "getDefaultDisplay", "()Landroid/view/Display;");
+  jmethodID get_metrics = env->GetMethodID(display_class_, "getRealMetrics",
                                            "(Landroid/util/DisplayMetrics;)V");
 
   jobject display_metrics =
-      env->NewObject(display_metrics_cls, display_metrics_constructor);
+      env->NewObject(display_metrics_class_, display_metrics_constructor);
   jobject window_manager = env->CallObjectMethod(context_, get_window_manager);
   jobject default_display =
       env->CallObjectMethod(window_manager, get_default_display);
   env->CallVoidMethod(default_display, get_metrics, display_metrics);
 
-  jfieldID xdpi_id = env->GetFieldID(display_metrics_cls, "xdpi", "F");
-  jfieldID ydpi_id = env->GetFieldID(display_metrics_cls, "ydpi", "F");
+  jfieldID xdpi_id = env->GetFieldID(display_metrics_class_, "xdpi", "F");
+  jfieldID ydpi_id = env->GetFieldID(display_metrics_class_, "ydpi", "F");
 
   float xdpi = env->GetFloatField(display_metrics, xdpi_id);
   float ydpi = env->GetFloatField(display_metrics, ydpi_id);
@@ -67,6 +76,10 @@ DisplayMetrics getDisplayMetrics() {
 void initializeAndroid(JavaVM* vm, jobject context) {
   vm_ = vm;
   context_ = context;
+
+  JNIEnv* env;
+  cardboard::jni::LoadJNIEnv(vm_, &env);
+  LoadJNIResources(env);
 }
 
 void getScreenSizeInMeters(int width_pixels, int height_pixels,

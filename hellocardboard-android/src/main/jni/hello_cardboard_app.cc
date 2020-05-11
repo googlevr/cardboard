@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,9 +204,10 @@ void HelloCardboardApp::OnDrawFrame() {
   }
 
   // Render
-  CardboardDestortionRenderer_renderEyeToDisplay(
-      distortion_renderer_, 0, screen_width_, screen_height_,
-      &left_eye_texture_description_, &right_eye_texture_description_);
+  CardboardDistortionRenderer_renderEyeToDisplay(
+      distortion_renderer_, /* target_display = */ 0, /* x = */ 0, /* y = */ 0,
+      screen_width_, screen_height_, &left_eye_texture_description_,
+      &right_eye_texture_description_);
 
   CHECKGLERROR("onDrawFrame");
 }
@@ -279,10 +280,14 @@ bool HelloCardboardApp::UpdateDeviceParams() {
                                       kRight);
 
   // Get eye matrices
-  CardboardLensDistortion_getEyeMatrices(
-      lens_distortion_, projection_matrices_[0], eye_matrices_[0], kLeft);
-  CardboardLensDistortion_getEyeMatrices(
-      lens_distortion_, projection_matrices_[1], eye_matrices_[1], kRight);
+  CardboardLensDistortion_getEyeFromHeadMatrix(
+      lens_distortion_, kLeft, eye_matrices_[0]);
+  CardboardLensDistortion_getEyeFromHeadMatrix(
+      lens_distortion_, kRight, eye_matrices_[1]);
+  CardboardLensDistortion_getProjectionMatrix(
+      lens_distortion_, kLeft, kZNear, kZFar, projection_matrices_[0]);
+  CardboardLensDistortion_getProjectionMatrix(
+      lens_distortion_, kRight, kZNear, kZFar, projection_matrices_[1]);
 
   screen_params_changed_ = false;
   device_params_changed_ = false;
@@ -311,14 +316,12 @@ void HelloCardboardApp::GlSetup() {
                GL_RGB, GL_UNSIGNED_BYTE, 0);
 
   left_eye_texture_description_.texture = texture_;
-  left_eye_texture_description_.layer = 0;
   left_eye_texture_description_.left_u = 0;
   left_eye_texture_description_.right_u = 0.5;
   left_eye_texture_description_.top_v = 1;
   left_eye_texture_description_.bottom_v = 0;
 
   right_eye_texture_description_.texture = texture_;
-  right_eye_texture_description_.layer = 0;
   right_eye_texture_description_.left_u = 0.5;
   right_eye_texture_description_.right_u = 1;
   right_eye_texture_description_.top_v = 1;

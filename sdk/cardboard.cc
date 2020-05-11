@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,11 @@
 #include "head_tracker.h"
 #include "lens_distortion.h"
 #include "qr_code.h"
+#include "qrcode/cardboard_v1/cardboard_v1.h"
 #include "screen_params.h"
+#ifdef __ANDROID__
+#include "device_params/android/device_params.h"
+#endif
 
 // TODO(b/134142617): Revisit struct/class hierarchy.
 struct CardboardLensDistortion : cardboard::LensDistortion {};
@@ -36,6 +40,7 @@ void Cardboard_initializeAndroid(JavaVM* vm, jobject context) {
 
   cardboard::qrcode::initializeAndroid(vm, global_context);
   cardboard::screen_params::initializeAndroid(vm, global_context);
+  cardboard::DeviceParams::initializeAndroid(vm, global_context);
 }
 #endif
 
@@ -51,11 +56,25 @@ void CardboardLensDistortion_destroy(CardboardLensDistortion* lens_distortion) {
   delete lens_distortion;
 }
 
-void CardboardLensDistortion_getEyeMatrices(
-    CardboardLensDistortion* lens_distortion, float* projection_matrix,
-    float* eye_from_head_matrix, CardboardEye eye) {
+void CardboardLensDistortion_getEyeFromHeadMatrix(
+    CardboardLensDistortion* lens_distortion, CardboardEye eye,
+    float* eye_from_head_matrix) {
   static_cast<cardboard::LensDistortion*>(lens_distortion)
-      ->GetEyeMatrices(projection_matrix, eye_from_head_matrix, eye);
+      ->GetEyeFromHeadMatrix(eye, eye_from_head_matrix);
+}
+
+void CardboardLensDistortion_getProjectionMatrix(
+    CardboardLensDistortion* lens_distortion, CardboardEye eye, float z_near,
+    float z_far, float* projection_matrix) {
+  static_cast<cardboard::LensDistortion*>(lens_distortion)
+      ->GetEyeProjectionMatrix(eye, z_near, z_far, projection_matrix);
+}
+
+void CardboardLensDistortion_getFieldOfView(
+    CardboardLensDistortion* lens_distortion, CardboardEye eye,
+    float* field_of_view) {
+  static_cast<cardboard::LensDistortion*>(lens_distortion)
+      ->GetEyeFieldOfView(eye, field_of_view);
 }
 
 void CardboardLensDistortion_getDistortionMesh(
@@ -109,13 +128,12 @@ void CardboardDistortionRenderer_setMesh(CardboardDistortionRenderer* renderer,
   static_cast<cardboard::DistortionRenderer*>(renderer)->SetMesh(mesh, eye);
 }
 
-void CardboardDestortionRenderer_renderEyeToDisplay(
-    CardboardDistortionRenderer* renderer, int target_display,
-    int display_width, int display_height,
-    const CardboardEyeTextureDescription* left_eye,
+void CardboardDistortionRenderer_renderEyeToDisplay(
+    CardboardDistortionRenderer* renderer, int target_display, int x, int y,
+    int width, int height, const CardboardEyeTextureDescription* left_eye,
     const CardboardEyeTextureDescription* right_eye) {
   static_cast<cardboard::DistortionRenderer*>(renderer)->RenderEyeToDisplay(
-      target_display, display_width, display_height, left_eye, right_eye);
+      target_display, x, y, width, height, left_eye, right_eye);
 }
 
 CardboardHeadTracker* CardboardHeadTracker_create() {
@@ -145,7 +163,6 @@ void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
   std::memcpy(orientation, &out_orientation[0], 4 * sizeof(float));
 }
 
-
 void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
                                           int* size) {
   std::vector<uint8_t> device_params =
@@ -161,6 +178,18 @@ void CardboardQrCode_destroy(const uint8_t* encoded_device_params) {
 
 void CardboardQrCode_scanQrCodeAndSaveDeviceParams() {
   cardboard::qrcode::scanQrCodeAndSaveDeviceParams();
+}
+
+int CardboardQrCode_getQrCodeScanCount() {
+  return cardboard::qrcode::getQrCodeScanCount();
+}
+
+void CardboardQrCode_getCardboardV1DeviceParams(uint8_t** encoded_device_params,
+                                                int* size) {
+  static std::vector<uint8_t> cardboard_v1_device_param =
+      cardboard::qrcode::getCardboardV1DeviceParams();
+  *encoded_device_params = cardboard_v1_device_param.data();
+  *size = cardboard_v1_device_param.size();
 }
 
 }  // extern "C"

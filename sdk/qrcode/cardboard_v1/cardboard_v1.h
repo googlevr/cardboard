@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,20 @@
 
 namespace cardboard {
 namespace qrcode {
+
+/// Device params for Cardboard V1 released at Google I/O 2014.
+/// {@
+constexpr float kCardboardV1InterLensDistance = 0.06f;
+constexpr float kCardboardV1TrayToLensDistance = 0.035f;
+constexpr float kCardboardV1VirtualEyeToScreenDistance = 0.042f;
+constexpr float kCardboardV1FovHalfDegrees[] = {40.0f, 40.0f, 40.0f, 40.0f};
+constexpr float kCardboardV1DistortionCoeffs[] = {0.441f, 0.156f};
+constexpr char kCardboardV1Vendor[] = "Google, Inc.";
+constexpr char kCardboardV1Model[] = "Cardboard v1";
+/// @}
+
 std::vector<uint8_t> getCardboardV1DeviceParams();
-}
+}  // namespace qrcode
 }  // namespace cardboard
 
 #endif  // CARDBOARD_SDK_QRCODE_CARDBOARD_V1_CARDBOARD_V1_H_

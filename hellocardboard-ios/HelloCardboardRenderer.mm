@@ -41,6 +41,15 @@ static constexpr float kDefaultFloorHeight = -1.7f;
 
 static constexpr uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 
+/**
+ * Default near clip plane z-axis coordinate.
+ */
+static constexpr float kZNear = 0.1f;
+/**
+ * Default far clip plane z-axis coordinate.
+ */
+static constexpr float kZFar = 100.f;
+
 // Angle threshold for determining whether the controller is pointing at the
 // object.
 static constexpr float kAngleLimit = 0.2f;
@@ -136,14 +145,12 @@ void HelloCardboardRenderer::InitializeGl() {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
   _leftEyeTexture.texture = _eyeTexture;
-  _leftEyeTexture.layer = 0;
   _leftEyeTexture.left_u = 0;
   _leftEyeTexture.right_u = 0.5;
   _leftEyeTexture.top_v = 1;
   _leftEyeTexture.bottom_v = 0;
 
   _rightEyeTexture.texture = _eyeTexture;
-  _rightEyeTexture.layer = 0;
   _rightEyeTexture.left_u = 0.5;
   _rightEyeTexture.right_u = 1;
   _rightEyeTexture.top_v = 1;
@@ -164,10 +171,12 @@ void HelloCardboardRenderer::InitializeGl() {
 
   CheckGLError("Create Frame buffer");
 
-  CardboardLensDistortion_getEyeMatrices(_lensDistortion, _projMatrices[kLeft], _eyeMatrices[kLeft],
-                                         kLeft);
-  CardboardLensDistortion_getEyeMatrices(_lensDistortion, _projMatrices[kRight],
-                                         _eyeMatrices[kRight], kRight);
+  CardboardLensDistortion_getEyeFromHeadMatrix(_lensDistortion, kLeft, _eyeMatrices[kLeft]);
+  CardboardLensDistortion_getEyeFromHeadMatrix(_lensDistortion, kRight, _eyeMatrices[kRight]);
+  CardboardLensDistortion_getProjectionMatrix(_lensDistortion, kLeft, kZNear, kZFar,
+                                              _projMatrices[kLeft]);
+  CardboardLensDistortion_getProjectionMatrix(_lensDistortion, kRight, kZNear, kZFar,
+                                              _projMatrices[kRight]);
 
   CardboardMesh leftMesh;
   CardboardMesh rightMesh;
@@ -224,8 +233,9 @@ void HelloCardboardRenderer::DrawFrame() {
   DrawWorld(_rightEyeViewPose, GLKMatrix4MakeWithArray(_projMatrices[kRight]));
 
   // Draw cardboard.
-  CardboardDestortionRenderer_renderEyeToDisplay(_distortionRenderer, renderTarget, _width, _height,
-                                                 &_leftEyeTexture, &_rightEyeTexture);
+  CardboardDistortionRenderer_renderEyeToDisplay(_distortionRenderer, renderTarget, /*x=*/0,
+                                                 /*y=*/0, _width, _height, &_leftEyeTexture,
+                                                 &_rightEyeTexture);
   CheckGLError("onDrawFrame");
 }
 
@@ -281,7 +291,7 @@ void HelloCardboardRenderer::HideTarget() {
   float angle = RandomUniformFloat(-M_PI, M_PI);
   float distance = RandomUniformFloat(kMinTargetDistance, kMaxTargetDistance);
   float height = RandomUniformFloat(kMinTargetHeight, kMaxTargetHeight);
-  GLKVector3 targetPosition = {std::cos(angle) * distance, height, std::sin(angle) * distance};
+  GLKVector3 targetPosition = {{std::cos(angle) * distance, height, std::sin(angle) * distance}};
 
   _modelTarget =
       GLKMatrix4MakeTranslation(targetPosition.v[0], targetPosition.v[1], targetPosition.v[2]);
@@ -292,7 +302,7 @@ bool HelloCardboardRenderer::IsPointingAtTarget() {
   // in head space.
   std::array<float, 3> pointVector = {0.0f, 0.0f, -1.0f};
   GLKMatrix4 headFromTarget = GLKMatrix4Multiply(_headView, _modelTarget);
-  GLKVector4 targetVector = GLKMatrix4MultiplyVector4(headFromTarget, {0.f, 0.f, 0.f, 1.f});
+  GLKVector4 targetVector = GLKMatrix4MultiplyVector4(headFromTarget, {{0.f, 0.f, 0.f, 1.f}});
   std::array<float, 3> targetVectorArray = {targetVector.v[0], targetVector.v[1],
                                             targetVector.v[2]};
 

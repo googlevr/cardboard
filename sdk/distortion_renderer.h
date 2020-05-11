@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ class DistortionRenderer {
   virtual ~DistortionRenderer();
   void SetMesh(const CardboardMesh* mesh, CardboardEye eye);
   void RenderEyeToDisplay(
-      int target_display, int display_width, int display_height,
+      int target_display, int x, int y, int width, int height,
       const CardboardEyeTextureDescription* left_eye,
       const CardboardEyeTextureDescription* right_eye) const;
 

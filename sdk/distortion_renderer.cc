@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,6 @@
 
 #include <vector>
 
-#ifdef __ANDROID__
-#include <GLES3/gl32.h>
-#endif
-#ifdef __APPLE__
-#include <OpenGLES/ES3/gl.h>
-#endif
 #include "screen_params.h"
 #include "util/logging.h"
 
@@ -104,7 +98,7 @@ void DistortionRenderer::SetMesh(const CardboardMesh* mesh, CardboardEye eye) {
 }
 
 void DistortionRenderer::RenderEyeToDisplay(
-    int target_display, int display_width, int display_height,
+    int target_display, int x, int y, int width, int height,
     const CardboardEyeTextureDescription* left_eye,
     const CardboardEyeTextureDescription* right_eye) const {
   if (elements_count_[0] == 0 || elements_count_[1] == 0) {
@@ -114,7 +108,7 @@ void DistortionRenderer::RenderEyeToDisplay(
     return;
   }
 
-  glViewport(0, 0, display_width, display_height);
+  glViewport(x, y, width, height);
   glBindFramebuffer(GL_FRAMEBUFFER, target_display);
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_CULL_FACE);
@@ -124,10 +118,10 @@ void DistortionRenderer::RenderEyeToDisplay(
   glUseProgram(program_);
 
   glEnable(GL_SCISSOR_TEST);
-  glScissor(0, 0, display_width / 2, display_height);
+  glScissor(x, y, width / 2, height);
   RenderDistortionMesh(left_eye, kLeft);
 
-  glScissor(display_width / 2, 0, display_width / 2, display_height);
+  glScissor(x + width / 2, y, width / 2, height);
   RenderDistortionMesh(right_eye, kRight);
 
   // Active GL_TEXTURE0 effectively enables the first texture that is

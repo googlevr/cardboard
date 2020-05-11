@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #import "qr_code.h"
 
 #import <AVFoundation/AVFoundation.h>
+#import <libkern/OSAtomic.h>
 #import <UIKit/UIKit.h>
 
 #import "qrcode/ios/device_params_helper.h"
@@ -23,8 +24,11 @@
 
 namespace cardboard {
 namespace qrcode {
-
 namespace {
+
+volatile int32_t qrCodeScanCount = 0;
+
+void incrementQrCodeScanCount() { OSAtomicIncrement32Barrier(&qrCodeScanCount); }
 
 void showQRScanViewController() {
   UIViewController *presentingViewController = nil;
@@ -38,6 +42,7 @@ void showQRScanViewController() {
 
   __block CardboardQRScanViewController *qrViewController =
       [[CardboardQRScanViewController alloc] initWithCompletion:^(BOOL succeeded) {
+        incrementQrCodeScanCount();
         [qrViewController dismissViewControllerAnimated:YES completion:nil];
       }];
 
@@ -91,6 +96,8 @@ void scanQrCodeAndSaveDeviceParams() {
       return;
   }
 }
+
+int getQrCodeScanCount() { return qrCodeScanCount; }
 
 }  // namespace qrcode
 }  // namespace cardboard

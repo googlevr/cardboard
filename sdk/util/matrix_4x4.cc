@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,10 +56,10 @@ Matrix4x4 Matrix4x4::Perspective(const std::array<float, 4>& fov, float zNear,
                                  float zFar) {
   Matrix4x4 ret = Matrix4x4::Zeros();
 
-  const float xLeft = -std::tan(fov[0] * M_PI / 180.0f) * zNear;
-  const float xRight = std::tan(fov[1] * M_PI / 180.0f) * zNear;
-  const float yBottom = -std::tan(fov[2] * M_PI / 180.0f) * zNear;
-  const float yTop = std::tan(fov[3] * M_PI / 180.0f) * zNear;
+  const float xLeft = -std::tan(fov[0]) * zNear;
+  const float xRight = std::tan(fov[1]) * zNear;
+  const float yBottom = -std::tan(fov[2]) * zNear;
+  const float yTop = std::tan(fov[3]) * zNear;
 
   const float X = (2 * zNear) / (xRight - xLeft);
   const float Y = (2 * zNear) / (yTop - yBottom);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 #include <thread>
 #include <vector>
 
-#include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include "cardboard.h"
 #include "util.h"
@@ -91,6 +90,16 @@ class HelloCardboardApp {
   void SwitchViewer();
 
  private:
+  /**
+   * Default near clip plane z-axis coordinate.
+   */
+  static constexpr float kZNear = 0.1f;
+
+  /**
+   * Default far clip plane z-axis coordinate.
+   */
+  static constexpr float kZFar = 100.f;
+
   /**
    * Updates device parameters, if necessary.
    *

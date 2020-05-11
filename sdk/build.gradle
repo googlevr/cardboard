@@ -1,22 +1,22 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.google.protobuf'
 
 android {
     compileSdkVersion 28
     buildToolsVersion "29.0.0"
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
         externalNativeBuild {
             cmake {
-                cppFlags.add("-std=gnu++11")
-                arguments "-DANDROID_STL=c++_shared",
-                          "-DPROTO_PATH:PATH=${project.rootDir}/proto"
+                cppFlags.add("-std=c++11")
+                arguments "-DANDROID_STL=c++_shared"
             }
         }
     }
@@ -33,7 +33,37 @@ android {
     }
     sourceSets {
         // Sets path to java, jni, resources files and manifest location as it is not the default one.
-        main.setRoot("qrcode/android")
+        main {
+            manifest.srcFile 'qrcode/android/AndroidManifest.xml'
+            java.srcDirs = ['qrcode/android/java', 'device_params/android/java']
+            jni.srcDirs = ['qrcode/android/jni']
+            res.srcDirs = ['qrcode/android/res']
+        }
+        // Adds proto file and generated source files
+        main.java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/javalite"
+        main.proto.srcDirs = ["${project.rootDir}/proto"]
+        main.proto.includes = ["cardboard_device.proto"]
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.0.0'
+    }
+    plugins {
+        javalite {
+            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                remove java
+            }
+            task.plugins {
+                javalite {}
+            }
+        }
     }
 }
 
@@ -44,4 +74,5 @@ dependencies {
     // Android Mobile Vision
     implementation 'com.google.android.gms:play-services-vision:15.0.2'
     implementation 'com.android.support:design:28.0.0'
+    implementation 'com.google.protobuf:protobuf-lite:3.0.0'
 }

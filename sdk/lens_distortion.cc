@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
  */
 #include "lens_distortion.h"
 
+#include <cmath>
+#include <cstring>
+
 #include "include/cardboard.h"
 #include "screen_params.h"
-#include "util/logging.h"
 
 namespace cardboard {
 
@@ -41,9 +43,11 @@ LensDistortion::LensDistortion(const uint8_t* encoded_device_params, int size,
       -device_params_.inter_lens_distance() * 0.5f, 0.f, 0.f);
 
   std::vector<float> distortion_coefficients(
-      device_params_.distortion_coefficients().data(),
-      device_params_.distortion_coefficients().data() +
-          device_params_.distortion_coefficients_size());
+      device_params_.distortion_coefficients_size(), 0.0f);
+  for (int i = 0; i < device_params_.distortion_coefficients_size(); i++) {
+    distortion_coefficients.at(i) = device_params_.distortion_coefficients(i);
+  }
+
   distortion_ = std::unique_ptr<PolynomialRadialDistortion>(
       new PolynomialRadialDistortion(distortion_coefficients));
 
@@ -55,11 +59,20 @@ LensDistortion::LensDistortion(const uint8_t* encoded_device_params, int size,
 
 LensDistortion::~LensDistortion() {}
 
-void LensDistortion::GetEyeMatrices(float* projection_matrix,
-                                    float* eye_from_head_matrix,
-                                    CardboardEye eye) const {
+void LensDistortion::GetEyeFromHeadMatrix(
+    CardboardEye eye, float* eye_from_head_matrix) const {
   this->eye_from_head_matrix_[eye].ToArray(eye_from_head_matrix);
-  this->projection_matrix_[eye].ToArray(projection_matrix);
+}
+
+void LensDistortion::GetEyeProjectionMatrix(
+    CardboardEye eye, float z_near, float z_far,
+    float* projection_matrix) const {
+  Matrix4x4::Perspective(fov_[eye], z_near, z_far).ToArray(projection_matrix);
+}
+
+void LensDistortion::GetEyeFieldOfView(CardboardEye eye,
+                                       float* field_of_view) const {
+  std::memcpy(field_of_view, fov_[eye].data(), sizeof(float) * 4);
 }
 
 CardboardMesh LensDistortion::GetDistortionMesh(CardboardEye eye) const {
@@ -73,10 +86,6 @@ void LensDistortion::UpdateParams() {
   fov_[kRight] = fov_[kLeft];
   fov_[kRight][0] = fov_[kLeft][1];
   fov_[kRight][1] = fov_[kLeft][0];
-
-  projection_matrix_[kLeft] = Matrix4x4::Perspective(fov_[kLeft], 0.1f, 100.f);
-  projection_matrix_[kRight] =
-      Matrix4x4::Perspective(fov_[kRight], 0.1f, 100.f);
 
   left_mesh_ = std::unique_ptr<DistortionMesh>(
       CreateDistortionMesh(kLeft, device_params_, *distortion_, fov_[kLeft],
@@ -147,12 +156,13 @@ std::array<float, 4> LensDistortion::CalculateFov(
     const DeviceParams& device_params,
     const PolynomialRadialDistortion& distortion, float screen_width_meters,
     float screen_height_meters) {
-  // This in in degrees.
+  // FOV angles in device parameters are in degrees so they are converted
+  // to radians for posterior use.
   std::array<float, 4> device_fov = {
-      device_params.left_eye_field_of_view_angles(0),
-      device_params.left_eye_field_of_view_angles(1),
-      device_params.left_eye_field_of_view_angles(2),
-      device_params.left_eye_field_of_view_angles(3),
+      DegreesToRadians(device_params.left_eye_field_of_view_angles(0)),
+      DegreesToRadians(device_params.left_eye_field_of_view_angles(1)),
+      DegreesToRadians(device_params.left_eye_field_of_view_angles(2)),
+      DegreesToRadians(device_params.left_eye_field_of_view_angles(3)),
   };
 
   const float eye_to_screen_distance = device_params.screen_to_lens_distance();
@@ -164,20 +174,13 @@ std::array<float, 4> LensDistortion::CalculateFov(
   const float top_distance = screen_height_meters - bottom_distance;
 
   const float outer_angle =
-      atan(
-          distortion.Distort({outer_distance / eye_to_screen_distance, 0})[0]) *
-      180.0f / M_PI;
+      atan(distortion.Distort({outer_distance / eye_to_screen_distance, 0})[0]);
   const float inner_angle =
-      atan(
-          distortion.Distort({inner_distance / eye_to_screen_distance, 0})[0]) *
-      180.0f / M_PI;
-  const float bottom_angle =
-      atan(distortion.Distort(
-          {0, bottom_distance / eye_to_screen_distance})[1]) *
-      180.0f / M_PI;
+      atan(distortion.Distort({inner_distance / eye_to_screen_distance, 0})[0]);
+  const float bottom_angle = atan(
+      distortion.Distort({0, bottom_distance / eye_to_screen_distance})[1]);
   const float top_angle =
-      atan(distortion.Distort({0, top_distance / eye_to_screen_distance})[1]) *
-      180.0f / M_PI;
+      atan(distortion.Distort({0, top_distance / eye_to_screen_distance})[1]);
 
   return {
       std::min(outer_angle, device_fov[0]),
@@ -239,11 +242,15 @@ void LensDistortion::CalculateViewportParameters(
       GetYEyeOffsetMeters(device_params, screen_height_meters) /
       device_params.screen_to_lens_distance();
 
-  texture_params->width = tan(fov[0] * M_PI / 180) + tan(fov[1] * M_PI / 180);
-  texture_params->height = tan(fov[2] * M_PI / 180) + tan(fov[3] * M_PI / 180);
+  texture_params->width = tan(fov[0]) + tan(fov[1]);
+  texture_params->height = tan(fov[2]) + tan(fov[3]);
 
-  texture_params->x_eye_offset = tan(fov[0] * M_PI / 180);
-  texture_params->y_eye_offset = tan(fov[2] * M_PI / 180);
+  texture_params->x_eye_offset = tan(fov[0]);
+  texture_params->y_eye_offset = tan(fov[2]);
+}
+
+constexpr float LensDistortion::DegreesToRadians(float angle) {
+  return angle * M_PI / 180.0f;
 }
 
 }  // namespace cardboard

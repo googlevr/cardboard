@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -203,6 +203,7 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   @Override
   public void onRequestPermissionsResult(
       int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (!arePermissionsEnabled()) {
       Toast.makeText(this, R.string.no_permissions, Toast.LENGTH_LONG).show();
       if (!ActivityCompat.shouldShowRequestPermissionRationale(

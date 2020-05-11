@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2019 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 #ifndef CARDBOARD_SDK_DISTORTION_MESH_H_
 #define CARDBOARD_SDK_DISTORTION_MESH_H_
 
+#include <vector>
+
 #include "include/cardboard.h"
 #include "polynomial_radial_distortion.h"
 
@@ -25,16 +27,18 @@ class DistortionMesh {
  public:
   DistortionMesh(const PolynomialRadialDistortion& distortion,
                  // Units of the following parameters are tan-angle units.
-                 float screen_width, float screen_height, float x_eye_offset_screen,
-                 float y_eye_offset_screen, float texture_width,
-                 float texture_height, float x_eye_offset_texture,
-                 float y_eye_offset_texture);
-  virtual ~DistortionMesh();
+                 float screen_width, float screen_height,
+                 float x_eye_offset_screen, float y_eye_offset_screen,
+                 float texture_width, float texture_height,
+                 float x_eye_offset_texture, float y_eye_offset_texture);
+  virtual ~DistortionMesh() = default;
   CardboardMesh GetMesh() const;
 
  private:
   static constexpr int kResolution = 40;
-  CardboardMesh mesh_;
+  std::vector<int> index_data_;
+  std::vector<float> vertex_data_;
+  std::vector<float> uvs_data_;
 };
 
 }  // namespace cardboard
