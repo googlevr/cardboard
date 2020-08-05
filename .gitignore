@@ -1,0 +1,14 @@
+.idea/*
+!.idea/codeStyles/
+
+*.iml
+.gradle
+local.properties
+.DS_Store
+build
+.cxx
+
+gitlog.json
+.externalNativeBuild
+
+hellocardboard-android/libraries/
