@@ -15,8 +15,8 @@
  */
 package com.google.cardboard.sdk.deviceparams;
 
+import androidx.annotation.Nullable;
 import android.util.Log;
-import android.support.annotation.Nullable;
 import com.google.cardboard.proto.CardboardDevice;
 import com.google.protobuf.ExtensionRegistryLite;
 import com.google.protobuf.InvalidProtocolBufferException;

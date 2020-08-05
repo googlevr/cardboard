@@ -18,12 +18,12 @@ package com.google.cardboard.sdk.qrcode.camera;
 import android.Manifest;
 import android.content.Context;
 import android.content.res.Configuration;
+import androidx.annotation.RequiresPermission;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
-import android.support.annotation.RequiresPermission;
 import com.google.android.gms.common.images.Size;
 import java.io.IOException;
 

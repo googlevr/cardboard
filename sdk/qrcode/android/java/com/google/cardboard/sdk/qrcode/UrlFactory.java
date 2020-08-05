@@ -16,8 +16,8 @@
 package com.google.cardboard.sdk.qrcode;
 
 import android.net.Uri;
+import androidx.annotation.Nullable;
 import android.util.Log;
-import android.support.annotation.Nullable;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
