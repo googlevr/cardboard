@@ -5,9 +5,9 @@ Copyright 2019 Google LLC.  All rights reserved.
 This SDK provides everything you need to create your own Virtual Reality (VR)
 experiences for Google Cardboard. It supports essential VR features, such as:
 
- * motion tracking
- * stereoscopic rendering
- * user interaction via the viewer button
+ * Motion tracking
+ * Stereoscopic rendering
+ * User interaction via the viewer button
 
 With these capabilities you can build entirely new VR experiences, or enhance
 existing apps with VR capabilities.

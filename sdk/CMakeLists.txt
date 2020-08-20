@@ -1,3 +1,17 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 cmake_minimum_required(VERSION 3.4.1)
 
 # Standard Android dependencies
@@ -25,8 +39,19 @@ file(GLOB qrcode_srcs "qrcode/android/*.cc")
 file(GLOB screen_params_srcs "screen_params/android/*.cc")
 # Device Params Sources
 file(GLOB device_params_srcs "device_params/android/*.cc")
+
+# === Cardboard Unity JNI ===
+file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")
+
+# === Cardboard Unity Wrapper ===
+file(GLOB cardboard_xr_unity_srcs "unity/xr_unity_plugin/*.cc")
+
+# === Cardboard XR Provider for Unity ===
+file(GLOB cardboard_xr_provider_srcs "unity/xr_provider/*.cc")
+
 # Output binary
 add_library(cardboard_api SHARED
+    # Cardboard API sources.
     ${cardboard_v1_srcs}
     ${general_srcs}
     ${sensors_srcs}
@@ -35,32 +60,20 @@ add_library(cardboard_api SHARED
     ${util_srcs}
     ${qrcode_srcs}
     ${screen_params_srcs}
-    ${device_params_srcs})
+    ${device_params_srcs}
+    # Cardboard Unity JNI sources
+    ${cardboard_unity_jni_srcs}
+    # Cardboard Unity Wrapper sources
+    ${cardboard_xr_unity_srcs}
+    # Cardboard XR Provider for Unity sources
+    ${cardboard_xr_provider_srcs})
+
 # Includes
 target_include_directories(cardboard_api
-    PRIVATE ${PROTO_PATH} ${PROTO_PATH}/libprotobuf/android/include)
+    PRIVATE ../third_party/unity_plugin_api)
+
 # Build
 target_link_libraries(cardboard_api
     ${android-lib}
     ${GLESv2-lib}
     ${log-lib})
-
-# === Cardboard Unity JNI ===
-# Sources
-file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")
-# Output binary
-add_library(cardboard_unity_jni SHARED ${cardboard_unity_jni_srcs})
-# Build
-target_link_libraries(cardboard_unity_jni ${android-lib} ${log-lib} cardboard_api)
-
-# === Cardboard Unity Wrapper ===
-# Sources
-file(GLOB cardboard_xr_unity_srcs "unity/xr_unity_plugin/*.cc")
-# Output binary
-add_library(cardboard_xr_unity SHARED ${cardboard_xr_unity_srcs})
-# Build
-target_link_libraries(cardboard_xr_unity
-  cardboard_api
-  ${android-lib}
-  ${GLESv2-lib}
-  ${log-lib})

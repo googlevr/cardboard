@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F2363882492E2080009924A /* cardboard_xr_unity.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0FF99B2524587233001FF78F /* cardboard_xr_unity.h */; };
 		0F8D4FDF2361F86A00E7C48D /* libprotobuf-lite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */; };
 		0FD2023E23575F3B00B3C342 /* screen_params.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FA23575F3A00B3C342 /* screen_params.mm */; };
 		0FD2023F23575F3B00B3C342 /* rotation.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FD23575F3A00B3C342 /* rotation.cc */; };
@@ -39,6 +40,10 @@
 		0FD2025F2357613600B3C342 /* cardboard_device.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2025E2357613600B3C342 /* cardboard_device.pb.cc */; };
 		0FD2027C235766E800B3C342 /* cardboard.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0FD2022B23575F3B00B3C342 /* cardboard.h */; };
 		0FF99B2724587233001FF78F /* cardboard_xr_unity.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */; };
+		7B76813A24A3FA6B00E92050 /* input.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813424A3FA6B00E92050 /* input.cc */; };
+		7B76813B24A3FA6B00E92050 /* display.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813524A3FA6B00E92050 /* display.cc */; };
+		7B76813C24A3FA6B00E92050 /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813624A3FA6B00E92050 /* main.cc */; };
+		7B76813D24A3FA6B00E92050 /* math_tools.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813724A3FA6B00E92050 /* math_tools.cc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -48,6 +53,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				0F2363882492E2080009924A /* cardboard_xr_unity.h in CopyFiles */,
 				0FD2027C235766E800B3C342 /* cardboard.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -55,8 +61,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../proto/libprotobuf/ios/lib/libprotobuf-lite.a"; sourceTree = "<group>"; };
-		0FD200852357511E00B3C342 /* libsdk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsdk.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../third_party/libprotobuf/ios/lib/libprotobuf-lite.a"; sourceTree = "<group>"; };
+		0FD200852357511E00B3C342 /* cardboard_api.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = cardboard_api.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FD201FA23575F3A00B3C342 /* screen_params.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = screen_params.mm; sourceTree = "<group>"; };
 		0FD201FB23575F3A00B3C342 /* lens_distortion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lens_distortion.h; sourceTree = "<group>"; };
 		0FD201FD23575F3A00B3C342 /* rotation.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rotation.cc; sourceTree = "<group>"; };
@@ -119,10 +125,39 @@
 		0FD2023C23575F3B00B3C342 /* cardboard_v1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard_v1.h; sourceTree = "<group>"; };
 		0FD2023D23575F3B00B3C342 /* distortion_mesh.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = distortion_mesh.cc; sourceTree = "<group>"; };
 		0FD2025E2357613600B3C342 /* cardboard_device.pb.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = cardboard_device.pb.cc; path = ../proto/cardboard_device.pb.cc; sourceTree = "<group>"; };
-		0FD20260235761ED00B3C342 /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../proto/libprotobuf/universal/libprotobuf-lite.a"; sourceTree = "<group>"; };
+		0FD20260235761ED00B3C342 /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../third_party/libprotobuf/universal/libprotobuf-lite.a"; sourceTree = "<group>"; };
 		0FD202B92357C0F200B3C342 /* sdk.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = sdk.bundle; path = qrcode/ios/sdk.bundle; sourceTree = "<group>"; };
 		0FF99B2524587233001FF78F /* cardboard_xr_unity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard_xr_unity.h; sourceTree = "<group>"; };
 		0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cardboard_xr_unity.cc; sourceTree = "<group>"; };
+		7B76813424A3FA6B00E92050 /* input.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cc; sourceTree = "<group>"; };
+		7B76813524A3FA6B00E92050 /* display.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = display.cc; sourceTree = "<group>"; };
+		7B76813624A3FA6B00E92050 /* main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cc; sourceTree = "<group>"; };
+		7B76813724A3FA6B00E92050 /* math_tools.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = math_tools.cc; sourceTree = "<group>"; };
+		7B76813824A3FA6B00E92050 /* math_tools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = math_tools.h; sourceTree = "<group>"; };
+		7B76813924A3FA6B00E92050 /* load.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = load.h; sourceTree = "<group>"; };
+		7B76813E24A3FA8100E92050 /* IUnityRenderingExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityRenderingExtensions.h; sourceTree = "<group>"; };
+		7B76813F24A3FA8100E92050 /* IUnityEventQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityEventQueue.h; sourceTree = "<group>"; };
+		7B76814024A3FA8100E92050 /* IUnityGraphicsD3D11.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityGraphicsD3D11.h; sourceTree = "<group>"; };
+		7B76814124A3FA8100E92050 /* UnityXRDisplayStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnityXRDisplayStats.h; sourceTree = "<group>"; };
+		7B76814224A3FA8100E92050 /* IUnityInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityInterface.h; sourceTree = "<group>"; };
+		7B76814324A3FA8100E92050 /* IUnityXRDisplayShadingRateExt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRDisplayShadingRateExt.h; sourceTree = "<group>"; };
+		7B76814424A3FA8100E92050 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		7B76814524A3FA8100E92050 /* UnitySubsystemTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnitySubsystemTypes.h; sourceTree = "<group>"; };
+		7B76814624A3FA8100E92050 /* IUnityXRTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRTrace.h; sourceTree = "<group>"; };
+		7B76814724A3FA8100E92050 /* UnityTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnityTypes.h; sourceTree = "<group>"; };
+		7B76814824A3FA8100E92050 /* IUnityGraphicsD3D12.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityGraphicsD3D12.h; sourceTree = "<group>"; };
+		7B76814924A3FA8100E92050 /* IUnityXRPreInit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRPreInit.h; sourceTree = "<group>"; };
+		7B76814A24A3FA8100E92050 /* IUnityXRAudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRAudio.h; sourceTree = "<group>"; };
+		7B76814B24A3FA8100E92050 /* IUnityXRStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRStats.h; sourceTree = "<group>"; };
+		7B76814C24A3FA8100E92050 /* UnityXRTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnityXRTypes.h; sourceTree = "<group>"; };
+		7B76814D24A3FA8100E92050 /* IUnitySubsystemExample.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnitySubsystemExample.h; sourceTree = "<group>"; };
+		7B76814E24A3FA8100E92050 /* UnityXRSubsystemTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnityXRSubsystemTypes.h; sourceTree = "<group>"; };
+		7B76814F24A3FA8100E92050 /* IUnityXRMeshing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRMeshing.h; sourceTree = "<group>"; };
+		7B76815024A3FA8100E92050 /* IUnityGraphicsMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityGraphicsMetal.h; sourceTree = "<group>"; };
+		7B76815124A3FA8100E92050 /* IUnityXRDisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRDisplay.h; sourceTree = "<group>"; };
+		7B76815224A3FA8100E92050 /* IUnityXRInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRInput.h; sourceTree = "<group>"; };
+		7B76815324A3FA8100E92050 /* IUnityGraphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityGraphics.h; sourceTree = "<group>"; };
+		7B76815424A3FA8100E92050 /* IUnityGraphicsD3D9.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityGraphicsD3D9.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -169,7 +204,7 @@
 		0FD200862357511E00B3C342 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0FD200852357511E00B3C342 /* libsdk.a */,
+				0FD200852357511E00B3C342 /* cardboard_api.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -301,6 +336,7 @@
 		0FF99B2324587233001FF78F /* unity */ = {
 			isa = PBXGroup;
 			children = (
+				7B76813224A3FA0400E92050 /* xr_provider */,
 				0FF99B2424587233001FF78F /* xr_unity_plugin */,
 			);
 			path = unity;
@@ -313,6 +349,50 @@
 				0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */,
 			);
 			path = xr_unity_plugin;
+			sourceTree = "<group>";
+		};
+		7B76813224A3FA0400E92050 /* xr_provider */ = {
+			isa = PBXGroup;
+			children = (
+				7B76813524A3FA6B00E92050 /* display.cc */,
+				7B76813424A3FA6B00E92050 /* input.cc */,
+				7B76813924A3FA6B00E92050 /* load.h */,
+				7B76813624A3FA6B00E92050 /* main.cc */,
+				7B76813724A3FA6B00E92050 /* math_tools.cc */,
+				7B76813824A3FA6B00E92050 /* math_tools.h */,
+				7B76813324A3FA1800E92050 /* unity */,
+			);
+			path = xr_provider;
+			sourceTree = "<group>";
+		};
+		7B76813324A3FA1800E92050 /* unity */ = {
+			isa = PBXGroup;
+			children = (
+				7B76813F24A3FA8100E92050 /* IUnityEventQueue.h */,
+				7B76815324A3FA8100E92050 /* IUnityGraphics.h */,
+				7B76815424A3FA8100E92050 /* IUnityGraphicsD3D9.h */,
+				7B76814024A3FA8100E92050 /* IUnityGraphicsD3D11.h */,
+				7B76814824A3FA8100E92050 /* IUnityGraphicsD3D12.h */,
+				7B76815024A3FA8100E92050 /* IUnityGraphicsMetal.h */,
+				7B76814224A3FA8100E92050 /* IUnityInterface.h */,
+				7B76813E24A3FA8100E92050 /* IUnityRenderingExtensions.h */,
+				7B76814D24A3FA8100E92050 /* IUnitySubsystemExample.h */,
+				7B76814A24A3FA8100E92050 /* IUnityXRAudio.h */,
+				7B76815124A3FA8100E92050 /* IUnityXRDisplay.h */,
+				7B76814324A3FA8100E92050 /* IUnityXRDisplayShadingRateExt.h */,
+				7B76815224A3FA8100E92050 /* IUnityXRInput.h */,
+				7B76814F24A3FA8100E92050 /* IUnityXRMeshing.h */,
+				7B76814924A3FA8100E92050 /* IUnityXRPreInit.h */,
+				7B76814B24A3FA8100E92050 /* IUnityXRStats.h */,
+				7B76814624A3FA8100E92050 /* IUnityXRTrace.h */,
+				7B76814424A3FA8100E92050 /* LICENSE */,
+				7B76814524A3FA8100E92050 /* UnitySubsystemTypes.h */,
+				7B76814724A3FA8100E92050 /* UnityTypes.h */,
+				7B76814124A3FA8100E92050 /* UnityXRDisplayStats.h */,
+				7B76814E24A3FA8100E92050 /* UnityXRSubsystemTypes.h */,
+				7B76814C24A3FA8100E92050 /* UnityXRTypes.h */,
+			);
+			path = unity;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -332,7 +412,7 @@
 			);
 			name = sdk;
 			productName = sdk;
-			productReference = 0FD200852357511E00B3C342 /* libsdk.a */;
+			productReference = 0FD200852357511E00B3C342 /* cardboard_api.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -389,9 +469,13 @@
 				0FD2025423575F3B00B3C342 /* qr_scan_view_controller.mm in Sources */,
 				0FD2025123575F3B00B3C342 /* cardboard.cc in Sources */,
 				0FF99B2724587233001FF78F /* cardboard_xr_unity.cc in Sources */,
+				7B76813A24A3FA6B00E92050 /* input.cc in Sources */,
+				7B76813B24A3FA6B00E92050 /* display.cc in Sources */,
+				7B76813D24A3FA6B00E92050 /* math_tools.cc in Sources */,
 				0FD2025723575F3B00B3C342 /* device_params_helper.mm in Sources */,
 				0FD2024023575F3B00B3C342 /* vectorutils.cc in Sources */,
 				0FD2025823575F3B00B3C342 /* cardboard_v1.cc in Sources */,
+				7B76813C24A3FA6B00E92050 /* main.cc in Sources */,
 				0FD2024923575F3B00B3C342 /* pose_prediction.cc in Sources */,
 				0FD2024E23575F3B00B3C342 /* sensor_helper.mm in Sources */,
 				0FD2025223575F3B00B3C342 /* distortion_renderer.cc in Sources */,
@@ -524,14 +608,16 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C5M9TX4B3U;
 				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = NO;
+				EXECUTABLE_PREFIX = "";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)/../proto",
-					"$(PROJECT_DIR)/../proto/libprotobuf/ios/include",
+					"$(PROJECT_DIR)/../third_party/libprotobuf/ios/include",
+					"$(PROJECT_DIR)/../third_party/unity_plugin_api",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../proto/libprotobuf/ios/lib";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../third_party/libprotobuf/ios/lib";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = cardboard_api;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -543,14 +629,15 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C5M9TX4B3U;
 				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = NO;
+				EXECUTABLE_PREFIX = "";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)/../proto",
-					"$(PROJECT_DIR)/../proto/libprotobuf/ios/include",
+					"$(PROJECT_DIR)/../third_party/libprotobuf/ios/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../proto/libprotobuf/ios/lib";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../third_party/libprotobuf/ios/lib";
 				OTHER_LDFLAGS = "-ObjC";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = cardboard_api;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
