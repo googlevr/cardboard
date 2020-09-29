@@ -1,4 +1,4 @@
-/* Copyright 2019 Google LLC. All rights reserved.
+/* Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,7 +183,7 @@ void HelloCardboardRenderer::InitializeGl() {
   CardboardLensDistortion_getDistortionMesh(_lensDistortion, kLeft, &leftMesh);
   CardboardLensDistortion_getDistortionMesh(_lensDistortion, kRight, &rightMesh);
 
-  _distortionRenderer = CardboardDistortionRenderer_create();
+  _distortionRenderer = CardboardOpenGlEs2DistortionRenderer_create();
   CardboardDistortionRenderer_setMesh(_distortionRenderer, &leftMesh, kLeft);
   CardboardDistortionRenderer_setMesh(_distortionRenderer, &rightMesh, kRight);
   CheckGLError("Cardboard distortion renderer set up");

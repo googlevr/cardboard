@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC. All Rights Reserved.
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package com.google.cardboard.sdk.deviceparams;
 
-import android.support.annotation.Nullable;
 import android.util.Log;
+import android.support.annotation.Nullable;
 import com.google.cardboard.proto.CardboardDevice;
 import com.google.protobuf.ExtensionRegistryLite;
 import com.google.protobuf.InvalidProtocolBufferException;

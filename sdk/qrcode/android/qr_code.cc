@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,11 @@ std::vector<uint8_t> getCurrentSavedDeviceParams() {
   JNIEnv* env;
   cardboard::jni::LoadJNIEnv(vm_, &env);
 
-  jmethodID readDeviceParamsFromExternalStorage =
-      env->GetStaticMethodID(cardboard_params_utils_class_,
-                             "readDeviceParamsFromExternalStorage", "()[B");
+  jmethodID readDeviceParams =
+      env->GetStaticMethodID(cardboard_params_utils_class_, "readDeviceParams",
+                             "(Landroid/content/Context;)[B");
   jbyteArray byteArray = static_cast<jbyteArray>(env->CallStaticObjectMethod(
-      cardboard_params_utils_class_, readDeviceParamsFromExternalStorage));
-
+      cardboard_params_utils_class_, readDeviceParams, context_));
   if (byteArray == nullptr) {
     return {};
   }

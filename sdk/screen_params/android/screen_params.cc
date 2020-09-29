@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ namespace screen_params {
 namespace {
 JavaVM* vm_;
 jobject context_;
-jclass display_metrics_class_;
-jclass activity_class_;
-jclass window_manager_class_;
-jclass display_class_;
+
+jclass screen_pixel_density_class_;
+jclass screen_params_utils_class_;
 
 struct DisplayMetrics {
   float xdpi;
@@ -36,38 +35,31 @@ struct DisplayMetrics {
 };
 
 void LoadJNIResources(JNIEnv* env) {
-  display_metrics_class_ = cardboard::jni::LoadJClass(env, "android/util/DisplayMetrics");
-  activity_class_ = cardboard::jni::LoadJClass(env, "android/app/Activity");
-  window_manager_class_ = cardboard::jni::LoadJClass(env, "android/view/WindowManager");
-  display_class_ = cardboard::jni::LoadJClass(env, "android/view/Display");
+  screen_params_utils_class_ = cardboard::jni::LoadJClass(
+      env, "com/google/cardboard/sdk/screenparams/ScreenParamsUtils");
+  screen_pixel_density_class_ =
+      cardboard::jni::LoadJClass(env,
+                                 "com/google/cardboard/sdk/screenparams/"
+                                 "ScreenParamsUtils$ScreenPixelDensity");
 }
 
 DisplayMetrics getDisplayMetrics() {
   JNIEnv* env;
   cardboard::jni::LoadJNIEnv(vm_, &env);
 
-  jmethodID display_metrics_constructor =
-      env->GetMethodID(display_metrics_class_, "<init>", "()V");
-  jmethodID get_window_manager = env->GetMethodID(
-      activity_class_, "getWindowManager", "()Landroid/view/WindowManager;");
-  jmethodID get_default_display = env->GetMethodID(
-      window_manager_class_, "getDefaultDisplay", "()Landroid/view/Display;");
-  jmethodID get_metrics = env->GetMethodID(display_class_, "getRealMetrics",
-                                           "(Landroid/util/DisplayMetrics;)V");
+  const jmethodID get_screen_pixel_density_method = env->GetStaticMethodID(
+      screen_params_utils_class_, "getScreenPixelDensity",
+      "(Landroid/content/Context;)Lcom/google/cardboard/sdk/screenparams/"
+      "ScreenParamsUtils$ScreenPixelDensity;");
+  const jobject screen_pixel_density = env->CallStaticObjectMethod(
+      screen_params_utils_class_, get_screen_pixel_density_method, context_);
+  const jfieldID xdpi_id =
+      env->GetFieldID(screen_pixel_density_class_, "xdpi", "F");
+  const jfieldID ydpi_id =
+      env->GetFieldID(screen_pixel_density_class_, "ydpi", "F");
 
-  jobject display_metrics =
-      env->NewObject(display_metrics_class_, display_metrics_constructor);
-  jobject window_manager = env->CallObjectMethod(context_, get_window_manager);
-  jobject default_display =
-      env->CallObjectMethod(window_manager, get_default_display);
-  env->CallVoidMethod(default_display, get_metrics, display_metrics);
-
-  jfieldID xdpi_id = env->GetFieldID(display_metrics_class_, "xdpi", "F");
-  jfieldID ydpi_id = env->GetFieldID(display_metrics_class_, "ydpi", "F");
-
-  float xdpi = env->GetFloatField(display_metrics, xdpi_id);
-  float ydpi = env->GetFloatField(display_metrics, ydpi_id);
-
+  const float xdpi = env->GetFloatField(screen_pixel_density, xdpi_id);
+  const float ydpi = env->GetFloatField(screen_pixel_density, ydpi_id);
   return {xdpi, ydpi};
 }
 
@@ -84,7 +76,7 @@ void initializeAndroid(JavaVM* vm, jobject context) {
 
 void getScreenSizeInMeters(int width_pixels, int height_pixels,
                            float* out_width_meters, float* out_height_meters) {
-  DisplayMetrics display_metrics = getDisplayMetrics();
+  const DisplayMetrics display_metrics = getDisplayMetrics();
 
   *out_width_meters = (width_pixels / display_metrics.xdpi) * kMetersPerInch;
   *out_height_meters = (height_pixels / display_metrics.ydpi) * kMetersPerInch;

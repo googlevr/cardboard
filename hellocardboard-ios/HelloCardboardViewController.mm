@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
   CardboardLensDistortion *_cardboardLensDistortion;
   CardboardHeadTracker *_cardboardHeadTracker;
   std::unique_ptr<cardboard::hello_cardboard::HelloCardboardRenderer> _renderer;
-  BOOL _isPaused;
   BOOL _updateParams;
 }
 @end
@@ -72,7 +71,6 @@
   _cardboardHeadTracker = CardboardHeadTracker_create();
   _cardboardLensDistortion = nil;
   _updateParams = YES;
-  _isPaused = NO;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -80,6 +78,7 @@
   if (@available(iOS 11.0, *)) {
     [self setNeedsUpdateOfHomeIndicatorAutoHidden];
   }
+  [self resumeCardboard];
 }
 
 - (BOOL)prefersHomeIndicatorAutoHidden {
@@ -93,7 +92,9 @@
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
   if (_updateParams) {
-    return;
+    if (![self updateCardboardParams]) {
+      return;
+    }
   }
 
   _renderer->DrawFrame();
@@ -103,57 +104,69 @@
   // Perform GL state update before drawing.
 }
 
-- (void)glkViewController:(GLKViewController *)controller willPause:(BOOL)pause {
-  // Doesn't execute the lifecycle code if it's not changing its state.
-  if (_isPaused == pause) {
-    return;
-  }
-  _isPaused = pause;
-
-  if (pause) {
-    CardboardHeadTracker_pause(_cardboardHeadTracker);
-  } else {
-    if (_updateParams) {
-      [self updateCardboardParams];
-    }
-    CardboardHeadTracker_resume(_cardboardHeadTracker);
-  }
-}
-
-- (void)updateCardboardParams {
+- (BOOL)updateCardboardParams {
   uint8_t *encodedDeviceParams;
   int size;
   CardboardQrCode_getSavedDeviceParams(&encodedDeviceParams, &size);
 
-  if (size != 0) {
-    // Using native scale as we are rendering directly to the screen.
-    CGRect screenRect = self.view.bounds;
-    CGFloat screenScale = UIScreen.mainScreen.nativeScale;
-    int height = screenRect.size.height * screenScale;
-    int width = screenRect.size.width * screenScale;
-
-    // Rendering coordinates asumes landscape orientation.
-    if (height > width) {
-      int temp = height;
-      height = width;
-      width = temp;
-    }
-
-    // Create CardboardLensDistortion.
-    CardboardLensDistortion_destroy(_cardboardLensDistortion);
-    _cardboardLensDistortion =
-        CardboardLensDistortion_create(encodedDeviceParams, size, width, height);
-
-    // Initialize HelloCardboardRenderer.
-    _renderer.reset(new cardboard::hello_cardboard::HelloCardboardRenderer(_cardboardLensDistortion,
-                                                             _cardboardHeadTracker, width, height));
-    _renderer->InitializeGl();
-    _updateParams = NO;
-  } else {
-    _updateParams = YES;
-    [self didChangeViewerProfile];
+  if (size == 0) {
+    return NO;
   }
+
+  // Using native scale as we are rendering directly to the screen.
+  CGRect screenRect = self.view.bounds;
+  CGFloat screenScale = UIScreen.mainScreen.nativeScale;
+  int height = screenRect.size.height * screenScale;
+  int width = screenRect.size.width * screenScale;
+
+  // Rendering coordinates asumes landscape orientation.
+  if (height > width) {
+    int temp = height;
+    height = width;
+    width = temp;
+  }
+
+  // Create CardboardLensDistortion.
+  CardboardLensDistortion_destroy(_cardboardLensDistortion);
+  _cardboardLensDistortion =
+      CardboardLensDistortion_create(encodedDeviceParams, size, width, height);
+
+  // Initialize HelloCardboardRenderer.
+  _renderer.reset(new cardboard::hello_cardboard::HelloCardboardRenderer(
+      _cardboardLensDistortion, _cardboardHeadTracker, width, height));
+  _renderer->InitializeGl();
+
   CardboardQrCode_destroy(encodedDeviceParams);
+
+  _updateParams = NO;
+  return YES;
+}
+
+- (void)pauseCardboard {
+  self.paused = true;
+  CardboardHeadTracker_pause(_cardboardHeadTracker);
+}
+
+- (void)resumeCardboard {
+  // Parameters may have changed.
+  _updateParams = YES;
+
+  // Check for device parameters existence in app storage. If they're missing,
+  // we must scan a Cardboard QR code and save the obtained parameters.
+  uint8_t *buffer;
+  int size;
+  CardboardQrCode_getSavedDeviceParams(&buffer, &size);
+  if (size == 0) {
+    [self switchViewer];
+  }
+  CardboardQrCode_destroy(buffer);
+
+  CardboardHeadTracker_resume(_cardboardHeadTracker);
+  self.paused = false;
+}
+
+- (void)switchViewer {
+  CardboardQrCode_scanQrCodeAndSaveDeviceParams();
 }
 
 - (void)didTapGLView:(id)sender {
@@ -173,8 +186,9 @@
 }
 
 - (void)didChangeViewerProfile {
-  CardboardQrCode_scanQrCodeAndSaveDeviceParams();
-  _updateParams = YES;
+  [self pauseCardboard];
+  [self switchViewer];
+  [self resumeCardboard];
 }
 
 @end

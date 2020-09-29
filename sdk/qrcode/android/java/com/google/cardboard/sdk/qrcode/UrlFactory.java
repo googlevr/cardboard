@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,22 @@
 package com.google.cardboard.sdk.qrcode;
 
 import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.util.Log;
+import android.support.annotation.Nullable;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import javax.net.ssl.HttpsURLConnection;
 
-/** UrlFactory for producing a url connection. */
+/** UrlFactory for producing a HttpURLConnection connection. */
 public class UrlFactory {
   public static final String TAG = UrlFactory.class.getSimpleName();
   private static final String HTTPS_SCHEME = "https";
 
   // Return connection object, or null on error.
   @Nullable
-  public HttpsURLConnection openHttpsConnection(@Nullable Uri uri) throws IOException {
+  public HttpURLConnection openHttpsConnection(@Nullable Uri uri) throws IOException {
     URL url;
     try {
       // Always opens an HTTPS connection.
@@ -41,10 +41,15 @@ public class UrlFactory {
       return null;
     }
     URLConnection urlConnection = url.openConnection();
-    if (!(urlConnection instanceof HttpsURLConnection)) {
-      Log.w(TAG, "Expected HttpsURLConnection");
-      throw new IllegalArgumentException("Expected HttpsURLConnection");
+    // Return type is HttpURLConnection. When using Cronet as the app's URLStreamHandlerFactory, we
+    // always get back an HttpURLConnection (see
+    // https://developer.android.com/guide/topics/connectivity/cronet/reference/org/chromium/net/CronetEngine.html#public-abstract-urlstreamhandlerfactory-createurlstreamhandlerfactory).
+    // Because the URL scheme is guaranteed to be https, we can safely return the type
+    // HttpURLConnection.
+    if (!(urlConnection instanceof HttpURLConnection)) {
+      Log.w(TAG, "Expected HttpURLConnection");
+      throw new IllegalArgumentException("Expected HttpURLConnection");
     }
-    return (HttpsURLConnection) urlConnection;
+    return (HttpURLConnection) urlConnection;
   }
 }

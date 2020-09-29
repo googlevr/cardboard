@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class HeadsetDetectionActivity extends AppCompatActivity {
       // Saves V1 Cardboard params.
       Uri uri = startupIntent.getData();
       if (URI_ORIGINAL_CARDBOARD_NFC.equals(uri)) {
-        CardboardParamsUtils.saveCardboardV1DeviceParams();
+        CardboardParamsUtils.saveCardboardV1DeviceParams(getApplicationContext());
       }
 
       Toast.makeText(this, R.string.viewer_detected, Toast.LENGTH_SHORT).show();

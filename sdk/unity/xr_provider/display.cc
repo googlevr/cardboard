@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC. All Rights Reserved.
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,51 @@ class CardboardDisplayProvider {
 
   void SetHandle(UnitySubsystemHandle handle) { handle_ = handle; }
 
-  UnitySubsystemErrorCode Initialize() const {
+  /// @return A reference to the static instance of this class, which is thought
+  ///         to be the only one.
+  static std::unique_ptr<CardboardDisplayProvider>& GetInstance();
+
+  /// @brief Initializes the display subsystem.
+  ///
+  /// @details Loads and configures a UnityXRDisplayGraphicsThreadProvider and
+  ///          UnityXRDisplayProvider with pointers to `display_provider_`'s
+  ///          methods.
+  /// @param handle Opaque Unity pointer type passed between plugins.
+  /// @return kUnitySubsystemErrorCodeSuccess when the registration is
+  ///         successful. Otherwise, a value in UnitySubsystemErrorCode flagging
+  ///         the error.
+  UnitySubsystemErrorCode Initialize(UnitySubsystemHandle handle) {
+    SetHandle(handle);
+
+    // Register for callbacks on the graphics thread.
+    UnityXRDisplayGraphicsThreadProvider gfx_thread_provider{};
+    gfx_thread_provider.userData = NULL;
+    gfx_thread_provider.Start = [](UnitySubsystemHandle, void*,
+                                   UnityXRRenderingCapabilities* rendering_caps)
+        -> UnitySubsystemErrorCode {
+      return GetInstance()->GfxThread_Start(rendering_caps);
+    };
+    gfx_thread_provider.SubmitCurrentFrame =
+        [](UnitySubsystemHandle, void*) -> UnitySubsystemErrorCode {
+      return GetInstance()->GfxThread_SubmitCurrentFrame();
+    };
+    gfx_thread_provider.PopulateNextFrameDesc =
+        [](UnitySubsystemHandle, void*,
+           const UnityXRFrameSetupHints* frame_hints,
+           UnityXRNextFrameDesc* next_frame) -> UnitySubsystemErrorCode {
+      return GetInstance()->GfxThread_PopulateNextFrameDesc(frame_hints,
+                                                            next_frame);
+    };
+    gfx_thread_provider.Stop = [](UnitySubsystemHandle,
+                                  void*) -> UnitySubsystemErrorCode {
+      return GetInstance()->GfxThread_Stop();
+    };
+    GetInstance()->GetDisplay()->RegisterProviderForGraphicsThread(
+        handle, &gfx_thread_provider);
+
+    UnityXRDisplayProvider provider{NULL, NULL, NULL};
+    GetInstance()->GetDisplay()->RegisterProvider(handle, &provider);
+
     return kUnitySubsystemErrorCodeSuccess;
   }
 
@@ -231,65 +275,20 @@ class CardboardDisplayProvider {
 
   /// @brief Map to link Cardboard API and Unity XR texture IDs.
   std::map<int, UnityXRRenderTextureId> tex_map_{};
+
+  static std::unique_ptr<CardboardDisplayProvider> display_provider_;
 };
 
-std::unique_ptr<CardboardDisplayProvider> display_provider;
+std::unique_ptr<CardboardDisplayProvider>
+    CardboardDisplayProvider::display_provider_;
+
+std::unique_ptr<CardboardDisplayProvider>&
+CardboardDisplayProvider::GetInstance() {
+  return display_provider_;
+}
 
 }  // namespace
 
-/// @brief Initializes the display subsystem.
-///
-/// @details Loads and configures a UnityXRDisplayGraphicsThreadProvider and
-///          UnityXRDisplayProvider with pointers to `display_provider`'s
-///          methods.
-/// @param handle Opaque Unity pointer type passed between plugins.
-/// @return kUnitySubsystemErrorCodeSuccess when the registration is successful.
-///         Otherwise, a value in UnitySubsystemErrorCode flagging the error.
-static UnitySubsystemErrorCode UNITY_INTERFACE_API
-DisplayInitialize(UnitySubsystemHandle handle, void*) {
-  display_provider->SetHandle(handle);
-
-  // Register for callbacks on the graphics thread.
-  UnityXRDisplayGraphicsThreadProvider gfx_thread_provider{};
-  gfx_thread_provider.userData = NULL;
-  gfx_thread_provider.Start = [](UnitySubsystemHandle, void*,
-                                 UnityXRRenderingCapabilities* rendering_caps)
-      -> UnitySubsystemErrorCode {
-    return display_provider->GfxThread_Start(rendering_caps);
-  };
-  gfx_thread_provider.SubmitCurrentFrame =
-      [](UnitySubsystemHandle, void*) -> UnitySubsystemErrorCode {
-    return display_provider->GfxThread_SubmitCurrentFrame();
-  };
-  gfx_thread_provider.PopulateNextFrameDesc =
-      [](UnitySubsystemHandle, void*, const UnityXRFrameSetupHints* frame_hints,
-         UnityXRNextFrameDesc* next_frame) -> UnitySubsystemErrorCode {
-    return display_provider->GfxThread_PopulateNextFrameDesc(frame_hints,
-                                                             next_frame);
-  };
-  gfx_thread_provider.Stop = [](UnitySubsystemHandle,
-                                void*) -> UnitySubsystemErrorCode {
-    return display_provider->GfxThread_Stop();
-  };
-  display_provider->GetDisplay()->RegisterProviderForGraphicsThread(
-      handle, &gfx_thread_provider);
-
-  UnityXRDisplayProvider provider{NULL, NULL, NULL};
-  display_provider->GetDisplay()->RegisterProvider(handle, &provider);
-
-  return display_provider->Initialize();
-}
-
-/// @brief Loads a UnityLifecycleProvider for the display provider.
-///
-/// @details Gets the trace and display interfaces from @p xr_interfaces and
-///          initializes the UnityLifecycleProvider's callbacks with references
-///          to `display_provider`'s methods. The subsystem is "Display", and
-///          the plugin is "Cardboard".
-/// @param xr_interfaces Unity XR interface provider to create the display
-///          subsystem.
-/// @return kUnitySubsystemErrorCodeSuccess when the registration is successful.
-///         Otherwise, a value in UnitySubsystemErrorCode flagging the error.
 UnitySubsystemErrorCode LoadDisplay(IUnityInterfaces* xr_interfaces) {
   auto* display = xr_interfaces->Get<IUnityXRDisplayInterface>();
   if (display == NULL) {
@@ -299,23 +298,30 @@ UnitySubsystemErrorCode LoadDisplay(IUnityInterfaces* xr_interfaces) {
   if (trace == NULL) {
     return kUnitySubsystemErrorCodeFailure;
   }
-  display_provider.reset(new CardboardDisplayProvider(trace, display));
+  CardboardDisplayProvider::GetInstance().reset(
+      new CardboardDisplayProvider(trace, display));
 
   UnityLifecycleProvider display_lifecycle_handler;
   display_lifecycle_handler.userData = NULL;
-  display_lifecycle_handler.Initialize = &DisplayInitialize;
+  display_lifecycle_handler.Initialize = [](UnitySubsystemHandle handle,
+                                            void*) -> UnitySubsystemErrorCode {
+    return CardboardDisplayProvider::GetInstance()->Initialize(handle);
+  };
   display_lifecycle_handler.Start = [](UnitySubsystemHandle,
                                        void*) -> UnitySubsystemErrorCode {
-    return display_provider->Start();
+    return CardboardDisplayProvider::GetInstance()->Start();
   };
   display_lifecycle_handler.Stop = [](UnitySubsystemHandle, void*) -> void {
-    display_provider->Stop();
+    CardboardDisplayProvider::GetInstance()->Stop();
   };
   display_lifecycle_handler.Shutdown = [](UnitySubsystemHandle, void*) -> void {
-    display_provider->Shutdown();
-    display_provider.reset();
+    CardboardDisplayProvider::GetInstance()->Shutdown();
   };
 
-  return display_provider->GetDisplay()->RegisterLifecycleProvider(
-      "Cardboard", "Display", &display_lifecycle_handler);
+  return CardboardDisplayProvider::GetInstance()
+      ->GetDisplay()
+      ->RegisterLifecycleProvider("Cardboard", "Display",
+                                  &display_lifecycle_handler);
 }
+
+void UnloadDisplay() { CardboardDisplayProvider::GetInstance().reset(); }

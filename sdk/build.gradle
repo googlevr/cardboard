@@ -2,20 +2,20 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.google.protobuf'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "29.0.0"
+    compileSdkVersion 30
+    buildToolsVersion "30.0.0"
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 28
+        minSdkVersion 16
+        targetSdkVersion 30
         versionCode 1
-        versionName "1.2"
+        versionName "1.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
         externalNativeBuild {
             cmake {
-                cppFlags.add("-std=c++11")
+                cppFlags.add("-std=c++17")
                 arguments "-DANDROID_STL=c++_static"
             }
         }
@@ -35,7 +35,7 @@ android {
         // Sets path to java, jni, resources files and manifest location as it is not the default one.
         main {
             manifest.srcFile 'qrcode/android/AndroidManifest.xml'
-            java.srcDirs = ['qrcode/android/java', 'device_params/android/java']
+            java.srcDirs = ['qrcode/android/java', 'device_params/android/java', 'screen_params/android/java']
             jni.srcDirs = ['qrcode/android/jni']
             res.srcDirs = ['qrcode/android/res']
         }

@@ -17,7 +17,7 @@
 		0F4614762363635500BDF427 /* sdk.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0F4614752363635500BDF427 /* sdk.bundle */; };
 		0F4614782363636800BDF427 /* HelloCardboard.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0F4614772363636800BDF427 /* HelloCardboard.bundle */; };
 		0FD20275235764AD00B3C342 /* launch.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0FD20265235764AD00B3C342 /* launch.xib */; };
-		0FD2028D23576AC200B3C342 /* libsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD20284235768A000B3C342 /* libsdk.a */; };
+		0FD2028D23576AC200B3C342 /* cardboard_api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD20284235768A000B3C342 /* cardboard_api.a */; };
 		0FD2029323576FAB00B3C342 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD2029223576FAB00B3C342 /* AVFoundation.framework */; };
 		0FD2029523576FBC00B3C342 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD2029423576FBC00B3C342 /* CoreMotion.framework */; };
 /* End PBXBuildFile section */
@@ -67,7 +67,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0FD2028D23576AC200B3C342 /* libsdk.a in Frameworks */,
+				0FD2028D23576AC200B3C342 /* cardboard_api.a in Frameworks */,
 				0FD2029523576FBC00B3C342 /* CoreMotion.framework in Frameworks */,
 				0FD2029323576FAB00B3C342 /* AVFoundation.framework in Frameworks */,
 			);
@@ -121,7 +121,7 @@
 		0FD20280235768A000B3C342 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0FD20284235768A000B3C342 /* libsdk.a */,
+				0FD20284235768A000B3C342 /* cardboard_api.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -185,10 +185,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		0FD20284235768A000B3C342 /* libsdk.a */ = {
+		0FD20284235768A000B3C342 /* cardboard_api.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libsdk.a;
+			path = cardboard_api.a;
 			remoteRef = 0FD20283235768A000B3C342 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -349,6 +349,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C5M9TX4B3U;
 				ENABLE_BITCODE = NO;
@@ -368,6 +369,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C5M9TX4B3U;
 				ENABLE_BITCODE = NO;

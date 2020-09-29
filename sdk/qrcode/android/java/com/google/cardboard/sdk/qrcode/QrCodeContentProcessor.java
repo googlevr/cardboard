@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@ package com.google.cardboard.sdk.qrcode;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
+import android.support.annotation.Nullable;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.cardboard.sdk.R;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.ProtocolException;
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Class for processing QR code data. The QR code content should be a URI which has a parameter
@@ -78,7 +78,13 @@ public class QrCodeContentProcessor {
     }
   }
 
-  /** Processes detected QR code and save obtained device parameters. */
+  /**
+   * Processes detected QR code and save obtained device parameters.
+   *
+   * @param context The current Context. It is generally an Activity instance or wraps one, or an
+   *     Application. It is used to write device params to scoped storage via
+   *     {@code Context.getFilesDir()}.
+   */
   public void processAndSaveQrCode(Barcode qrCode, Context context) {
     new ProcessAndSaveQrCodeTask(context).execute(qrCode);
   }
@@ -90,6 +96,13 @@ public class QrCodeContentProcessor {
   public class ProcessAndSaveQrCodeTask extends AsyncTask<Barcode, Void, QrCodeToParamsStatus> {
     private final Context context;
 
+    /**
+     * Contructs a ProcessAndSaveQrCodeTask.
+     *
+     * @param context The current Context. It is generally an Activity instance or wraps one, or an
+     *     Application. It is used to write device params to scoped storage via
+     *     {@code Context.getFilesDir()}.
+     */
     public ProcessAndSaveQrCodeTask(Context context) {
       this.context = context;
     }
@@ -111,9 +124,9 @@ public class QrCodeContentProcessor {
       } else if (result.statusCode == QrCodeToParamsStatus.STATUS_CONNECTION_ERROR) {
         Toast.makeText(context, R.string.connection_error, Toast.LENGTH_LONG).show();
       } else if (result.params != null) {
-        status = CardboardParamsUtils.writeDeviceParamsToExternalStorage(result.params);
+        status = CardboardParamsUtils.writeDeviceParams(result.params, context);
         if (!status) {
-          Log.e(TAG, "Could not write Cardboard parameters to external storage.");
+          Log.e(TAG, "Could not write Cardboard parameters to storage.");
         }
       }
 
@@ -135,7 +148,7 @@ public class QrCodeContentProcessor {
    * @return Cardboard device parameters, or null if there is an error.
    */
   private static QrCodeToParamsStatus getParamsFromQrCode(Barcode barcode, UrlFactory urlFactory) {
-    if (barcode.valueFormat != Barcode.TEXT) {
+    if (barcode.valueFormat != Barcode.TEXT && barcode.valueFormat != Barcode.URL) {
       return QrCodeToParamsStatus.error(QrCodeToParamsStatus.STATUS_UNEXPECTED_FORMAT);
     }
 
@@ -203,7 +216,7 @@ public class QrCodeContentProcessor {
    */
   @Nullable
   private static Uri resolveHttpsRedirect(Uri uri, UrlFactory urlFactory) throws IOException {
-    HttpsURLConnection connection = urlFactory.openHttpsConnection(uri);
+    HttpURLConnection connection = urlFactory.openHttpsConnection(uri);
     if (connection == null) {
       return null;
     }
@@ -225,8 +238,8 @@ public class QrCodeContentProcessor {
     try {
       connection.connect();
       int responseCode = connection.getResponseCode();
-      if (responseCode != HttpsURLConnection.HTTP_MOVED_PERM
-          && responseCode != HttpsURLConnection.HTTP_MOVED_TEMP) {
+      if (responseCode != HttpURLConnection.HTTP_MOVED_PERM
+          && responseCode != HttpURLConnection.HTTP_MOVED_TEMP) {
         return null;
       }
       String location = connection.getHeaderField("Location");

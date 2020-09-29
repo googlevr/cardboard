@@ -1,6 +1,6 @@
 Cardboard SDK
 =============
-Copyright 2019 Google LLC.  All rights reserved.
+Copyright 2019 Google LLC
 
 This SDK provides everything you need to create your own Virtual Reality (VR)
 experiences for Google Cardboard. It supports essential VR features, such as:

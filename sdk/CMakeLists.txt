@@ -14,6 +14,9 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
+# C++ flags.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+
 # Standard Android dependencies
 find_library(android-lib android)
 find_library(GLESv2-lib GLESv2)
@@ -39,6 +42,8 @@ file(GLOB qrcode_srcs "qrcode/android/*.cc")
 file(GLOB screen_params_srcs "screen_params/android/*.cc")
 # Device Params Sources
 file(GLOB device_params_srcs "device_params/android/*.cc")
+# Rendering Sources
+file(GLOB rendering_srcs "rendering/*.cc")
 
 # === Cardboard Unity JNI ===
 file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")
@@ -61,6 +66,7 @@ add_library(cardboard_api SHARED
     ${qrcode_srcs}
     ${screen_params_srcs}
     ${device_params_srcs}
+    ${rendering_srcs}
     # Cardboard Unity JNI sources
     ${cardboard_unity_jni_srcs}
     # Cardboard Unity Wrapper sources

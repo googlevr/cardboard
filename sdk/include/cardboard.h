@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,17 +90,36 @@ extern "C" {
 // Initialization (Android only)
 /////////////////////////////////////////////////////////////////////////////
 /// @defgroup initialization Initialization (Android only)
-/// @brief This module initializes the JavaVM and Android activity context.
+/// @brief This module initializes the JavaVM and Android context.
 ///
 /// Important: This function is only used by Android and it's mandatory to call
 ///     this function before using any other Cardboard APIs.
 /// @{
 
 #ifdef __ANDROID__
-/// Initializes JavaVM and Android activity context.
+/// Initializes JavaVM and Android context.
+///
+/// @details The following methods are required to work for @p context:
+///
+/// -
+/// [Context.getFilesDir()](https://developer.android.com/reference/android/content/Context#getFilesDir())
+/// -
+/// [Context.getResources()](https://developer.android.com/reference/android/content/Context#getResources())
+/// -
+/// [Context.getSystemService(Context.WINDOW_SERVICE)](https://developer.android.com/reference/android/content/Context#getSystemService(java.lang.String))
+/// -
+/// [Context.startActivity(Intent)](https://developer.android.com/reference/android/content/Context#startActivity(android.content.Intent))
+/// -
+/// [Context.getDisplay()](https://developer.android.com/reference/android/content/Context#getDisplay())
+///
+/// @pre @p vm Must not be null.
+/// @pre @p context Must not be null.
+/// When it is unmet a call to this function results in a no-op.
 ///
 /// @param[in]      vm                      JavaVM pointer
-/// @param[in]      context                 Android activity context
+/// @param[in]      context                 The current Android Context. It is
+///                                         generally an Activity instance or
+///                                         wraps one.
 void Cardboard_initializeAndroid(JavaVM* vm, jobject context);
 #endif
 
@@ -118,6 +137,10 @@ void Cardboard_initializeAndroid(JavaVM* vm, jobject context);
 /// Creates a new lens distortion object and initializes it with the values from
 /// @c encoded_device_params.
 ///
+/// @pre @p encoded_device_params Must not be null.
+/// When it is unmet, a call to this function results in a no-op and returns a
+/// nullptr.
+///
 /// @param[in]      encoded_device_params   The device parameters serialized
 ///     using cardboard_device.proto.
 /// @param[in]      size                    Size in bytes of
@@ -131,10 +154,18 @@ CardboardLensDistortion* CardboardLensDistortion_create(
 
 /// Destroys and releases memory used by the provided lens distortion object.
 ///
+/// @pre @p lens_distortion Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
+///
 /// @param[in]      lens_distortion         Lens distortion object pointer.
 void CardboardLensDistortion_destroy(CardboardLensDistortion* lens_distortion);
 
 /// Gets the eye_from_head matrix for a particular eye.
+///
+/// @pre @p lens_distortion Must not be null.
+/// @pre @p eye_from_head_matrix Must not be null.
+/// When it is unmet, a call to this function results in a no-op and a default
+/// value is returned (identity matrix).
 ///
 /// @param[in]      lens_distortion         Lens distortion object pointer.
 /// @param[in]      eye                     Desired eye.
@@ -144,6 +175,11 @@ void CardboardLensDistortion_getEyeFromHeadMatrix(
     float* eye_from_head_matrix);
 
 /// Gets the ideal projection matrix for a particular eye.
+///
+/// @pre @p lens_distortion Must not be null.
+/// @pre @p projection_matrix Must not be null.
+/// When it is unmet, a call to this function results in a no-op and a default
+/// value is returned (identity matrix).
 ///
 /// @param[in]      lens_distortion         Lens distortion object pointer.
 /// @param[in]      eye                     Desired eye.
@@ -156,6 +192,11 @@ void CardboardLensDistortion_getProjectionMatrix(
 
 /// Gets the field of view half angles for a particular eye.
 ///
+/// @pre @p lens_distortion Must not be null.
+/// @pre @p field_of_view Must not be null.
+/// When it is unmet, a call to this function results in a no-op and a default
+/// value is returned (all angles equal to 45 degrees).
+///
 /// @param[in]      lens_distortion         Lens distortion object pointer.
 /// @param[in]      eye                     Desired eye.
 /// @param[out]     field_of_view           4x1 float half angles in radians,
@@ -166,6 +207,11 @@ void CardboardLensDistortion_getFieldOfView(
     float* field_of_view);
 
 /// Gets the distortion mesh for a particular eye.
+///
+/// @pre @p lens_distortion Must not be null.
+/// @pre @p mesh Must not be null.
+/// When it is unmet, a call to this function results in a no-op and a default
+/// value is returned (empty values).
 ///
 /// Important: The distorsion mesh that is returned by this function becomes
 /// invalid if CardboardLensDistortion is destroyed.
@@ -180,6 +226,11 @@ void CardboardLensDistortion_getDistortionMesh(
 /// Applies lens inverse distortion function to a point normalized [0,1] in
 /// pre-distortion (eye texture) space.
 ///
+/// @pre @p lens_distortion Must not be null.
+/// @pre @p distorted_uv Must not be null.
+/// When it is unmet, a call to this function results in a no-op and returns an
+/// invalid struct (both UV coordinates equal to -1).
+///
 /// @param[in]      lens_distortion         Lens distortion object pointer.
 /// @param[in]      distorted_uv            Distorted UV point.
 /// @param[in]      eye                     Desired eye.
@@ -190,6 +241,11 @@ CardboardUv CardboardLensDistortion_undistortedUvForDistortedUv(
 
 /// Applies lens distortion function to a point normalized [0,1] in the screen
 /// post-distortion space.
+///
+/// @pre @p lens_distortion Must not be null.
+/// @pre @p undistorted_uv Must not be null.
+/// When it is unmet, a call to this function results in a no-op and returns an
+/// invalid struct (both UV coordinates equal to -1).
 ///
 /// @param[in]      lens_distortion         Lens distortion object pointer.
 /// @param[in]      undistorted_uv          Undistorted UV point.
@@ -210,19 +266,45 @@ CardboardUv CardboardLensDistortion_distortedUvForUndistortedUv(
 /// Important: This module functions must be called from the render thread.
 /// @{
 
-/// Creates a new distortion renderer object. Must be called from render thread.
+/// Creates a new distortion renderer object. It uses OpenGL ES 2.0 as rendering
+/// API. Must be called from render thread.
 ///
 /// @return         Distortion renderer object pointer
-CardboardDistortionRenderer* CardboardDistortionRenderer_create();
+CardboardDistortionRenderer* CardboardOpenGlEs2DistortionRenderer_create();
+
+/// Creates a new distortion renderer object. It uses OpenGL ES 3.0 as rendering
+/// API. Must be called from render thread.
+///
+/// @return         Distortion renderer object pointer
+CardboardDistortionRenderer* CardboardOpenGlEs3DistortionRenderer_create();
+
+/// Creates a new distortion renderer object. It uses Metal as rendering
+/// API. Must be called from render thread.
+///
+/// @return         Distortion renderer object pointer
+CardboardDistortionRenderer* CardboardMetalDistortionRenderer_create();
+
+/// Creates a new distortion renderer object. It uses Vulkan as rendering
+/// API. Must be called from render thread.
+///
+/// @return         Distortion renderer object pointer
+CardboardDistortionRenderer* CardboardVulkanDistortionRenderer_create();
 
 /// Destroys and releases memory used by the provided distortion renderer
 /// object. Must be called from render thread.
+///
+/// @pre @p renderer Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
 ///
 /// @param[in]      renderer                Distortion renderer object pointer.
 void CardboardDistortionRenderer_destroy(CardboardDistortionRenderer* renderer);
 
 /// Sets Distortion Mesh for a particular eye. Must be called from render
 /// thread.
+///
+/// @pre @p renderer Must not be null.
+/// @pre @p mesh Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
 ///
 /// @param[in]      renderer                Distortion renderer object pointer.
 /// @param[in]      mesh                    Distortion mesh.
@@ -233,6 +315,11 @@ void CardboardDistortionRenderer_setMesh(CardboardDistortionRenderer* renderer,
 
 /// Renders eye textures to a rectangle in the display. Must be called from
 /// render thread.
+///
+/// @pre @p renderer Must not be null.
+/// @pre @p left_eye Must not be null.
+/// @pre @p right_eye Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
 ///
 /// @param[in]      renderer                Distortion renderer object pointer.
 /// @param[in]      target_display          Target display.
@@ -271,20 +358,35 @@ CardboardHeadTracker* CardboardHeadTracker_create();
 
 /// Destroys and releases memory used by the provided head tracker object.
 ///
+/// @pre @p head_tracker Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
+///
 /// @param[in]      head_tracker            Head tracker object pointer.
 void CardboardHeadTracker_destroy(CardboardHeadTracker* head_tracker);
 
 /// Pauses head tracker and underlying device sensors.
+///
+/// @pre @p head_tracker Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
 ///
 /// @param[in]      head_tracker            Head tracker object pointer.
 void CardboardHeadTracker_pause(CardboardHeadTracker* head_tracker);
 
 /// Resumes head tracker and underlying device sensors.
 ///
+/// @pre @p head_tracker Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
+///
 /// @param[in]      head_tracker            Head tracker object pointer.
 void CardboardHeadTracker_resume(CardboardHeadTracker* head_tracker);
 
 /// Gets the predicted head pose for a given timestamp.
+///
+/// @pre @p head_tracker Must not be null.
+/// @pre @p position Must not be null.
+/// @pre @p orientation Must not be null.
+/// When it is unmet, a call to this function results in a no-op and default
+/// values are returned (zero values and identity quaternion, respectively).
 ///
 /// @param[in]      head_tracker            Head tracker object pointer.
 /// @param[in]      timestamp_ns            The timestamp for the pose in
@@ -309,6 +411,11 @@ void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
 /// Gets currently saved devices parameters. This function allocates memory for
 /// the parameters, so it must be released using CardboardQrCode_destroy.
 ///
+/// @pre @p encoded_device_params Must not be null.
+/// @pre @p size Must not be null.
+/// When it is unmet, a call to this function results in a no-op and default
+/// values are returned (empty values).
+///
 /// @param[out]     encoded_device_params   Reference to the device parameters
 ///     serialized using cardboard_device.proto.
 /// @param[out]     size                    Size in bytes of
@@ -317,6 +424,9 @@ void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
                                           int* size);
 
 /// Releases memory used by the provided encoded_device_params array.
+///
+/// @pre @p encoded_device_params Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
 ///
 /// @param[in]      encoded_device_params   The device parameters serialized
 ///     using cardboard_device.proto.
@@ -339,6 +449,11 @@ int CardboardQrCode_getQrCodeScanCount();
 /// @details This function does not use external storage, and stores into @p
 ///          encoded_device_params the value of a pointer storing proto buffer.
 ///          Users of this API should not free memory.
+///
+/// @pre @p encoded_device_params Must not be null.
+/// @pre @p size Must not be null.
+/// When it is unmet, a call to this function results in a no-op and default
+/// values are returned (empty values).
 ///
 /// @param[out]     encoded_device_params   Reference to the device parameters.
 /// @param[out]     size                    Size in bytes of

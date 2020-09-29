@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC. All Rights Reserved.
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef THIRD_PARTY_CARDBOARD_OSS_UNITY_PLUGIN_SOURCE_MATH_TOOLS_H_
-#define THIRD_PARTY_CARDBOARD_OSS_UNITY_PLUGIN_SOURCE_MATH_TOOLS_H_
+#ifndef CARDBOARD_SDK_UNITY_XR_PROVIDER_MATH_TOOLS_H_
+#define CARDBOARD_SDK_UNITY_XR_PROVIDER_MATH_TOOLS_H_
 
 #include <array>
 #include <cmath>
@@ -39,4 +39,4 @@ UnityXRPose CardboardTransformToUnityPose(
 }  // namespace unity
 }  // namespace cardboard
 
-#endif  // THIRD_PARTY_CARDBOARD_OSS_UNITY_PLUGIN_SOURCE_MATH_TOOLS_H_
+#endif  // CARDBOARD_SDK_UNITY_XR_PROVIDER_MATH_TOOLS_H_

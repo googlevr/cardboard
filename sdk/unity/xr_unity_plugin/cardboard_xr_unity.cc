@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC. All Rights Reserved.
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -274,7 +274,8 @@ class CardboardApi::CardboardApiImpl {
 
     GlSetup();
 
-    distortion_renderer_.reset(CardboardDistortionRenderer_create());
+    // TODO(b/165286488): Check whether the rendering API is available.
+    distortion_renderer_.reset(CardboardOpenGlEs2DistortionRenderer_create());
 
     CardboardLensDistortion_getDistortionMesh(
         lens_distortion, CardboardEye::kLeft,
@@ -330,19 +331,19 @@ class CardboardApi::CardboardApiImpl {
   }
 
   int GetLeftTextureId() {
-    return gl_framebuffer_[CardboardEye::kLeft].color_texture;
+    return gl_render_textures_[CardboardEye::kLeft].color_texture;
   }
 
   int GetRightTextureId() {
-    return gl_framebuffer_[CardboardEye::kRight].color_texture;
+    return gl_render_textures_[CardboardEye::kRight].color_texture;
   }
 
   int GetLeftDepthBufferId() {
-    return gl_framebuffer_[CardboardEye::kLeft].depth_render_buffer;
+    return gl_render_textures_[CardboardEye::kLeft].depth_render_buffer;
   }
 
   int GetRightDepthBufferId() {
-    return gl_framebuffer_[CardboardEye::kRight].depth_render_buffer;
+    return gl_render_textures_[CardboardEye::kRight].depth_render_buffer;
   }
 
   static void SetUnityScreenParams(int x, int y, int width, int height) {
@@ -408,13 +409,11 @@ class CardboardApi::CardboardApiImpl {
     CardboardEyeTextureDescription texture;
   };
 
-  // @brief Holds the OpenGl texture, frame and depth buffers for each eye.
-  struct GlFramebuffer {
+  // @brief Holds the OpenGl texture and depth buffers for each eye.
+  struct GlRenderTexture {
     unsigned int color_texture = 0;
 
     unsigned int depth_render_buffer = 0;
-
-    unsigned int frame_buffer = 0;
   };
 
   // @brief Custom deleter for HeadTracker.
@@ -440,15 +439,14 @@ class CardboardApi::CardboardApiImpl {
            res.tv_nsec;
   }
 
-  // @brief Creates and configures a GlFramebuffer.
+  // @brief Creates and configures a texture and depth buffer for an eye.
   //
-  // @details Loads a color texture, then a depth buffer an finally a
-  //          frame buffer for an eye.
-  // @param gl_framebuffer A GlFramebuffer to load its resources.
-  void CreateGlFramebuffer(GlFramebuffer* gl_framebuffer) {
+  // @details Loads a color texture and then a depth buffer for an eye.
+  // @param gl_render_texture A GlRenderTexture to load its resources.
+  void CreateGlRenderTexture(GlRenderTexture* gl_render_texture) {
     // Create color texture.
-    glGenTextures(1, &gl_framebuffer->color_texture);
-    glBindTexture(GL_TEXTURE_2D, gl_framebuffer->color_texture);
+    glGenTextures(1, &gl_render_texture->color_texture);
+    glBindTexture(GL_TEXTURE_2D, gl_render_texture->color_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -458,42 +456,32 @@ class CardboardApi::CardboardApiImpl {
     CHECKGLERROR("Create a color texture.");
 
     // Create depth buffer.
-    glGenRenderbuffers(1, &gl_framebuffer->depth_render_buffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, gl_framebuffer->depth_render_buffer);
+    glGenRenderbuffers(1, &gl_render_texture->depth_render_buffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, gl_render_texture->depth_render_buffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
                           screen_params_.width / 2, screen_params_.height);
     CHECKGLERROR("Create depth render buffer.");
-
-    // Create a frame buffer
-    glGenFramebuffers(1, &gl_framebuffer->frame_buffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, gl_framebuffer->frame_buffer);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                           gl_framebuffer->color_texture, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                              GL_RENDERBUFFER,
-                              gl_framebuffer->depth_render_buffer);
-    CHECKGLERROR("Create frame buffer.");
   }
 
   // @brief Configures GL resources.
   void GlSetup() {
-    if (gl_framebuffer_[0].frame_buffer != 0) {
+    if (gl_render_textures_[0].color_texture != 0) {
       GlTeardown();
     }
 
-    // Create render texture, depth buffer and frame buffer for both eyes.
-    CreateGlFramebuffer(&gl_framebuffer_[CardboardEye::kLeft]);
-    CreateGlFramebuffer(&gl_framebuffer_[CardboardEye::kRight]);
+    // Create render texture and depth buffer for both eyes.
+    CreateGlRenderTexture(&gl_render_textures_[CardboardEye::kLeft]);
+    CreateGlRenderTexture(&gl_render_textures_[CardboardEye::kRight]);
 
     eye_data_[CardboardEye::kLeft].texture.texture =
-        gl_framebuffer_[CardboardEye::kLeft].color_texture;
+        gl_render_textures_[CardboardEye::kLeft].color_texture;
     eye_data_[CardboardEye::kLeft].texture.left_u = 0;
     eye_data_[CardboardEye::kLeft].texture.right_u = 1;
     eye_data_[CardboardEye::kLeft].texture.top_v = 1;
     eye_data_[CardboardEye::kLeft].texture.bottom_v = 0;
 
     eye_data_[CardboardEye::kRight].texture.texture =
-        gl_framebuffer_[CardboardEye::kRight].color_texture;
+        gl_render_textures_[CardboardEye::kRight].color_texture;
     eye_data_[CardboardEye::kRight].texture.left_u = 0;
     eye_data_[CardboardEye::kRight].texture.right_u = 1;
     eye_data_[CardboardEye::kRight].texture.top_v = 1;
@@ -507,27 +495,24 @@ class CardboardApi::CardboardApiImpl {
     widget_uniform_texture_ = glGetUniformLocation(widget_program_, "uTexture");
   }
 
-  // @brief Releases Gl resources in a GlFramebuffer.
+  // @brief Releases Gl resources in a GlRenderTexture.
   //
-  // @param gl_framebuffer A GlFramebuffer to release its resources.
-  void DestroyGlFramebuffer(GlFramebuffer* gl_framebuffer) {
-    glDeleteRenderbuffers(1, &gl_framebuffer->depth_render_buffer);
-    gl_framebuffer->depth_render_buffer = 0;
+  // @param gl_render_texture A GlRenderTexture to release its resources.
+  void DestroyGlRenderTexture(GlRenderTexture* gl_render_texture) {
+    glDeleteRenderbuffers(1, &gl_render_texture->depth_render_buffer);
+    gl_render_texture->depth_render_buffer = 0;
 
-    glDeleteFramebuffers(1, &gl_framebuffer->frame_buffer);
-    gl_framebuffer->frame_buffer = 0;
-
-    glDeleteTextures(1, &gl_framebuffer->color_texture);
-    gl_framebuffer->color_texture = 0;
+    glDeleteTextures(1, &gl_render_texture->color_texture);
+    gl_render_texture->color_texture = 0;
   }
 
   // @brief Frees GL resources.
   void GlTeardown() {
-    if (gl_framebuffer_[0].frame_buffer == 0) {
+    if (gl_render_textures_[0].color_texture == 0) {
       return;
     }
-    DestroyGlFramebuffer(&gl_framebuffer_[CardboardEye::kLeft]);
-    DestroyGlFramebuffer(&gl_framebuffer_[CardboardEye::kRight]);
+    DestroyGlRenderTexture(&gl_render_textures_[CardboardEye::kLeft]);
+    DestroyGlRenderTexture(&gl_render_textures_[CardboardEye::kRight]);
     CHECKGLERROR("GlTeardown");
   }
 
@@ -601,8 +586,8 @@ class CardboardApi::CardboardApiImpl {
   //          `CardboardEye::kRight` holds the right eye data.
   std::array<EyeData, 2> eye_data_;
 
-  // @brief Holds the OpenGL framebuffer information for each eye.
-  std::array<GlFramebuffer, 2> gl_framebuffer_;
+  // @brief Holds the OpenGL render texture information for each eye.
+  std::array<GlRenderTexture, 2> gl_render_textures_;
 
   // @brief Store Unity reported screen params.
   static std::atomic<ScreenParams> unity_screen_params_;

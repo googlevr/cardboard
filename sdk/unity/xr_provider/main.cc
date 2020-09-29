@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC. All Rights Reserved.
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,20 @@
 #define CARDBOARD_MAIN_XR_TRACE_LOG(trace, message) \
   XR_TRACE_LOG(trace, "[CardboardXrMain]: " message "\n")
 
-// @brief Loads an Unity XR Display and Input subsystems.
+extern "C" {
+
+// @note See https://docs.unity3d.com/Manual/NativePluginInterface.html for
+// further information about UnityPluginLoad() and UnityPluginUnload().
+// UnityPluginLoad() will be called just once when the first native call in C#
+// is executed. Before the library is torn down,
+// UnityPluginUnload() will be called to destruct and release all taken
+// resources.
+
+// @brief Loads Unity XR Display and Input subsystems.
 // @details It tries to load the display subsystem first, if it fails it
 //          returns. Then, it continues with the input subsystem.
 // @param unity_interfaces Unity Interface pointer.
-extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
+void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
 UnityPluginLoad(IUnityInterfaces* unity_interfaces) {
   auto* xr_trace = unity_interfaces->Get<IUnityXRTrace>();
 
@@ -41,3 +50,12 @@ UnityPluginLoad(IUnityInterfaces* unity_interfaces) {
   }
   CARDBOARD_MAIN_XR_TRACE_LOG(xr_trace, "Input subsystem successfully loaded.");
 }
+
+// @brief Unloads Unity XR Display and Input subsystems.
+void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
+UnityPluginUnload() {
+  UnloadDisplay();
+  UnloadInput();
+}
+
+}  // extern "C"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC. All Rights Reserved.
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,73 @@ class CardboardInputProvider {
 
   IUnityXRTrace* GetTrace() { return trace_; }
 
-  void Init() { cardboard_api_->InitHeadTracker(); }
+  /// @return A reference to the static instance of this class, which is thought
+  ///         to be the only one.
+  static std::unique_ptr<CardboardInputProvider>& GetInstance();
+
+  /// Callback executed when a subsystem should initialize in preparation for
+  /// becoming active.
+  UnitySubsystemErrorCode Initialize(UnitySubsystemHandle handle, void* data) {
+    CARDBOARD_INPUT_XR_TRACE_LOG(cardboard_input_provider_->GetTrace(),
+                                 "Lifecycle initialized");
+
+    // Initializes XR Input Provider
+    UnityXRInputProvider input_provider;
+    input_provider.userData = nullptr;
+    input_provider.Tick = [](UnitySubsystemHandle, void*,
+                             UnityXRInputUpdateType) {
+      return GetInstance()->Tick();
+    };
+    input_provider.FillDeviceDefinition =
+        [](UnitySubsystemHandle, void*, UnityXRInternalInputDeviceId device_id,
+           UnityXRInputDeviceDefinition* definition) {
+          return GetInstance()->FillDeviceDefinition(device_id, definition);
+        };
+    input_provider.UpdateDeviceState =
+        [](UnitySubsystemHandle, void*, UnityXRInternalInputDeviceId device_id,
+           UnityXRInputUpdateType, UnityXRInputDeviceState* state) {
+          return GetInstance()->UpdateDeviceState(device_id, state);
+        };
+    input_provider.HandleEvent = [](UnitySubsystemHandle, void*, unsigned int,
+                                    UnityXRInternalInputDeviceId, void*,
+                                    unsigned int) {
+      CARDBOARD_INPUT_XR_TRACE_LOG(cardboard_input_provider_->GetTrace(),
+                                   "No events to handle");
+      return kUnitySubsystemErrorCodeSuccess;
+    };
+    input_provider.QueryTrackingOriginMode =
+        [](UnitySubsystemHandle, void*,
+           UnityXRInputTrackingOriginModeFlags* tracking_origin_mode) {
+          return GetInstance()->QueryTrackingOriginMode(tracking_origin_mode);
+        };
+    input_provider.QuerySupportedTrackingOriginModes =
+        [](UnitySubsystemHandle, void*,
+           UnityXRInputTrackingOriginModeFlags*
+               supported_tracking_origin_modes) {
+          return GetInstance()->QuerySupportedTrackingOriginModes(
+              supported_tracking_origin_modes);
+        };
+    input_provider.HandleSetTrackingOriginMode =
+        [](UnitySubsystemHandle, void*,
+           UnityXRInputTrackingOriginModeFlags tracking_origin_mode) {
+          return GetInstance()->HandleSetTrackingOriginMode(
+              tracking_origin_mode);
+        };
+    input_provider.HandleRecenter = nullptr;
+    input_provider.HandleHapticImpulse = nullptr;
+    input_provider.HandleHapticBuffer = nullptr;
+    input_provider.QueryHapticCapabilities = nullptr;
+    input_provider.HandleHapticStop = nullptr;
+    GetInstance()->GetInput()->RegisterInputProvider(handle, &input_provider);
+
+    // Initializes Cardboard's Head Tracker module.
+    GetInstance()->InitHeadTracker();
+
+    return kUnitySubsystemErrorCodeSuccess;
+  }
+
+  /// Initializes the head tracker module.
+  void InitHeadTracker() { cardboard_api_->InitHeadTracker(); }
 
   /// Callback executed when a subsystem should become active.
   UnitySubsystemErrorCode Start(UnitySubsystemHandle handle) {
@@ -138,74 +204,18 @@ class CardboardInputProvider {
   UnityXRPose head_pose_;
 
   std::unique_ptr<cardboard::unity::CardboardApi> cardboard_api_;
+
+  static std::unique_ptr<CardboardInputProvider> cardboard_input_provider_;
 };
 
-std::unique_ptr<CardboardInputProvider> cardboard_input_provider;
-}  // anonymous namespace
+std::unique_ptr<CardboardInputProvider>
+    CardboardInputProvider::cardboard_input_provider_;
 
-/// Callback executed when a subsystem should initialize in preparation for
-/// becoming active.
-static UnitySubsystemErrorCode UNITY_INTERFACE_API
-LifecycleInitialize(UnitySubsystemHandle handle, void* data) {
-  CARDBOARD_INPUT_XR_TRACE_LOG(cardboard_input_provider->GetTrace(),
-                               "Lifecycle initialized");
-
-  // Initializes XR Input Provider
-  UnityXRInputProvider input_provider;
-  input_provider.userData = nullptr;
-  input_provider.Tick = [](UnitySubsystemHandle, void*,
-                           UnityXRInputUpdateType) {
-    return cardboard_input_provider->Tick();
-  };
-  input_provider.FillDeviceDefinition =
-      [](UnitySubsystemHandle, void*, UnityXRInternalInputDeviceId device_id,
-         UnityXRInputDeviceDefinition* definition) {
-        return cardboard_input_provider->FillDeviceDefinition(device_id,
-                                                              definition);
-      };
-  input_provider.UpdateDeviceState =
-      [](UnitySubsystemHandle, void*, UnityXRInternalInputDeviceId device_id,
-         UnityXRInputUpdateType, UnityXRInputDeviceState* state) {
-        return cardboard_input_provider->UpdateDeviceState(device_id, state);
-      };
-  input_provider.HandleEvent = [](UnitySubsystemHandle, void*, unsigned int,
-                                  UnityXRInternalInputDeviceId, void*,
-                                  unsigned int) {
-    CARDBOARD_INPUT_XR_TRACE_LOG(cardboard_input_provider->GetTrace(),
-                                 "No events to handle");
-    return kUnitySubsystemErrorCodeSuccess;
-  };
-  input_provider.QueryTrackingOriginMode =
-      [](UnitySubsystemHandle, void*,
-         UnityXRInputTrackingOriginModeFlags* tracking_origin_mode) {
-        return cardboard_input_provider->QueryTrackingOriginMode(
-            tracking_origin_mode);
-      };
-  input_provider.QuerySupportedTrackingOriginModes =
-      [](UnitySubsystemHandle, void*,
-         UnityXRInputTrackingOriginModeFlags* supported_tracking_origin_modes) {
-        return cardboard_input_provider->QuerySupportedTrackingOriginModes(
-            supported_tracking_origin_modes);
-      };
-  input_provider.HandleSetTrackingOriginMode =
-      [](UnitySubsystemHandle, void*,
-         UnityXRInputTrackingOriginModeFlags tracking_origin_mode) {
-        return cardboard_input_provider->HandleSetTrackingOriginMode(
-            tracking_origin_mode);
-      };
-  input_provider.HandleRecenter = nullptr;
-  input_provider.HandleHapticImpulse = nullptr;
-  input_provider.HandleHapticBuffer = nullptr;
-  input_provider.QueryHapticCapabilities = nullptr;
-  input_provider.HandleHapticStop = nullptr;
-  cardboard_input_provider->GetInput()->RegisterInputProvider(handle,
-                                                              &input_provider);
-
-  // Initializes Cardboard's Head Tracker module.
-  cardboard_input_provider->Init();
-
-  return kUnitySubsystemErrorCodeSuccess;
+std::unique_ptr<CardboardInputProvider>& CardboardInputProvider::GetInstance() {
+  return cardboard_input_provider_;
 }
+
+}  // namespace
 
 UnitySubsystemErrorCode LoadInput(IUnityInterfaces* xr_interfaces) {
   auto* input = xr_interfaces->Get<IUnityXRInputInterface>();
@@ -216,22 +226,29 @@ UnitySubsystemErrorCode LoadInput(IUnityInterfaces* xr_interfaces) {
   if (trace == NULL) {
     return kUnitySubsystemErrorCodeFailure;
   }
-  cardboard_input_provider.reset(new CardboardInputProvider(trace, input));
+
+  CardboardInputProvider::GetInstance().reset(
+      new CardboardInputProvider(trace, input));
 
   UnityLifecycleProvider input_lifecycle_handler;
   input_lifecycle_handler.userData = NULL;
-  input_lifecycle_handler.Initialize = &LifecycleInitialize;
+  input_lifecycle_handler.Initialize =
+      [](UnitySubsystemHandle handle, void* data) -> UnitySubsystemErrorCode {
+    return CardboardInputProvider::GetInstance()->Initialize(handle, data);
+  };
   input_lifecycle_handler.Start = [](UnitySubsystemHandle handle, void*) {
-    return cardboard_input_provider->Start(handle);
+    return CardboardInputProvider::GetInstance()->Start(handle);
   };
   input_lifecycle_handler.Stop = [](UnitySubsystemHandle handle, void*) {
-    return cardboard_input_provider->Stop(handle);
+    return CardboardInputProvider::GetInstance()->Stop(handle);
   };
   input_lifecycle_handler.Shutdown = [](UnitySubsystemHandle, void*) {
-    CARDBOARD_INPUT_XR_TRACE_LOG(cardboard_input_provider->GetTrace(),
-                                 "Lifecycle finished");
-    cardboard_input_provider.reset();
+    CARDBOARD_INPUT_XR_TRACE_LOG(
+        CardboardInputProvider::GetInstance()->GetTrace(),
+        "Lifecycle finished");
   };
   return input->RegisterLifecycleProvider("Cardboard", "Input",
                                           &input_lifecycle_handler);
 }
+
+void UnloadInput() { CardboardInputProvider::GetInstance().reset(); }

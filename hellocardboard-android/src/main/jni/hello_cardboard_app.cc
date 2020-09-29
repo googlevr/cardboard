@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC. All Rights Reserved.
+ * Copyright 2019 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -266,7 +266,7 @@ bool HelloCardboardApp::UpdateDeviceParams() {
   GlSetup();
 
   CardboardDistortionRenderer_destroy(distortion_renderer_);
-  distortion_renderer_ = CardboardDistortionRenderer_create();
+  distortion_renderer_ = CardboardOpenGlEs2DistortionRenderer_create();
 
   CardboardMesh left_mesh;
   CardboardMesh right_mesh;

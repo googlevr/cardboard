@@ -36,4 +36,8 @@
             description="Text shown when a connection error occurs when retrieving the QR Code
                          content. [CHAR_LIMIT=30]">
             Connection error</string>
+    <string name="missing_dependencies"
+            description="Text shown when dependencies are not available to read QR Codes.
+                         [CHAR_LIMIT=70]">
+            QR Code detection dependency is missing. Try connecting to WiFi.</string>
 </resources>
