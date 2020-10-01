@@ -313,7 +313,6 @@ UnitySubsystemErrorCode LoadDisplay(IUnityInterfaces* xr_interfaces) {
   };
   display_lifecycle_handler.Shutdown = [](UnitySubsystemHandle, void*) -> void {
     display_provider->Shutdown();
-    display_provider.reset();
   };
 
   return display_provider->GetDisplay()->RegisterLifecycleProvider(

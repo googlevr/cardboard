@@ -230,7 +230,6 @@ UnitySubsystemErrorCode LoadInput(IUnityInterfaces* xr_interfaces) {
   input_lifecycle_handler.Shutdown = [](UnitySubsystemHandle, void*) {
     CARDBOARD_INPUT_XR_TRACE_LOG(cardboard_input_provider->GetTrace(),
                                  "Lifecycle finished");
-    cardboard_input_provider.reset();
   };
   return input->RegisterLifecycleProvider("Cardboard", "Input",
                                           &input_lifecycle_handler);
