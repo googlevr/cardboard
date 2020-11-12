@@ -21,8 +21,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.hardware.Camera;
 import android.net.Uri;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -77,42 +78,71 @@ public class QrCodeCaptureActivity extends AppCompatActivity
   }
 
   /**
-   * Checks for activity permissions.
+   * Checks for CAMERA permission.
    *
-   * @return whether the permissions are already granted.
+   * @return whether CAMERA permission is already granted.
    */
-  private boolean arePermissionsEnabled() {
-    boolean cameraPermission =
-        ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            == PackageManager.PERMISSION_GRANTED;
-    boolean writePermission =
-        ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            == PackageManager.PERMISSION_GRANTED;
-    return (cameraPermission && writePermission);
+  private boolean isCameraEnabled() {
+    return ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+        == PackageManager.PERMISSION_GRANTED;
+  }
+
+  /**
+   * Checks for WRITE_EXTERNAL_STORAGE permission.
+   *
+   * @return whether WRITE_EXTERNAL_STORAGE permission is already granted.
+   */
+  private boolean isWriteExternalStoragePermissionsEnabled() {
+    return ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        == PackageManager.PERMISSION_GRANTED;
   }
 
   /** Handles the requests for activity permissions. */
   private void requestPermissions() {
     final String[] permissions =
-        new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        VERSION.SDK_INT < VERSION_CODES.Q
+            ? new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}
+            : new String[] {Manifest.permission.CAMERA};
     ActivityCompat.requestPermissions(this, permissions, PERMISSIONS_REQUEST_CODE);
   }
 
-  /** Callback for the result from requesting permissions. */
+  /**
+   * Callback for the result from requesting permissions.
+   *
+   * <p>When Android SDK version is less than Q, both WRITE_EXTERNAL_STORAGE and CAMERA permissions
+   * are requested. Otherwise, only CAMERA permission is requested.
+   */
   @Override
   public void onRequestPermissionsResult(
       int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    if (!arePermissionsEnabled()) {
-      Toast.makeText(this, R.string.no_permissions, Toast.LENGTH_LONG).show();
-      if (!ActivityCompat.shouldShowRequestPermissionRationale(
-              this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-          || !ActivityCompat.shouldShowRequestPermissionRationale(
-              this, Manifest.permission.CAMERA)) {
-        // Permission denied with checking "Do not ask again".
-        launchPermissionsSettings();
+    if (VERSION.SDK_INT < VERSION_CODES.Q) {
+      if (!(isCameraEnabled() && isWriteExternalStoragePermissionsEnabled())) {
+        Log.i(TAG, getString(R.string.no_permissions));
+        Toast.makeText(this, R.string.no_permissions, Toast.LENGTH_LONG).show();
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            || !ActivityCompat.shouldShowRequestPermissionRationale(
+                this, Manifest.permission.CAMERA)) {
+          // Permission denied with checking "Do not ask again".
+          Log.i(TAG, "Permission denied with checking \"Do not ask again\".");
+          launchPermissionsSettings();
+        }
+        finish();
       }
-      finish();
+    } else {
+      if (!isCameraEnabled()) {
+        Log.i(TAG, getString(R.string.no_camera_permission));
+        Toast.makeText(this, R.string.no_camera_permission, Toast.LENGTH_LONG).show();
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(
+            this, Manifest.permission.CAMERA)) {
+          // Permission denied with checking "Do not ask again". Note that in Android R "Do not ask
+          // again" is not available anymore.
+          Log.i(TAG, "Permission denied with checking \"Do not ask again\".");
+          launchPermissionsSettings();
+        }
+        finish();
+      }
     }
   }
 
@@ -152,22 +182,17 @@ public class QrCodeCaptureActivity extends AppCompatActivity
     }
 
     // Creates and starts the camera.
-    cameraSource =
-        new CameraSource.Builder(getApplicationContext(), qrCodeDetector)
-            .setFacing(CameraSource.CAMERA_FACING_BACK)
-            .setRequestedPreviewSize(1600, 1024)
-            .setRequestedFps(15.0f)
-            .setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
-            .setFlashMode(null)
-            .build();
+    cameraSource = new CameraSource(getApplicationContext(), qrCodeDetector);
   }
 
   /** Restarts the camera. */
   @Override
   protected void onResume() {
     super.onResume();
-    // Checks for activity permissions, if not granted, requests them.
-    if (!arePermissionsEnabled()) {
+    // Checks for CAMERA permission and WRITE_EXTERNAL_STORAGE permission when running on Android P
+    // or below. If needed permissions are not granted, requests them.
+    if (!(isCameraEnabled()
+        && (VERSION.SDK_INT >= VERSION_CODES.Q || isWriteExternalStoragePermissionsEnabled()))) {
       requestPermissions();
       return;
     }
@@ -194,6 +219,7 @@ public class QrCodeCaptureActivity extends AppCompatActivity
         GoogleApiAvailability.getInstance()
             .isGooglePlayServicesAvailable(getApplicationContext(), MIN_SDK_VERSION);
     if (code != ConnectionResult.SUCCESS) {
+      Log.i(TAG, "isGooglePlayServicesAvailable() returned: " + new ConnectionResult(code));
       Dialog dlg = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
       dlg.show();
     }
@@ -208,6 +234,7 @@ public class QrCodeCaptureActivity extends AppCompatActivity
       } catch (SecurityException e) {
         Log.e(TAG, "Security exception: ", e);
       }
+      Log.i(TAG, "cameraSourcePreview successfully started.");
     }
   }
 

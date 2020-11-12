@@ -22,9 +22,9 @@
 #include "lens_distortion.h"
 #include "qr_code.h"
 #include "qrcode/cardboard_v1/cardboard_v1.h"
-#include "rendering/opengl_es2_distortion_renderer.h"
 #include "screen_params.h"
 #include "util/is_arg_null.h"
+#include "util/is_initialized.h"
 #include "util/logging.h"
 #ifdef __ANDROID__
 #include "device_params/android/device_params.h"
@@ -35,27 +35,7 @@ struct CardboardLensDistortion : cardboard::LensDistortion {};
 struct CardboardDistortionRenderer : cardboard::DistortionRenderer {};
 struct CardboardHeadTracker : cardboard::HeadTracker {};
 
-// Validates that Cardboard SDK is initialized. Returns true if Cardboard SDK is
-// not initialized, false otherwise.
-#define CARDBOARD_IS_NOT_INITIALIZED() !IsInitialized(__FILE__, __LINE__)
-
 namespace {
-
-#ifdef __ANDROID__
-bool is_initialized = false;
-bool IsInitialized(const char* file_name, int line_number) {
-  if (!is_initialized) {
-    CARDBOARD_LOGE(
-        "[%s : %d] Cardboard SDK is not initialized yet. Please call "
-        "Cardboard_initializeAndroid().",
-        file_name, line_number);
-    return false;
-  }
-  return true;
-}
-#else
-bool IsInitialized(const char* file_name, int line_number) { return true; }
-#endif
 
 // Return default (identity) matrix.
 void GetDefaultMatrix(float* matrix) {
@@ -135,7 +115,7 @@ void Cardboard_initializeAndroid(JavaVM* vm, jobject context) {
   cardboard::screen_params::initializeAndroid(vm, global_context);
   cardboard::DeviceParams::initializeAndroid(vm, global_context);
 
-  is_initialized = true;
+  cardboard::util::SetIsInitialized();
 }
 #endif
 
@@ -248,22 +228,6 @@ CardboardUv CardboardLensDistortion_distortedUvForUndistortedUv(
   ret.u = out[0];
   ret.v = out[1];
   return ret;
-}
-
-CardboardDistortionRenderer* CardboardOpenGlEs2DistortionRenderer_create() {
-  if (CARDBOARD_IS_NOT_INITIALIZED()) {
-    return nullptr;
-  }
-  return reinterpret_cast<CardboardDistortionRenderer*>(
-      new cardboard::rendering::OpenGlEs2DistortionRenderer());
-}
-
-CardboardDistortionRenderer* CardboardOpenGlEs3DistortionRenderer_create() {
-  if (CARDBOARD_IS_NOT_INITIALIZED()) {
-    return nullptr;
-  }
-  CARDBOARD_LOGE("OpenGL ES 3.0 rendering API not available");
-  return nullptr;
 }
 
 CardboardDistortionRenderer* CardboardMetalDistortionRenderer_create() {

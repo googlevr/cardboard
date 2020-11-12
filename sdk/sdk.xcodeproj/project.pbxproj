@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0F2363882492E2080009924A /* cardboard_xr_unity.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0FF99B2524587233001FF78F /* cardboard_xr_unity.h */; };
+		0F29AA5F255AC37F00154BD0 /* opengl_es3_distortion_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0F29AA5E255AC37F00154BD0 /* opengl_es3_distortion_renderer.cc */; };
+		0F29AA62255AC3A200154BD0 /* is_initialized.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0F29AA61255AC3A200154BD0 /* is_initialized.cc */; };
 		0F8D4FDF2361F86A00E7C48D /* libprotobuf-lite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */; };
 		0FD2023E23575F3B00B3C342 /* screen_params.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FA23575F3A00B3C342 /* screen_params.mm */; };
 		0FD2023F23575F3B00B3C342 /* rotation.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FD23575F3A00B3C342 /* rotation.cc */; };
@@ -61,6 +63,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0F29AA5E255AC37F00154BD0 /* opengl_es3_distortion_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_es3_distortion_renderer.cc; sourceTree = "<group>"; };
+		0F29AA60255AC3A200154BD0 /* is_initialized.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = is_initialized.h; sourceTree = "<group>"; };
+		0F29AA61255AC3A200154BD0 /* is_initialized.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = is_initialized.cc; sourceTree = "<group>"; };
 		0F2D9A572523781600BB8866 /* is_arg_null.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = is_arg_null.h; sourceTree = "<group>"; };
 		0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../third_party/libprotobuf/ios/lib/libprotobuf-lite.a"; sourceTree = "<group>"; };
 		0FD200852357511E00B3C342 /* cardboard_api.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = cardboard_api.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -130,7 +135,6 @@
 		0FF99B2524587233001FF78F /* cardboard_xr_unity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard_xr_unity.h; sourceTree = "<group>"; };
 		0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cardboard_xr_unity.cc; sourceTree = "<group>"; };
 		7B2ADAC924E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_es2_distortion_renderer.cc; sourceTree = "<group>"; };
-		7B2ADACA24E4779500FEBAA8 /* opengl_es2_distortion_renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opengl_es2_distortion_renderer.h; sourceTree = "<group>"; };
 		7B76813424A3FA6B00E92050 /* input.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cc; sourceTree = "<group>"; };
 		7B76813524A3FA6B00E92050 /* display.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = display.cc; sourceTree = "<group>"; };
 		7B76813624A3FA6B00E92050 /* main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cc; sourceTree = "<group>"; };
@@ -239,6 +243,8 @@
 		0FD201FC23575F3A00B3C342 /* util */ = {
 			isa = PBXGroup;
 			children = (
+				0F29AA61255AC3A200154BD0 /* is_initialized.cc */,
+				0F29AA60255AC3A200154BD0 /* is_initialized.h */,
 				0F2D9A572523781600BB8866 /* is_arg_null.h */,
 				0FD201FD23575F3A00B3C342 /* rotation.cc */,
 				0FD201FE23575F3A00B3C342 /* vectorutils.cc */,
@@ -357,8 +363,8 @@
 		7B2ADAC824E4779500FEBAA8 /* rendering */ = {
 			isa = PBXGroup;
 			children = (
+				0F29AA5E255AC37F00154BD0 /* opengl_es3_distortion_renderer.cc */,
 				7B2ADAC924E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc */,
-				7B2ADACA24E4779500FEBAA8 /* opengl_es2_distortion_renderer.h */,
 			);
 			path = rendering;
 			sourceTree = "<group>";
@@ -462,11 +468,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F29AA5F255AC37F00154BD0 /* opengl_es3_distortion_renderer.cc in Sources */,
 				0FD2025323575F3B00B3C342 /* polynomial_radial_distortion.cc in Sources */,
 				0FD2025923575F3B00B3C342 /* distortion_mesh.cc in Sources */,
 				0FD2024623575F3B00B3C342 /* lowpass_filter.cc in Sources */,
 				0FD2024823575F3B00B3C342 /* neck_model.cc in Sources */,
 				0FD2024D23575F3B00B3C342 /* sensor_event_producer.mm in Sources */,
+				0F29AA62255AC3A200154BD0 /* is_initialized.cc in Sources */,
 				0FD2025023575F3B00B3C342 /* mean_filter.cc in Sources */,
 				0FD2025623575F3B00B3C342 /* nsurl_connection_data_handler.mm in Sources */,
 				0FD2024F23575F3B00B3C342 /* gyroscope_bias_estimator.cc in Sources */,

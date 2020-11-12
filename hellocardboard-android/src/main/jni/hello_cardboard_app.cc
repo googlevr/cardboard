@@ -48,7 +48,7 @@ constexpr float kAngleLimit = 0.2f;
 constexpr int kTargetMeshCount = 3;
 
 // Simple shaders to render .obj files without any lighting.
-constexpr const char* kObjVertexShaders =
+constexpr const char* kObjVertexShader =
     R"glsl(
     uniform mat4 u_MVP;
     attribute vec4 a_Position;
@@ -60,11 +60,12 @@ constexpr const char* kObjVertexShaders =
       gl_Position = u_MVP * a_Position;
     })glsl";
 
-constexpr const char* kObjFragmentShaders =
+constexpr const char* kObjFragmentShader =
     R"glsl(
     precision mediump float;
-    varying vec2 v_UV;
+
     uniform sampler2D u_Texture;
+    varying vec2 v_UV;
 
     void main() {
       // The y coordinate of this sample's textures is reversed compared to
@@ -110,9 +111,9 @@ HelloCardboardApp::~HelloCardboardApp() {
 
 void HelloCardboardApp::OnSurfaceCreated(JNIEnv* env) {
   const int obj_vertex_shader =
-      LoadGLShader(GL_VERTEX_SHADER, kObjVertexShaders);
+      LoadGLShader(GL_VERTEX_SHADER, kObjVertexShader);
   const int obj_fragment_shader =
-      LoadGLShader(GL_FRAGMENT_SHADER, kObjFragmentShaders);
+      LoadGLShader(GL_FRAGMENT_SHADER, kObjFragmentShader);
 
   obj_program_ = glCreateProgram();
   glAttachShader(obj_program_, obj_vertex_shader);

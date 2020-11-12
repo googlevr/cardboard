@@ -8,10 +8,10 @@
     <string name="title_activity_vr"
             description="VR activity title. [CHAR_LIMIT=30]">
             Hello Cardboard</string>
-    <string name="no_permissions"
+    <string name="read_storage_permission"
             description="Text shown on Android Toast when permissions are not granted.
-                         [CHAR_LIMIT=30]">
-            Permissions not granted</string>
+                         [CHAR_LIMIT=90]">
+            Hello Cardboard requires to read your external storage to load device parameters.</string>
     <string name="low_storage_error"
             description="Text shown on Android Toast when detector dependencies can not be
                          downloaded due to low storage. [CHAR_LIMIT=70]">

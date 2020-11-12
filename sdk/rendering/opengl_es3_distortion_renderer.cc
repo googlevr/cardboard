@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,15 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * #gles3 - This file is only needed if OpenGL ES 3.0 support is desired. Delete
+ * the contents of this file if OpenGL ES 3.0 support is not needed.
  */
 #include <array>
 #include <vector>
 
 #ifdef __ANDROID__
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #endif
 #ifdef __APPLE__
-#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES3/gl.h>
 #endif
 #include "distortion_renderer.h"
 #include "include/cardboard.h"
@@ -32,9 +35,11 @@ namespace {
 
 constexpr const char* kDistortionVertexShader =
     R"glsl(
-    attribute vec2 a_Position;
-    attribute vec2 a_TexCoords;
-    varying vec2 v_TexCoords;
+    #version 300 es
+
+    layout (location = 0) in vec2 a_Position;
+    layout (location = 1) in vec2 a_TexCoords;
+    out vec2 v_TexCoords;
 
     void main() {
       gl_Position = vec4(a_Position, 0, 1);
@@ -43,16 +48,19 @@ constexpr const char* kDistortionVertexShader =
 
 constexpr const char* kDistortionFragmentShader =
     R"glsl(
+    #version 300 es
+
     precision mediump float;
 
     uniform sampler2D u_Texture;
     uniform vec2 u_Start;
     uniform vec2 u_End;
-    varying vec2 v_TexCoords;
+    in vec2 v_TexCoords;
+    out vec4 o_FragColor;
 
     void main() {
       vec2 coords = u_Start + v_TexCoords * (u_End - u_Start);
-      gl_FragColor = texture2D(u_Texture, coords);
+      o_FragColor = texture(u_Texture, coords);
     })glsl";
 
 void CheckGlError(const char* label) {
@@ -135,10 +143,10 @@ GLuint CreateProgram(const char* vertex, const char* fragment) {
 namespace cardboard {
 namespace rendering {
 
-// @brief OpenGL ES 2.0 concrete implementation of DistortionRenderer.
-class OpenGlEs2DistortionRenderer : public DistortionRenderer {
+// @brief OpenGL ES 3.0 concrete implementation of DistortionRenderer.
+class OpenGlEs3DistortionRenderer : public DistortionRenderer {
  public:
-  OpenGlEs2DistortionRenderer()
+  OpenGlEs3DistortionRenderer()
       : vertices_vbo_{0, 0},
         uvs_vbo_{0, 0},
         elements_vbo_{0, 0},
@@ -154,14 +162,14 @@ class OpenGlEs2DistortionRenderer : public DistortionRenderer {
     glGenBuffers(2, &vertices_vbo_[0]);
     glGenBuffers(2, &uvs_vbo_[0]);
     glGenBuffers(2, &elements_vbo_[0]);
-    CheckGlError("OpenGlEs2DistortionRendererSetUp");
+    CheckGlError("OpenGlEs3DistortionRendererSetUp");
   }
 
-  ~OpenGlEs2DistortionRenderer() {
+  ~OpenGlEs3DistortionRenderer() {
     glDeleteBuffers(2, &vertices_vbo_[0]);
     glDeleteBuffers(2, &uvs_vbo_[0]);
     glDeleteBuffers(2, &elements_vbo_[0]);
-    CheckGlError("~OpenGlEs2DistortionRenderer");
+    CheckGlError("~OpenGlEs3DistortionRenderer");
   }
 
   /*
@@ -184,7 +192,7 @@ class OpenGlEs2DistortionRenderer : public DistortionRenderer {
                  mesh->indices, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    CheckGlError("OpenGlEs2DistortionRenderer::SetMesh");
+    CheckGlError("OpenGlEs3DistortionRenderer::SetMesh");
     elements_count_[eye] = mesh->n_indices;
   }
 
@@ -207,7 +215,7 @@ class OpenGlEs2DistortionRenderer : public DistortionRenderer {
       const CardboardEyeTextureDescription* right_eye) const override {
     if (elements_count_[0] == 0 || elements_count_[1] == 0) {
       CARDBOARD_LOGE(
-          "Distortion mesh is empty. OpenGlEs2DistortionRenderer::SetMesh was "
+          "Distortion mesh is empty. OpenGlEs3DistortionRenderer::SetMesh was "
           "not called yet.");
       return;
     }
@@ -239,7 +247,7 @@ class OpenGlEs2DistortionRenderer : public DistortionRenderer {
 
     // Disable scissor test.
     glDisable(GL_SCISSOR_TEST);
-    CheckGlError("OpenGlEs2DistortionRenderer::RenderEyeToDisplay");
+    CheckGlError("OpenGlEs3DistortionRenderer::RenderEyeToDisplay");
   }
 
  private:
@@ -283,7 +291,7 @@ class OpenGlEs2DistortionRenderer : public DistortionRenderer {
     // Draw with indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_[eye]);
     glDrawElements(GL_TRIANGLE_STRIP, elements_count_[eye], GL_UNSIGNED_INT, 0);
-    CheckGlError("OpenGlEs2DistortionRenderer::RenderDistortionMesh");
+    CheckGlError("OpenGlEs3DistortionRenderer::RenderDistortionMesh");
   }
 
   std::array<GLuint, 2> vertices_vbo_;  // One per eye.
@@ -303,12 +311,12 @@ class OpenGlEs2DistortionRenderer : public DistortionRenderer {
 
 extern "C" {
 
-CardboardDistortionRenderer* CardboardOpenGlEs2DistortionRenderer_create() {
+CardboardDistortionRenderer* CardboardOpenGlEs3DistortionRenderer_create() {
   if (CARDBOARD_IS_NOT_INITIALIZED()) {
     return nullptr;
   }
   return reinterpret_cast<CardboardDistortionRenderer*>(
-      new cardboard::rendering::OpenGlEs2DistortionRenderer());
+      new cardboard::rendering::OpenGlEs3DistortionRenderer());
 }
 
 }  // extern "C"

@@ -18,6 +18,13 @@
 
 #include <memory>
 
+/// @brief Determines the supported graphics APIs.
+typedef enum CardboardGraphicsApi {
+    kOpenGlEs2 = 1,         ///< Uses OpenGL ES2.0
+    kOpenGlEs3 = 2,        ///< Uses OpenGL ES3.0
+    kNone = -1,             ///< No graphic API is selected.
+} CardboardGraphicsApi;
+
 // TODO(b/151087873) Convert into single line namespace declaration.
 namespace cardboard {
 namespace unity {
@@ -173,6 +180,11 @@ class CardboardApi {
   /// @return true When device parameters changed.
   static bool GetDeviceParametersChanged();
 
+  /// @brief Sets the Graphics API that should be used.
+  /// @param graphics_api One of the possible CardboardGraphicsApi
+  ///        implementations.
+  static void SetGraphicsApi(CardboardGraphicsApi graphics_api);
+
  private:
   // Forward declaration of the api implementation.
   class CardboardApiImpl;
@@ -213,6 +225,10 @@ void CardboardUnity_setWidgetParams(int i, void* texture, int x, int y,
 
 /// @brief Flags a change in device parameters configuration.
 void CardboardUnity_setDeviceParametersChanged();
+
+/// @brief Sets the graphics API to use.
+/// @param graphics_api The graphics API to use.
+void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api);
 
 #ifdef __cplusplus
 }

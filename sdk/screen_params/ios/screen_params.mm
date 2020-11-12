@@ -47,13 +47,22 @@ NSString *const kGIPDeviceGenerationiPhone11 = @"iPhone 11";
 NSString *const kGIPDeviceGenerationiPhone11Pro = @"iPhone 11 Pro";
 NSString *const kGIPDeviceGenerationiPhone11ProMax = @"iPhone 11 Pro Max";
 NSString *const kGIPDeviceGenerationiPhoneSimulator = @"iPhone Simulator";
+NSString *const kGIPDeviceGenerationiPhone12Mini = @"iPhone 12 Mini";
+NSString *const kGIPDeviceGenerationiPhone12 = @"iPhone 12";
+NSString *const kGIPDeviceGenerationiPhone12Pro = @"iPhone 12 Pro";
+NSString *const kGIPDeviceGenerationiPhone12ProMax = @"iPhone 12 Pro Max";
 
-// DPI for iPhone (default) and iPhone+: http://dpi.lv/
+// iPod touch Generations.
+NSString *const kGIPDeviceGenerationiPodTouch7thGen = @"iPod touch (7th generation)";
+
+// DPI for iPod touch, iPhone (default) and iPhone+: http://dpi.lv/
 static CGFloat const kDefaultDpi = 326.0f;
 static CGFloat const kIPhonePlusDpi = 401.0f;
 static CGFloat const kIPhoneOledDpi = 458.0f;
 static CGFloat const kIPhoneXrDpi = 324.0f;
 static CGFloat const kIPhoneXsMaxDpi = 456.0f;
+static CGFloat const kIPhone12MiniDpi = 476.0f;
+static CGFloat const kIPhone12Dpi = 460.0f;
 
 CGFloat getDpi() {
   // Gets model name.
@@ -103,6 +112,11 @@ CGFloat getDpi() {
     @"iPhone12,1" : kGIPDeviceGenerationiPhone11,
     @"iPhone12,3" : kGIPDeviceGenerationiPhone11Pro,
     @"iPhone12,5" : kGIPDeviceGenerationiPhone11ProMax,
+    @"iPhone13,1" : kGIPDeviceGenerationiPhone12Mini,
+    @"iPhone13,2" : kGIPDeviceGenerationiPhone12,
+    @"iPhone13,3" : kGIPDeviceGenerationiPhone12Pro,
+    @"iPhone13,4" : kGIPDeviceGenerationiPhone12ProMax,
+    @"iPod9,1" : kGIPDeviceGenerationiPodTouch7thGen,
   };
   NSString *model = models[modelName];
   if (!model) {
@@ -135,6 +149,11 @@ CGFloat getDpi() {
     kGIPDeviceGenerationiPhone11 : @(kDefaultDpi),
     kGIPDeviceGenerationiPhone11Pro : @(kIPhoneOledDpi),
     kGIPDeviceGenerationiPhone11ProMax : @(kIPhoneOledDpi),
+    kGIPDeviceGenerationiPhone12Mini : @(kIPhone12MiniDpi),
+    kGIPDeviceGenerationiPhone12 : @(kIPhone12Dpi),
+    kGIPDeviceGenerationiPhone12Pro : @(kIPhone12Dpi),
+    kGIPDeviceGenerationiPhone12ProMax : @(kIPhoneOledDpi),
+    kGIPDeviceGenerationiPodTouch7thGen : @(kDefaultDpi),
   };
 
   NSNumber *dpi = dpis[model];

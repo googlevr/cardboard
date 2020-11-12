@@ -22,6 +22,10 @@ find_library(android-lib android)
 find_library(GLESv2-lib GLESv2)
 find_library(log-lib log)
 
+# #gles3 - Library is only needed if OpenGL ES 3.0 support is desired. Remove
+# the following line if OpenGL ES 3.0 support is not needed.
+find_library(GLESv3-lib GLESv3)
+
 include_directories(.)
 
 # === Cardboard API ===
@@ -82,4 +86,7 @@ target_include_directories(cardboard_api
 target_link_libraries(cardboard_api
     ${android-lib}
     ${GLESv2-lib}
+    # #gles3 - Library is only needed if OpenGL ES 3.0 support is desired.
+    # Remove the following line if OpenGL ES 3.0 support is not needed.
+    ${GLESv3-lib}
     ${log-lib})

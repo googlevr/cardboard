@@ -27,14 +27,11 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import android.support.annotation.RequiresPermission;
-import android.support.annotation.StringDef;
 import com.google.android.gms.common.images.Size;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 import java.io.IOException;
 import java.lang.Thread.State;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,52 +55,28 @@ public class CameraSource {
 
   private static final float ASPECT_RATIO_TOLERANCE = 0.01f;
 
-  @StringDef({
-    Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE,
-    Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO,
-    Camera.Parameters.FOCUS_MODE_AUTO,
-    Camera.Parameters.FOCUS_MODE_EDOF,
-    Camera.Parameters.FOCUS_MODE_FIXED,
-    Camera.Parameters.FOCUS_MODE_INFINITY,
-    Camera.Parameters.FOCUS_MODE_MACRO
-  })
-  @Retention(RetentionPolicy.SOURCE)
-  private @interface FocusMode {}
+  // Preferred width in pixels.
+  private static final int WIDTH = 1600;
 
-  @StringDef({
-    Camera.Parameters.FLASH_MODE_ON,
-    Camera.Parameters.FLASH_MODE_OFF,
-    Camera.Parameters.FLASH_MODE_AUTO,
-    Camera.Parameters.FLASH_MODE_RED_EYE,
-    Camera.Parameters.FLASH_MODE_TORCH
-  })
-  @Retention(RetentionPolicy.SOURCE)
-  private @interface FlashMode {}
+  // Preferred height in pixels.
+  private static final int HEIGHT = 1200;
 
-  private Context context;
+  /**
+   * These values may be requested by the caller. Due to hardware limitations, we may need to select
+   * close, but not exactly the same values for these.
+   */
+  private static final float FPS = 15.0f;
+
+  private final Context context;
 
   private final Object cameraLock = new Object();
 
   // Guarded by cameraLock
   private Camera camera;
 
-  private int facing = CAMERA_FACING_BACK;
-
   private int rotation;
 
   private Size previewSize;
-
-  /**
-   * These values may be requested by the caller. Due to hardware limitations, we may need to select
-   * close, but not exactly the same values for these.
-   */
-  private float requestedFps = 30.0f;
-
-  private int requestedPreviewWidth = 1024;
-  private int requestedPreviewHeight = 768;
-
-  private String focusMode = null;
-  private String flashMode = null;
 
   /**
    * Dedicated thread and associated runnable for calling into the detector with frames, as the
@@ -111,85 +84,38 @@ public class CameraSource {
    */
   private Thread processingThread;
 
-  private FrameProcessingRunnable frameProcessor;
+  private final FrameProcessingRunnable frameProcessor;
 
   /**
    * Map to convert between a byte array, received from the camera, and its associated byte buffer.
    */
   private final Map<byte[], ByteBuffer> bytesToByteBuffer = new HashMap<>();
 
-  // ==============================================================================================
-  // Builder
-  // ==============================================================================================
-
-  /** Builder for configuring and creating an associated camera source. */
-  public static class Builder {
-    private final Detector<?> detector;
-    private final CameraSource cameraSource = new CameraSource();
-
-    /**
-     * Creates a camera source builder with the supplied context and detector. Camera preview images
-     * will be streamed to the associated detector upon starting the camera source.
-     */
-    public Builder(Context context, Detector<?> detector) {
-      if (context == null) {
-        throw new IllegalArgumentException("No context supplied.");
-      }
-      if (detector == null) {
-        throw new IllegalArgumentException("No detector supplied.");
-      }
-
-      this.detector = detector;
-      cameraSource.context = context;
+  /**
+   * Constructs a CameraSource.
+   *
+   * <p>Creates a camera source builder with the supplied context and detector. Camera preview
+   * images will be streamed to the associated detector upon starting the camera source.
+   *
+   * @param context The Android's Application context.
+   * @param detector Expects a QR code detector.
+   * @throws IllegalArgumentException When any of the parameter preconditions is unmet.
+   */
+  public CameraSource(Context context, Detector<?> detector) {
+    // Prerequisite evaluation.
+    if (context == null) {
+      Log.e(TAG, "context is null.");
+      throw new IllegalArgumentException("No context supplied.");
+    }
+    if (detector == null) {
+      Log.e(TAG, "detector is null.");
+      throw new IllegalArgumentException("No detector supplied.");
     }
 
-    public Builder setRequestedFps(float fps) {
-      if (fps <= 0) {
-        throw new IllegalArgumentException("Invalid fps: " + fps);
-      }
-      cameraSource.requestedFps = fps;
-      return this;
-    }
-
-    public Builder setFocusMode(@FocusMode String mode) {
-      cameraSource.focusMode = mode;
-      return this;
-    }
-
-    public Builder setFlashMode(@FlashMode String mode) {
-      cameraSource.flashMode = mode;
-      return this;
-    }
-
-    public Builder setRequestedPreviewSize(int width, int height) {
-      // max is a value beyond resolutions that devices can support to avoid int overflow.
-      final int max = 1000000;
-      if ((width <= 0) || (width > max) || (height <= 0) || (height > max)) {
-        throw new IllegalArgumentException("Invalid preview size: " + width + "x" + height);
-      }
-      cameraSource.requestedPreviewWidth = width;
-      cameraSource.requestedPreviewHeight = height;
-      return this;
-    }
-
-    public Builder setFacing(int facing) {
-      if ((facing != CAMERA_FACING_BACK) && (facing != CAMERA_FACING_FRONT)) {
-        throw new IllegalArgumentException("Invalid camera: " + facing);
-      }
-      cameraSource.facing = facing;
-      return this;
-    }
-
-    /** Creates an instance of the camera source. */
-    public CameraSource build() {
-      cameraSource.frameProcessor = cameraSource.new FrameProcessingRunnable(detector);
-      return cameraSource;
-    }
+    this.context = context;
+    frameProcessor = new FrameProcessingRunnable(detector);
+    Log.i(TAG, "Successful CameraSource creation.");
   }
-
-  // ==============================================================================================
-  // Public
-  // ==============================================================================================
 
   /** Stops the camera and releases the resources of the camera and underlying detector. */
   public void release() {
@@ -259,13 +185,6 @@ public class CameraSource {
     return previewSize;
   }
 
-  // ==============================================================================================
-  // Private
-  // ==============================================================================================
-
-  /** Only allow creation via the builder class. */
-  private CameraSource() {}
-
   /**
    * Opens the camera and applies the user settings.
    *
@@ -273,21 +192,24 @@ public class CameraSource {
    */
   @SuppressLint("InlinedApi")
   private Camera createCamera() {
-    int requestedCameraId = getIdForRequestedCamera(facing);
+    int requestedCameraId = getIdForRequestedCamera(CAMERA_FACING_BACK);
     if (requestedCameraId == -1) {
+      Log.e(TAG, "Could not find requested camera.");
       throw new RuntimeException("Could not find requested camera.");
     }
     Camera camera = Camera.open(requestedCameraId);
 
-    SizePair sizePair = selectSizePair(camera, requestedPreviewWidth, requestedPreviewHeight);
+    SizePair sizePair = selectSizePair(camera, WIDTH, HEIGHT);
     if (sizePair == null) {
+      Log.e(TAG, "Could not find suitable preview size.");
       throw new RuntimeException("Could not find suitable preview size.");
     }
     Size pictureSize = sizePair.pictureSize();
     previewSize = sizePair.previewSize();
 
-    int[] previewFpsRange = selectPreviewFpsRange(camera, requestedFps);
+    int[] previewFpsRange = selectPreviewFpsRange(camera, FPS);
     if (previewFpsRange == null) {
+      Log.e(TAG, "Could not find suitable preview frames per second range.");
       throw new RuntimeException("Could not find suitable preview frames per second range.");
     }
 
@@ -305,29 +227,14 @@ public class CameraSource {
 
     setRotation(camera, parameters, requestedCameraId);
 
-    if (focusMode != null) {
-      if (parameters.getSupportedFocusModes().contains(focusMode)) {
-        parameters.setFocusMode(focusMode);
-      } else {
-        Log.i(TAG, "Camera focus mode: " + focusMode + " is not supported on this device" + ".");
-      }
+    if (parameters
+        .getSupportedFocusModes()
+        .contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+      parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+    } else {
+      Log.i(
+          TAG, "Camera focus mode: FOCUS_MODE_CONTINUOUS_PICTURE is not supported on this device.");
     }
-
-    // Setting focusMode to the one set in the params
-    focusMode = parameters.getFocusMode();
-
-    if (flashMode != null) {
-      if (parameters.getSupportedFlashModes() != null) {
-        if (parameters.getSupportedFlashModes().contains(flashMode)) {
-          parameters.setFlashMode(flashMode);
-        } else {
-          Log.i(TAG, "Camera flash mode: " + flashMode + " is not supported on this " + "device.");
-        }
-      }
-    }
-
-    // Setting flashMode to the one set in the params
-    flashMode = parameters.getFlashMode();
 
     camera.setParameters(parameters);
 
@@ -342,6 +249,7 @@ public class CameraSource {
     camera.addCallbackBuffer(createPreviewBuffer(previewSize));
     camera.addCallbackBuffer(createPreviewBuffer(previewSize));
 
+    Log.i(TAG, "Successfull camera creation.");
     return camera;
   }
 
@@ -547,10 +455,6 @@ public class CameraSource {
     // should guarantee that there will be an array to work with.
     byte[] byteArray = new byte[bufferSize];
     ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-    if (!buffer.hasArray() || (buffer.array() != byteArray)) {
-      throw new IllegalStateException("Failed to create valid buffer for camera source.");
-    }
-
     bytesToByteBuffer.put(byteArray, buffer);
     return byteArray;
   }

@@ -20,6 +20,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 # Standard Android dependencies
 find_library(android-lib android)
 find_library(GLESv2-lib GLESv2)
+find_library(GLESv3-lib GLESv3)
 find_library(log-lib log)
 
 set(libs_dir ${CMAKE_CURRENT_SOURCE_DIR}/libraries)
@@ -35,5 +36,6 @@ target_include_directories(cardboard_jni PRIVATE ${libs_dir})
 target_link_libraries(cardboard_jni
     ${android-lib}
     ${GLESv2-lib}
+    ${GLESv3-lib}
     ${log-lib}
     ${libs_dir}/jni/${ANDROID_ABI}/libcardboard_api.so)

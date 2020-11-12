@@ -97,9 +97,10 @@ extern "C" {
 /// @{
 
 #ifdef __ANDROID__
-/// Initializes JavaVM and Android context.
+/// Initializes the JavaVM and Android context.
 ///
-/// @details The following methods are required to work for @p context:
+/// @details The following methods are required to work for the parameter
+///   @p context:
 ///
 /// -
 /// [Context.getFilesDir()](https://developer.android.com/reference/android/content/Context#getFilesDir())
@@ -229,7 +230,7 @@ void CardboardLensDistortion_getDistortionMesh(
 /// @pre @p lens_distortion Must not be null.
 /// @pre @p distorted_uv Must not be null.
 /// When it is unmet, a call to this function results in a no-op and returns an
-/// invalid struct (both UV coordinates equal to -1).
+/// invalid struct (in other words, both UV coordinates are equal to -1).
 ///
 /// @param[in]      lens_distortion         Lens distortion object pointer.
 /// @param[in]      distorted_uv            Distorted UV point.
@@ -245,7 +246,7 @@ CardboardUv CardboardLensDistortion_undistortedUvForDistortedUv(
 /// @pre @p lens_distortion Must not be null.
 /// @pre @p undistorted_uv Must not be null.
 /// When it is unmet, a call to this function results in a no-op and returns an
-/// invalid struct (both UV coordinates equal to -1).
+/// invalid struct (in other words, both UV coordinates are equal to -1).
 ///
 /// @param[in]      lens_distortion         Lens distortion object pointer.
 /// @param[in]      undistorted_uv          Undistorted UV point.
@@ -266,26 +267,26 @@ CardboardUv CardboardLensDistortion_distortedUvForUndistortedUv(
 /// Important: This module functions must be called from the render thread.
 /// @{
 
-/// Creates a new distortion renderer object. It uses OpenGL ES 2.0 as rendering
-/// API. Must be called from render thread.
+/// Creates a new distortion renderer object. It uses OpenGL ES 2.0 as the
+/// rendering API. Must be called from the render thread.
 ///
 /// @return         Distortion renderer object pointer
 CardboardDistortionRenderer* CardboardOpenGlEs2DistortionRenderer_create();
 
-/// Creates a new distortion renderer object. It uses OpenGL ES 3.0 as rendering
-/// API. Must be called from render thread.
+/// Creates a new distortion renderer object. It uses OpenGL ES 3.0 as the
+/// rendering API. Must be called from the render thread.
 ///
 /// @return         Distortion renderer object pointer
 CardboardDistortionRenderer* CardboardOpenGlEs3DistortionRenderer_create();
 
-/// Creates a new distortion renderer object. It uses Metal as rendering
-/// API. Must be called from render thread.
+/// Creates a new distortion renderer object. It uses Metal as the rendering
+/// API. Must be called from the render thread.
 ///
 /// @return         Distortion renderer object pointer
 CardboardDistortionRenderer* CardboardMetalDistortionRenderer_create();
 
-/// Creates a new distortion renderer object. It uses Vulkan as rendering
-/// API. Must be called from render thread.
+/// Creates a new distortion renderer object. It uses Vulkan as the rendering
+/// API. Must be called from the render thread.
 ///
 /// @return         Distortion renderer object pointer
 CardboardDistortionRenderer* CardboardVulkanDistortionRenderer_create();
@@ -299,7 +300,7 @@ CardboardDistortionRenderer* CardboardVulkanDistortionRenderer_create();
 /// @param[in]      renderer                Distortion renderer object pointer.
 void CardboardDistortionRenderer_destroy(CardboardDistortionRenderer* renderer);
 
-/// Sets Distortion Mesh for a particular eye. Must be called from render
+/// Sets the distortion Mesh for a particular eye. Must be called from render
 /// thread.
 ///
 /// @pre @p renderer Must not be null.

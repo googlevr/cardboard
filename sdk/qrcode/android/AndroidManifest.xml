@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.google.cardboard.sdk">
 
-    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+    <!-- #gles3 - glEsVersion is 0x00030000 for OpenGL ES 3.0 support. Change it to 0x00020000 if
+      only OpenGL ES 2.0 support is needed. -->
+    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />

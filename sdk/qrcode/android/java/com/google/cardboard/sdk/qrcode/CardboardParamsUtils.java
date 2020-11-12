@@ -72,6 +72,7 @@ public abstract class CardboardParamsUtils {
   };
 
   /** URI of original cardboard QR code. */
+  // TODO(b/170471141): Wifi connection shouldn't be required for Cardboard Viewer v1.0.
   private static final Uri URI_ORIGINAL_CARDBOARD_QR_CODE =
       new Uri.Builder()
           .scheme(HTTPS_SCHEME)
@@ -378,7 +379,7 @@ public abstract class CardboardParamsUtils {
         VERSION.SDK_INT < VERSION_CODES.Q
             ? StorageSource.EXTERNAL_STORAGE
             : StorageSource.SCOPED_STORAGE;
-    if (storageSource == StorageSource.EXTERNAL_STORAGE) {
+    if (storageSource == StorageSource.SCOPED_STORAGE) {
       Log.d(TAG, "Writing device parameters to scoped storage.");
     } else {
       Log.d(TAG, "Writing device parameters to external storage.");

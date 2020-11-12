@@ -31,6 +31,12 @@ The SDK release notes are available on the
 [releases](//github.com/googlevr/cardboard/releases) page.
 
 
+## Roadmap
+
+The project roadmap is available on the
+[Projects](https://github.com/googlevr/cardboard/projects/1) page.
+
+
 ## How to make contributions
 
 Please read and follow the steps in [CONTRIBUTING.md](/CONTRIBUTING.md) file.
@@ -40,6 +46,26 @@ Please read and follow the steps in [CONTRIBUTING.md](/CONTRIBUTING.md) file.
 
 Please see the [LICENSE](/LICENSE) file.
 
+## Data Collection
+
+The libraries `cardboard` and `cardboard-xr-plugin` do not collect any data.
+However, when a QR code is recognized during scanning as requested by the
+developer, these libraries may make multiple web requests to retrieve the
+Cardboard viewer device parameters.
+
+Specifically:
+
+*   If the decoded URL matches "https://google.com/cardboard" or
+    "https://google.com/cardboard/cfg?p=...", it is parsed to retrieve the
+    Cardboard viewer device parameters.
+*   Otherwise, the decoded URL is requested via a normal web request. Any HTTP
+    redirects are followed until a matching URL is found.
+
+See
+[QrCodeContentProcessor.java](sdk/qrcode/android/java/com/google/cardboard/sdk/qrcode/QrCodeContentProcessor.java)
+(Android) and
+[device_params_helper.mm](sdk/qrcode/ios/device_params_helper.mm) (iOS) for the
+code that does the above.
 
 ## Brand guidelines
 

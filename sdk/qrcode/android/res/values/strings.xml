@@ -2,8 +2,12 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="no_permissions"
             description="Text shown on Android Toast when permissions are not granted.
-                         [CHAR_LIMIT=30]">
-            Permissions not granted</string>
+                         [CHAR_LIMIT=140]">
+            Cardboard SDK requires camera and write to external storage permission to read the QR code and save the encoded device parameters.</string>
+    <string name="no_camera_permission"
+            description="Text shown on Android Toast when camera permission is not granted.
+                         [CHAR_LIMIT=70]">
+            Camera permission is not granted and is needed to read QR codes</string>
     <string name="low_storage_error"
             description="Text shown on Android Toast when detector dependencies can not be
                          downloaded due to low storage. [CHAR_LIMIT=70]">
@@ -38,6 +42,6 @@
             Connection error</string>
     <string name="missing_dependencies"
             description="Text shown when dependencies are not available to read QR Codes.
-                         [CHAR_LIMIT=70]">
-            QR Code detection dependency is missing. Try connecting to WiFi.</string>
+                         [CHAR_LIMIT=100]">
+            QR Code detection dependency is missing. Try connecting to WiFi and update Google Play Services.</string>
 </resources>

@@ -15,13 +15,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.3</string>
+	<string>1.4</string>
 	<key>CFBundleVersion</key>
-	<string>1.3</string>
+	<string>1.4</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Used to scan QR codes</string>
+	<string>Cardboard SDK requires camera permission to read the QR code (required to get the encoded device parameters).</string>
 	<key>UILaunchStoryboardName</key>
 	<string>launch</string>
 	<key>UIRequiredDeviceCapabilities</key>

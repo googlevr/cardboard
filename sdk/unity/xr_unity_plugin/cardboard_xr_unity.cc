@@ -32,6 +32,12 @@
 #ifdef __APPLE__
 #include <OpenGLES/ES2/gl.h>
 #endif
+#ifdef __ANDROID__
+#include <GLES3/gl3.h>
+#endif
+#ifdef __APPLE__
+#include <OpenGLES/ES3/gl.h>
+#endif
 #include "include/cardboard.h"
 
 // The following block makes log macros available for Android and iOS.
@@ -111,7 +117,7 @@ GLuint LoadShader(GLenum shader_type, const char* source) {
     std::vector<char> log_string(log_length);
     glGetShaderInfoLog(shader, log_length, nullptr, log_string.data());
     LOGE("Could not compile shader of type %d: %s", shader_type,
-                   log_string.data());
+         log_string.data());
 
     shader = 0;
   }
@@ -164,26 +170,52 @@ GLuint CreateProgram(const char* vertex, const char* fragment) {
   return program;
 }
 
-/// @brief Vertex shader for RenderWidget.
-const char kWidgetVertexShader[] =
-  R"glsl(
-  attribute vec2 aPosition;
-  attribute vec2 aTexCoords;
-  varying vec2 vTexCoords;
+/// @brief Vertex shader for RenderWidget when using OpenGL ES2.0.
+const char kWidgetVertexShaderOpenGlEs2[] =
+    R"glsl(
+  attribute vec2 a_Position;
+  attribute vec2 a_TexCoords;
+  varying vec2 v_TexCoords;
   void main() {
-    gl_Position = vec4(aPosition, 0, 1);
-    vTexCoords = aTexCoords;
+    gl_Position = vec4(a_Position, 0, 1);
+    v_TexCoords = a_TexCoords;
   }
   )glsl";
 
-/// @brief Fragment shader for RenderWidget.
-const char kWidgetFragmentShader[] =
-  R"glsl(
+/// @brief Fragment shader for RenderWidget when using OpenGL ES2.0.
+const char kWidgetFragmentShaderOpenGlEs2[] =
+    R"glsl(
   precision mediump float;
-  varying vec2 vTexCoords;
-  uniform sampler2D uTexture;
+  uniform sampler2D u_Texture;
+  varying vec2 v_TexCoords;
   void main() {
-    gl_FragColor = texture2D(uTexture, vTexCoords);
+    gl_FragColor = texture2D(u_Texture, v_TexCoords);
+  }
+  )glsl";
+
+/// @brief Vertex shader for RenderWidget when using OpenGL ES3.0.
+const char kWidgetVertexShaderOpenGlEs3[] =
+    R"glsl(
+  #version 300 es
+  layout (location = 0) in vec2 a_Position;
+  layout (location = 1) in vec2 a_TexCoords;
+  out vec2 v_TexCoords;
+  void main() {
+    gl_Position = vec4(a_Position, 0, 1);
+    v_TexCoords = a_TexCoords;
+  }
+  )glsl";
+
+/// @brief Fragment shader for RenderWidget when using OpenGL ES3.0.
+const char kWidgetFragmentShaderOpenGlEs3[] =
+    R"glsl(
+  #version 300 es
+  precision mediump float;
+  uniform sampler2D u_Texture;
+  in vec2 v_TexCoords;
+  out vec4 o_FragColor;
+  void main() {
+    o_FragColor = texture(u_Texture, v_TexCoords);
   }
   )glsl";
 
@@ -251,6 +283,13 @@ class CardboardApi::CardboardApiImpl {
   }
 
   void UpdateDeviceParams() {
+    if (selected_graphics_api_ == kNone) {
+      LOGE(
+          "Misconfigured Graphics API. Neither OpenGl ES2.0 nor OpenGl ES3.0 "
+          "was selected.");
+      return;
+    }
+
     // Updates the screen size.
     screen_params_ = unity_screen_params_;
 
@@ -274,8 +313,13 @@ class CardboardApi::CardboardApiImpl {
 
     GlSetup();
 
-    // TODO(b/165286488): Check whether the rendering API is available.
-    distortion_renderer_.reset(CardboardOpenGlEs2DistortionRenderer_create());
+    if (selected_graphics_api_ == kOpenGlEs2) {
+      distortion_renderer_.reset(CardboardOpenGlEs2DistortionRenderer_create());
+    } else {
+      // #gles3 - This call is only needed if OpenGL ES 3.0 support is desired.
+      // Remove the following line if OpenGL ES 3.0 is not needed.
+      distortion_renderer_.reset(CardboardOpenGlEs3DistortionRenderer_create());
+    }
 
     CardboardLensDistortion_getDistortionMesh(
         lens_distortion, CardboardEye::kLeft,
@@ -364,8 +408,8 @@ class CardboardApi::CardboardApiImpl {
   static void SetWidgetParams(int i, const WidgetParams& params) {
     std::lock_guard<std::mutex> l(widget_mutex_);
     if (i < 0 || i >= widget_params_.size()) {
-      LOGE("SetWidgetParams parameter i=%d, out of bounds (size=%d)",
-           i, static_cast<int>(widget_params_.size()));
+      LOGE("SetWidgetParams parameter i=%d, out of bounds (size=%d)", i,
+           static_cast<int>(widget_params_.size()));
       return;
     }
 
@@ -375,6 +419,10 @@ class CardboardApi::CardboardApiImpl {
   static void SetDeviceParametersChanged() { device_params_changed_ = true; }
 
   static bool GetDeviceParametersChanged() { return device_params_changed_; }
+
+  static void SetGraphicsApi(CardboardGraphicsApi graphics_api) {
+    selected_graphics_api_ = graphics_api;
+  }
 
  private:
   // @brief Holds the rectangle information to draw into the screen.
@@ -465,6 +513,13 @@ class CardboardApi::CardboardApiImpl {
 
   // @brief Configures GL resources.
   void GlSetup() {
+    if (selected_graphics_api_ == kNone) {
+      LOGE(
+          "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
+          "was selected.");
+      return;
+    }
+
     if (gl_render_textures_[0].color_texture != 0) {
       GlTeardown();
     }
@@ -488,11 +543,21 @@ class CardboardApi::CardboardApiImpl {
     eye_data_[CardboardEye::kRight].texture.bottom_v = 0;
 
     // Load widget state
-    widget_program_ = CreateProgram(kWidgetVertexShader, kWidgetFragmentShader);
-    widget_attrib_position_ = glGetAttribLocation(widget_program_, "aPosition");
-    widget_attrib_tex_coords_ = glGetAttribLocation(widget_program_,
-                                                    "aTexCoords");
-    widget_uniform_texture_ = glGetUniformLocation(widget_program_, "uTexture");
+    if (selected_graphics_api_ == kOpenGlEs2) {
+      widget_program_ = CreateProgram(kWidgetVertexShaderOpenGlEs2,
+                                      kWidgetFragmentShaderOpenGlEs2);
+    } else {
+      // #gles3 - This call is only needed if OpenGL ES 3.0 support is desired.
+      // Remove the following line if OpenGL ES 3.0 is not needed.
+      widget_program_ = CreateProgram(kWidgetVertexShaderOpenGlEs3,
+                                      kWidgetFragmentShaderOpenGlEs3);
+    }
+    widget_attrib_position_ =
+        glGetAttribLocation(widget_program_, "a_Position");
+    widget_attrib_tex_coords_ =
+        glGetAttribLocation(widget_program_, "a_TexCoords");
+    widget_uniform_texture_ =
+        glGetUniformLocation(widget_program_, "u_Texture");
   }
 
   // @brief Releases Gl resources in a GlRenderTexture.
@@ -529,18 +594,22 @@ class CardboardApi::CardboardApiImpl {
 
     // Convert coordinates to normalized space (-1,-1 - +1,+1)
     float x = Lerp(-1, +1, static_cast<float>(params.x) / screen_params_.width);
-    float y = Lerp(-1, +1, static_cast<float>(params.y) / screen_params_.height);
+    float y =
+        Lerp(-1, +1, static_cast<float>(params.y) / screen_params_.height);
     float width = params.width * 2.0f / screen_params_.width;
     float height = params.height * 2.0f / screen_params_.height;
+    const float position[] = {x, y,          x + width, y,
+                              x, y + height, x + width, y + height};
 
-    const float position[] =
-      { x, y, x + width, y, x, y + height, x + width, y + height };
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glEnableVertexAttribArray(widget_attrib_position_);
     glVertexAttribPointer(
         widget_attrib_position_, /*size=*/2, /*type=*/GL_FLOAT,
         /*normalized=*/GL_FALSE, /*stride=*/0, /*pointer=*/position);
+    CHECKGLERROR("RenderWidget-7");
 
-    const float uv[] = { 0, 0, 1, 0, 0, 1, 1, 1 };
+    const float uv[] = {0, 0, 1, 0, 0, 1, 1, 1};
     glEnableVertexAttribArray(widget_attrib_tex_coords_);
     glVertexAttribPointer(
         widget_attrib_tex_coords_, /*size=*/2, /*type=*/GL_FLOAT,
@@ -601,17 +670,20 @@ class CardboardApi::CardboardApiImpl {
   // @brief RenderWidget GL program.
   GLuint widget_program_;
 
-  // @brief RenderWidget "aPosition" attrib location.
+  // @brief RenderWidget "a_Position" attrib location.
   GLint widget_attrib_position_;
 
-  // @brief RenderWidget "aTexCoords" attrib location.
+  // @brief RenderWidget "a_TexCoords" attrib location.
   GLint widget_attrib_tex_coords_;
 
-  // @brief RenderWidget "uTexture" uniform location.
+  // @brief RenderWidget "u_Texture" uniform location.
   GLint widget_uniform_texture_;
 
   // @brief Track changes to device parameters.
   static std::atomic<bool> device_params_changed_;
+
+  // @brief Holds the selected graphics API.
+  static std::atomic<CardboardGraphicsApi> selected_graphics_api_;
 };
 
 std::atomic<CardboardApi::CardboardApiImpl::ScreenParams>
@@ -623,6 +695,9 @@ std::vector<CardboardApi::WidgetParams>
 std::mutex CardboardApi::CardboardApiImpl::widget_mutex_;
 
 std::atomic<bool> CardboardApi::CardboardApiImpl::device_params_changed_(true);
+
+std::atomic<CardboardGraphicsApi>
+    CardboardApi::CardboardApiImpl::selected_graphics_api_(kNone);
 
 CardboardApi::CardboardApi() { p_impl_.reset(new CardboardApiImpl()); }
 
@@ -650,9 +725,7 @@ void CardboardApi::RenderEyesToDisplay(int gl_framebuffer_id) {
   p_impl_->RenderEyesToDisplay(gl_framebuffer_id);
 }
 
-void CardboardApi::RenderWidgets() {
-  p_impl_->RenderWidgets();
-}
+void CardboardApi::RenderWidgets() { p_impl_->RenderWidgets(); }
 
 int CardboardApi::GetLeftTextureId() { return p_impl_->GetLeftTextureId(); }
 
@@ -696,6 +769,10 @@ void CardboardApi::SetWidgetParams(int i, const WidgetParams& params) {
   CardboardApi::CardboardApiImpl::SetWidgetParams(i, params);
 }
 
+void CardboardApi::SetGraphicsApi(CardboardGraphicsApi graphics_api) {
+  CardboardApi::CardboardApiImpl::SetGraphicsApi(graphics_api);
+}
+
 }  // namespace unity
 }  // namespace cardboard
 
@@ -725,6 +802,23 @@ void CardboardUnity_setWidgetParams(int i, void* texture, int x, int y,
   params.width = width;
   params.height = height;
   cardboard::unity::CardboardApi::SetWidgetParams(i, params);
+}
+
+void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api) {
+  switch (graphics_api) {
+    case CardboardGraphicsApi::kOpenGlEs2:
+      LOGD("Configured OpenGL ES2.0 as Graphics API.");
+      cardboard::unity::CardboardApi::SetGraphicsApi(graphics_api);
+      break;
+    case CardboardGraphicsApi::kOpenGlEs3:
+      LOGD("Configured OpenGL ES3.0 as Graphics API.");
+      cardboard::unity::CardboardApi::SetGraphicsApi(graphics_api);
+      break;
+    default:
+      LOGE(
+          "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
+          "was selected.");
+  }
 }
 
 #ifdef __cplusplus

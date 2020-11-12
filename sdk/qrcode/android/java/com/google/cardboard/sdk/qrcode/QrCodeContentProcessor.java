@@ -111,8 +111,7 @@ public class QrCodeContentProcessor {
     @Nullable
     protected QrCodeToParamsStatus doInBackground(Barcode... qrCode) {
       UrlFactory urlFactory = new UrlFactory();
-      final QrCodeToParamsStatus status = getParamsFromQrCode(qrCode[0], urlFactory);
-      return status;
+      return getParamsFromQrCode(qrCode[0], urlFactory);
     }
 
     @Override
@@ -120,14 +119,14 @@ public class QrCodeContentProcessor {
       super.onPostExecute(result);
       boolean status = false;
       if (result.statusCode == QrCodeToParamsStatus.STATUS_UNEXPECTED_FORMAT) {
+        Log.d(TAG, String.valueOf(R.string.invalid_qr_code));
         Toast.makeText(context, R.string.invalid_qr_code, Toast.LENGTH_LONG).show();
       } else if (result.statusCode == QrCodeToParamsStatus.STATUS_CONNECTION_ERROR) {
+        Log.d(TAG, String.valueOf(R.string.connection_error));
         Toast.makeText(context, R.string.connection_error, Toast.LENGTH_LONG).show();
       } else if (result.params != null) {
         status = CardboardParamsUtils.writeDeviceParams(result.params, context);
-        if (!status) {
-          Log.e(TAG, "Could not write Cardboard parameters to storage.");
-        }
+        Log.d(TAG, "Could " + (!status ? "not " : "") + "write Cardboard parameters to storage.");
       }
 
       listener.onQrCodeSaved(status);
@@ -149,11 +148,13 @@ public class QrCodeContentProcessor {
    */
   private static QrCodeToParamsStatus getParamsFromQrCode(Barcode barcode, UrlFactory urlFactory) {
     if (barcode.valueFormat != Barcode.TEXT && barcode.valueFormat != Barcode.URL) {
+      Log.e(TAG, "Invalid QR code format: " + barcode.valueFormat);
       return QrCodeToParamsStatus.error(QrCodeToParamsStatus.STATUS_UNEXPECTED_FORMAT);
     }
 
     Uri uri = Uri.parse(barcode.rawValue);
     if (uri == null) {
+      Log.e(TAG, "Error when parsing scanned URI: " + barcode.rawValue);
       return QrCodeToParamsStatus.error(QrCodeToParamsStatus.STATUS_UNEXPECTED_FORMAT);
     }
 
@@ -164,6 +165,7 @@ public class QrCodeContentProcessor {
 
     // Follow redirects to support URL shortening.
     try {
+      Log.d(TAG, "Following redirects for original URI: " + uri);
       uri = followCardboardParamRedirect(uri, MAX_REDIRECTS, urlFactory);
     } catch (IOException e) {
       Log.w(TAG, "Error while following URL redirect " + e);
@@ -171,11 +173,13 @@ public class QrCodeContentProcessor {
     }
 
     if (uri == null) {
+      Log.e(TAG, "Error when following URI redirects");
       return QrCodeToParamsStatus.error(QrCodeToParamsStatus.STATUS_UNEXPECTED_FORMAT);
     }
 
     byte[] params = CardboardParamsUtils.createFromUri(uri);
     if (params == null) {
+      Log.e(TAG, "Error when parsing device parameters from URI query string: " + uri);
       return QrCodeToParamsStatus.error(QrCodeToParamsStatus.STATUS_UNEXPECTED_FORMAT);
     }
     return QrCodeToParamsStatus.success(params);
@@ -199,6 +203,7 @@ public class QrCodeContentProcessor {
     int numRedirects = 0;
     while (uri != null && !CardboardParamsUtils.isCardboardUri(uri)) {
       if (numRedirects >= maxRedirects) {
+        Log.d(TAG, "Exceeding the number of maximum redirects: " + maxRedirects);
         return null;
       }
       uri = resolveHttpsRedirect(uri, urlFactory);
@@ -238,19 +243,24 @@ public class QrCodeContentProcessor {
     try {
       connection.connect();
       int responseCode = connection.getResponseCode();
+      Log.i(TAG, "Response code: " + responseCode);
       if (responseCode != HttpURLConnection.HTTP_MOVED_PERM
           && responseCode != HttpURLConnection.HTTP_MOVED_TEMP) {
         return null;
       }
       String location = connection.getHeaderField("Location");
       if (location == null) {
+        Log.d(TAG, "Returning null because of null location.");
         return null;
       }
+      Log.i(TAG, "Location: " + location);
+
       Uri redirectUri = Uri.parse(location.replaceFirst(HTTP_SCHEME_PREFIX, HTTPS_SCHEME_PREFIX));
       if (redirectUri == null || redirectUri.compareTo(uri) == 0) {
+        Log.d(TAG, "Returning null because of wrong redirect URI.");
         return null;
       }
-      Log.d(TAG, "Param URI redirect to " + redirectUri);
+      Log.i(TAG, "Param URI redirect to " + redirectUri);
       uri = redirectUri;
     } finally {
       connection.disconnect();
