@@ -195,8 +195,7 @@ const char kWidgetFragmentShaderOpenGlEs2[] =
 
 /// @brief Vertex shader for RenderWidget when using OpenGL ES3.0.
 const char kWidgetVertexShaderOpenGlEs3[] =
-    R"glsl(
-  #version 300 es
+    R"glsl(#version 300 es
   layout (location = 0) in vec2 a_Position;
   layout (location = 1) in vec2 a_TexCoords;
   out vec2 v_TexCoords;
@@ -208,8 +207,7 @@ const char kWidgetVertexShaderOpenGlEs3[] =
 
 /// @brief Fragment shader for RenderWidget when using OpenGL ES3.0.
 const char kWidgetFragmentShaderOpenGlEs3[] =
-    R"glsl(
-  #version 300 es
+    R"glsl(#version 300 es
   precision mediump float;
   uniform sampler2D u_Texture;
   in vec2 v_TexCoords;

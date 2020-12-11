@@ -34,9 +34,7 @@
 namespace {
 
 constexpr const char* kDistortionVertexShader =
-    R"glsl(
-    #version 300 es
-
+    R"glsl(#version 300 es
     layout (location = 0) in vec2 a_Position;
     layout (location = 1) in vec2 a_TexCoords;
     out vec2 v_TexCoords;
@@ -47,9 +45,7 @@ constexpr const char* kDistortionVertexShader =
     })glsl";
 
 constexpr const char* kDistortionFragmentShader =
-    R"glsl(
-    #version 300 es
-
+    R"glsl(#version 300 es
     precision mediump float;
 
     uniform sampler2D u_Texture;
