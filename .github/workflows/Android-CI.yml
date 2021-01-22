@@ -31,5 +31,5 @@ jobs:
         uses: actions/upload-artifact@v2.0.1
         if: ${{ always() }}
         with:
-          name: MLKit-Lint-report
+          name: Cardboard-Lint-report
           path: hellocardboard-android/build/reports/lint-results.html
