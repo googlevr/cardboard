@@ -430,7 +430,7 @@ static constexpr uint64_t kNanosInSeconds = 1000000000;
 
 long GetMonotonicTimeNano() {
   struct timespec res;
-  clock_gettime(CLOCK_MONOTONIC, &res);
+  clock_gettime(CLOCK_BOOTTIME, &res);
   return (res.tv_sec * kNanosInSeconds) + res.tv_nsec;
 }
 
