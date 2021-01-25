@@ -480,7 +480,12 @@ class CardboardApi::CardboardApiImpl {
   // @return The monotonic time count in nano seconds.
   static int64_t GetMonotonicTimeNano() {
     struct timespec res;
-    clock_gettime(CLOCK_MONOTONIC, &res);
+  // Sensor timestamps are recorded as the time since boot
+#ifdef __APPLE__
+      clock_gettime(CLOCK_UPTIME_RAW, &res);
+#else
+      clock_gettime(CLOCK_BOOTTIME, &res);
+#endif
     return (res.tv_sec * CardboardApi::CardboardApiImpl::kNanosInSeconds) +
            res.tv_nsec;
   }
