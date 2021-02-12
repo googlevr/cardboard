@@ -18,6 +18,74 @@
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>
 
+// Aryzon multiple orientations
+@interface OrientationHelper : NSObject {
+    
+}
+@property cardboard::screen_params::ScreenOrientation orientation;
+-(void) orientationChanged:(NSNotification *)note;
+@end
+
+@implementation OrientationHelper {
+    
+}
+@synthesize orientation;
+
+-(id)init
+{
+    self = [super init];
+    if (self) {
+        UIDevice *device = [UIDevice currentDevice];
+        [self setOrientationValue:device];
+        [device beginGeneratingDeviceOrientationNotifications];
+        
+        [[NSNotificationCenter defaultCenter]
+           addObserver:self selector:@selector(orientationChanged:)
+           name:UIDeviceOrientationDidChangeNotification
+           object:device];
+    }
+    return self;
+}
+
+-(void) orientationChanged:(NSNotification *)note {
+    [self setOrientationValue:note.object];
+}
+
+-(void)setOrientationValue:(UIDevice *)device {
+    UIDeviceOrientation orientation = [device orientation];
+    
+    if (!UIDeviceOrientationIsValidInterfaceOrientation(orientation)) {
+        return;
+    }
+    UIInterfaceOrientationMask supportedInterfaces = -1;
+    for (UIWindow *window in [[UIApplication sharedApplication] windows]) {
+        if (!window.hidden && window.subviews.count > 0) {
+            for (int i=0;i<window.subviews.count;i++) {
+                UIView *view = window.subviews[window.subviews.count - 1 - i];
+                if (!view.isHidden && window.rootViewController) {
+                    if (window.rootViewController.shouldAutorotate) {
+                        supportedInterfaces = window.rootViewController.supportedInterfaceOrientations;
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    
+    if (orientation == UIDeviceOrientationPortrait && (supportedInterfaces & UIInterfaceOrientationMaskPortrait) != 0) {
+        NSLog(@"Setting portrait");
+        self.orientation = cardboard::screen_params::Portrait;
+    } else if (orientation == UIDeviceOrientationLandscapeLeft && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeRight) != 0) {
+        NSLog(@"Setting landscapeleft");
+        self.orientation = cardboard::screen_params::LandscapeLeft;
+    } else if (orientation == UIDeviceOrientationLandscapeRight && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeLeft) != 0) {
+        NSLog(@"Setting landscaperight");
+        self.orientation = cardboard::screen_params::LandscapeRight;
+    }
+}
+@end
+
 namespace cardboard {
 namespace screen_params {
 
@@ -63,6 +131,12 @@ static CGFloat const kIPhoneXrDpi = 324.0f;
 static CGFloat const kIPhoneXsMaxDpi = 456.0f;
 static CGFloat const kIPhone12MiniDpi = 476.0f;
 static CGFloat const kIPhone12Dpi = 460.0f;
+
+static OrientationHelper *helper = [[OrientationHelper alloc] init];
+
+ScreenOrientation getScreenOrientation() {
+    return [helper orientation];
+}
 
 CGFloat getDpi() {
   // Gets model name.

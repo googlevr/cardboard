@@ -28,7 +28,8 @@ HeadTracker::HeadTracker()
       sensor_fusion_(new SensorFusionEkf()),
       latest_gyroscope_data_({0, 0, Vector3::Zero()}),
       accel_sensor_(new SensorEventProducer<AccelerometerData>()),
-      gyro_sensor_(new SensorEventProducer<GyroscopeData>()) {
+      gyro_sensor_(new SensorEventProducer<GyroscopeData>(),
+      start_orientation_(screen_params::getScreenOrientation()) { // Aryzon multiple orientations
   sensor_fusion_->SetBiasEstimationEnabled(/*kGyroBiasEstimationEnabled*/ true);
   on_accel_callback_ = [&](const AccelerometerData& event) {
     OnAccelerometerData(event);
@@ -36,6 +37,16 @@ HeadTracker::HeadTracker()
   on_gyro_callback_ = [&](const GyroscopeData& event) {
     OnGyroscopeData(event);
   };
+          
+  // Aryzon multiple orientations
+  if (start_orientation_ == screen_params::LandscapeLeft) {
+      ekf_to_head_tracker = Rotation::FromYawPitchRoll(-M_PI / 2.0, 0, -M_PI / 2.0);
+  } else if (start_orientation_ == screen_params::LandscapeRight) {
+      ekf_to_head_tracker = Rotation::FromYawPitchRoll(M_PI / 2.0, 0, M_PI / 2.0);
+  } else {
+      // Portrait
+      ekf_to_head_tracker = Rotation::FromYawPitchRoll(M_PI / 2.0, M_PI / 2.0, M_PI / 2.0);
+  }
 }
 
 HeadTracker::~HeadTracker() { UnregisterCallbacks(); }
@@ -67,29 +78,27 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
                           std::array<float, 4>& out_orientation) const {
   Rotation predicted_rotation;
   const PoseState pose_state = sensor_fusion_->GetLatestPoseState();
-  if (!sensor_fusion_->IsFullyInitialized()) {
-    CARDBOARD_LOGI(
-        "Head Tracker not fully initialized yet. Using pose prediction only.");
-    predicted_rotation = pose_prediction::PredictPose(timestamp_ns, pose_state);
-  } else {
-    predicted_rotation = pose_state.sensor_from_start_rotation;
-  }
+  predicted_rotation = pose_prediction::PredictPose(timestamp_ns, pose_state);
 
   // In order to update our pose as the sensor changes, we begin with the
   // inverse default orientation (the orientation returned by a reset sensor),
   // apply the current sensor transformation, and then transform into display
   // space.
-  // TODO(b/135488467): Support different screen orientations.
-  const Rotation ekf_to_head_tracker =
-      Rotation::FromYawPitchRoll(-M_PI / 2.0, 0, -M_PI / 2.0);
-  const Rotation sensor_to_display =
-      Rotation::FromAxisAndAngle(Vector3(0, 0, 1), M_PI / 2.0);
+  Rotation sensor_to_display;
 
-  const Vector4 q =
-      (sensor_to_display * predicted_rotation * ekf_to_head_tracker)
-          .GetQuaternion();
-  Rotation rotation;
-  rotation.SetQuaternion(q);
+  // Aryzon multiple orientations
+  // Very fast implementation on iOS, pretty fast for Android
+  screen_params::ScreenOrientation orientation = screen_params::getScreenOrientation();
+
+  if (orientation == screen_params::LandscapeLeft) {
+      sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), M_PI / 2.0);
+  } else  if (orientation == screen_params::LandscapeRight) {
+      sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), -M_PI / 2.0);
+  } else { // Portrait
+      sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), 0.0);
+  }
+ 
+  Rotation rotation = sensor_to_display * predicted_rotation * ekf_to_head_tracker;
 
   out_orientation[0] = static_cast<float>(rotation.GetQuaternion()[0]);
   out_orientation[1] = static_cast<float>(rotation.GetQuaternion()[1]);

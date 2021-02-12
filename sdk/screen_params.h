@@ -28,6 +28,16 @@ void initializeAndroid(JavaVM* vm, jobject context);
 #endif
 void getScreenSizeInMeters(int width_pixels, int height_pixels,
                            float* out_width_meters, float* out_height_meters);
+
+// Aryzon multiple orientations
+enum ScreenOrientation {
+    LandscapeLeft,
+    Portrait,
+    LandscapeRight,
+    PortraitUpsideDown
+};
+ScreenOrientation getScreenOrientation();
+
 }  // namespace screen_params
 }  // namespace cardboard
 
