@@ -321,6 +321,18 @@ void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
   std::memcpy(orientation, &out_orientation[0], 4 * sizeof(float));
 }
 
+// Aryzon 6DoF
+void CardboardHeadTracker_addSixDoFData(CardboardHeadTracker* head_tracker,
+                                        int64_t timestamp_ns,
+                                        float* position,
+                                        float* orientation) {
+  if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(head_tracker)) {
+    return;
+  }
+    
+  static_cast<cardboard::HeadTracker*>(head_tracker)->AddSixDoFData(timestamp_ns, position, orientation);
+}
+
 void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
                                           int* size) {
   if (CARDBOARD_IS_NOT_INITIALIZED() ||

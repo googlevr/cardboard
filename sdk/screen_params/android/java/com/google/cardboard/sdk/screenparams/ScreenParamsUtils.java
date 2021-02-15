@@ -112,6 +112,7 @@ public abstract class ScreenParamsUtils {
     }
 
     private static ScreenOrientation screenOrientation;
+    private static Display defaultDisplay;
     
     public static int getScreenOrientation(Context context) {
       if (screenOrientation == null) {

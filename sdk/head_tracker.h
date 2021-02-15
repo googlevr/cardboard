@@ -88,6 +88,7 @@ class HeadTracker {
   std::function<void(GyroscopeData)> on_gyro_callback_;
     
   // Aryzon multiple orientations
+  Rotation ekf_to_head_tracker;
   const screen_params::ScreenOrientation start_orientation_;
 };
 

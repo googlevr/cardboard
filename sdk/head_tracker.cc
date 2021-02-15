@@ -28,7 +28,7 @@ HeadTracker::HeadTracker()
       sensor_fusion_(new SensorFusionEkf()),
       latest_gyroscope_data_({0, 0, Vector3::Zero()}),
       accel_sensor_(new SensorEventProducer<AccelerometerData>()),
-      gyro_sensor_(new SensorEventProducer<GyroscopeData>(),
+      gyro_sensor_(new SensorEventProducer<GyroscopeData>()),
       start_orientation_(screen_params::getScreenOrientation()) { // Aryzon multiple orientations
   sensor_fusion_->SetBiasEstimationEnabled(/*kGyroBiasEstimationEnabled*/ true);
   on_accel_callback_ = [&](const AccelerometerData& event) {
