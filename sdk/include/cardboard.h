@@ -398,6 +398,22 @@ void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
                                   int64_t timestamp_ns, float* position,
                                   float* orientation);
 
+/// Aryzon 6DoF
+/// Sends through the event with pose and timestamp data from 6DoF tracker
+///
+/// @pre @p head_tracker Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
+///
+/// @param[in]      head_tracker            Head tracker object pointer.
+/// @param[in]      timestamp_ns            The timestamp for the data in
+///     nanoseconds in system monotonic clock.
+/// @param[out]     position                3 floats for (x, y, z).
+/// @param[out]     orientation             4 floats for quaternion
+void CardboardHeadTracker_addSixDoFData(CardboardHeadTracker* head_tracker,
+                                        int64_t timestamp_ns,
+                                        float* position,
+                                        float* orientation);
+
 /// @}
 
 /////////////////////////////////////////////////////////////////////////////

@@ -23,12 +23,20 @@
 
 namespace cardboard {
 
+// Aryzon 6DoF
+const int rotation_samples = 10;
+const int position_samples = 3;
+const int64_t max6DoFTimeDifference = 200000000; // Maximum time difference between last pose state timestamp and last 6DoF timestamp, if it takes longer than this the last known location of sixdof will be used
+
 HeadTracker::HeadTracker()
     : is_tracking_(false),
       sensor_fusion_(new SensorFusionEkf()),
       latest_gyroscope_data_({0, 0, Vector3::Zero()}),
       accel_sensor_(new SensorEventProducer<AccelerometerData>()),
       gyro_sensor_(new SensorEventProducer<GyroscopeData>()),
+      // Aryzon 6DoF
+      rotation_data_(new RotationData(rotation_samples)),
+      position_data_(new PositionData(position_samples)),
       start_orientation_(screen_params::getScreenOrientation()) { // Aryzon multiple orientations
   sensor_fusion_->SetBiasEstimationEnabled(/*kGyroBiasEstimationEnabled*/ true);
   on_accel_callback_ = [&](const AccelerometerData& event) {
@@ -100,12 +108,43 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
  
   Rotation rotation = sensor_to_display * predicted_rotation * ekf_to_head_tracker;
 
-  out_orientation[0] = static_cast<float>(rotation.GetQuaternion()[0]);
-  out_orientation[1] = static_cast<float>(rotation.GetQuaternion()[1]);
-  out_orientation[2] = static_cast<float>(rotation.GetQuaternion()[2]);
-  out_orientation[3] = static_cast<float>(rotation.GetQuaternion()[3]);
+  // Aryzon 6DoF
+  // Save rotation sample with timestamp to be used in AddSixDoFData()
+  rotation_data_->AddSample(rotation.GetQuaternion(), timestamp_ns);
 
-  out_position = ApplyNeckModel(out_orientation, 1.0);
+  if (position_data_->IsValid() && pose_state.timestamp - position_data_->GetLatestTimestamp() < max6DoFTimeDifference) {
+      // 6DoF is recently updated
+      
+      rotation = rotation * -difference_to_6DoF_;
+
+      Vector3 p = position_data_->GetExtrapolatedForTimeStamp(timestamp_ns);
+      std::array<float, 3> predicted_position_ = {(float)p[0], (float)p[1], (float)p[2]};
+        
+      out_orientation[0] = static_cast<float>(rotation.GetQuaternion()[0]);
+      out_orientation[1] = static_cast<float>(rotation.GetQuaternion()[1]);
+      out_orientation[2] = static_cast<float>(rotation.GetQuaternion()[2]);
+      out_orientation[3] = static_cast<float>(rotation.GetQuaternion()[3]);
+        
+      out_position = predicted_position_;
+  } else {
+      // 6DoF is not recently updated
+
+      out_orientation[0] = static_cast<float>(rotation.GetQuaternion()[0]);
+      out_orientation[1] = static_cast<float>(rotation.GetQuaternion()[1]);
+      out_orientation[2] = static_cast<float>(rotation.GetQuaternion()[2]);
+      out_orientation[3] = static_cast<float>(rotation.GetQuaternion()[3]);
+        
+      out_position = ApplyNeckModel(out_orientation, 1.0);
+        
+      if (position_data_->IsValid()) {
+          // Apply last known 6DoF position if 6DoF was data previously added, while still applying neckmodel.
+          
+          Vector3 last_known_position_ = position_data_->GetLatestData();
+          out_position[0] += (float)last_known_position_[0];
+          out_position[1] += (float)last_known_position_[1];
+          out_position[2] += (float)last_known_position_[2];
+      }
+  }
 }
 
 Rotation HeadTracker::GetDefaultOrientation() const {
@@ -136,6 +175,30 @@ void HeadTracker::OnGyroscopeData(const GyroscopeData& event) {
   }
   latest_gyroscope_data_ = event;
   sensor_fusion_->ProcessGyroscopeSample(event);
+}
+
+// Aryzon 6DoF
+void HeadTracker::AddSixDoFData(int64_t timestamp_ns, float* pos, float* orientation) {
+  if (!is_tracking_) {
+    return;
+  }
+    position_data_->AddSample(Vector3(pos[0], pos[1], pos[2]), timestamp_ns);
+    
+    if (position_data_->IsValid() && rotation_data_->IsValid()) {
+        // 6DoF timestamp needs to be before the latest rotation_data timestamp
+        Rotation gyroAtTimeOfSixDoF = Rotation::FromQuaternion(rotation_data_->GetInterpolatedForTimeStamp(timestamp_ns));
+        Rotation sixDoFRotation = Rotation::FromQuaternion(Vector4(0, orientation[1], 0, orientation[3]));
+
+        Rotation difference = gyroAtTimeOfSixDoF * -sixDoFRotation;
+        
+        // Only synchronize rotation around the y axis
+        Vector4 diffQ = difference.GetQuaternion();
+        diffQ[0] = 0;
+        diffQ[2] = 0;
+        
+        // Quaternion will be normalized in this call:
+        difference_to_6DoF_.SetQuaternion(diffQ);
+    }
 }
 
 }  // namespace cardboard

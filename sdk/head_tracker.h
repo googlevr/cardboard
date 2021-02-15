@@ -26,6 +26,10 @@
 #include "sensors/sensor_fusion_ekf.h"
 #include "util/rotation.h"
 
+// Aryzon 6DoF
+#include "sixdof/rotation_data.h"
+#include "sixdof/position_data.h"
+
 // Aryzon multiple orientations
 #include "screen_params.h"
 
@@ -49,6 +53,12 @@ class HeadTracker {
   // TODO(b/135488467): Support different display to sensor orientations.
   void GetPose(int64_t timestamp_ns, std::array<float, 3>& out_position,
                std::array<float, 4>& out_orientation) const;
+    
+  // Function to be called when receiving SixDoFData.
+  //
+  // Aryzon 6DoF
+  // @param event sensor event.
+  void AddSixDoFData(int64_t timestamp_ns, float* position, float* orientation);
 
  private:
   // Function called when receiving AccelerometerData.
@@ -86,6 +96,11 @@ class HeadTracker {
   // Callback functions registered to the input SingleTypeEventProducer.
   std::function<void(AccelerometerData)> on_accel_callback_;
   std::function<void(GyroscopeData)> on_gyro_callback_;
+    
+  // Aryzon 6DoF
+  RotationData *rotation_data_;
+  PositionData *position_data_;
+  Rotation difference_to_6DoF_;
     
   // Aryzon multiple orientations
   Rotation ekf_to_head_tracker;

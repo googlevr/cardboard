@@ -41,6 +41,8 @@
 		0FD2025F2357613600B3C342 /* cardboard_device.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2025E2357613600B3C342 /* cardboard_device.pb.cc */; };
 		0FD2027C235766E800B3C342 /* cardboard.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0FD2022B23575F3B00B3C342 /* cardboard.h */; };
 		0FF99B2724587233001FF78F /* cardboard_xr_unity.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */; };
+		65D9D58F25DA7DED00A3F5E2 /* rotation_data.cc in Sources */ = {isa = PBXBuildFile; fileRef = 65D9D58B25DA7DEC00A3F5E2 /* rotation_data.cc */; };
+		65D9D59025DA7DED00A3F5E2 /* position_data.cc in Sources */ = {isa = PBXBuildFile; fileRef = 65D9D58C25DA7DEC00A3F5E2 /* position_data.cc */; };
 		7B2ADACB24E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B2ADAC924E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc */; };
 		7B76813A24A3FA6B00E92050 /* input.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813424A3FA6B00E92050 /* input.cc */; };
 		7B76813B24A3FA6B00E92050 /* display.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813524A3FA6B00E92050 /* display.cc */; };
@@ -134,6 +136,10 @@
 		0FD202B92357C0F200B3C342 /* sdk.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = sdk.bundle; path = qrcode/ios/sdk.bundle; sourceTree = "<group>"; };
 		0FF99B2524587233001FF78F /* cardboard_xr_unity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard_xr_unity.h; sourceTree = "<group>"; };
 		0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cardboard_xr_unity.cc; sourceTree = "<group>"; };
+		65D9D58B25DA7DEC00A3F5E2 /* rotation_data.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rotation_data.cc; sourceTree = "<group>"; };
+		65D9D58C25DA7DEC00A3F5E2 /* position_data.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = position_data.cc; sourceTree = "<group>"; };
+		65D9D58D25DA7DED00A3F5E2 /* position_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = position_data.h; sourceTree = "<group>"; };
+		65D9D58E25DA7DED00A3F5E2 /* rotation_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rotation_data.h; sourceTree = "<group>"; };
 		7B2ADAC924E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_es2_distortion_renderer.cc; sourceTree = "<group>"; };
 		7B76813424A3FA6B00E92050 /* input.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cc; sourceTree = "<group>"; };
 		7B76813524A3FA6B00E92050 /* display.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = display.cc; sourceTree = "<group>"; };
@@ -199,6 +205,7 @@
 				0FD2023123575F3B00B3C342 /* qrcode */,
 				0FD201F823575F3A00B3C342 /* screen_params */,
 				0FD2022923575F3B00B3C342 /* screen_params.h */,
+				65D9D58A25DA7DD400A3F5E2 /* sixdof */,
 				0FD2020C23575F3B00B3C342 /* sensors */,
 				0FF99B2324587233001FF78F /* unity */,
 				0FD201FC23575F3A00B3C342 /* util */,
@@ -360,6 +367,17 @@
 			path = xr_unity_plugin;
 			sourceTree = "<group>";
 		};
+		65D9D58A25DA7DD400A3F5E2 /* sixdof */ = {
+			isa = PBXGroup;
+			children = (
+				65D9D58C25DA7DEC00A3F5E2 /* position_data.cc */,
+				65D9D58D25DA7DED00A3F5E2 /* position_data.h */,
+				65D9D58B25DA7DEC00A3F5E2 /* rotation_data.cc */,
+				65D9D58E25DA7DED00A3F5E2 /* rotation_data.h */,
+			);
+			path = sixdof;
+			sourceTree = "<group>";
+		};
 		7B2ADAC824E4779500FEBAA8 /* rendering */ = {
 			isa = PBXGroup;
 			children = (
@@ -472,6 +490,7 @@
 				0FD2025323575F3B00B3C342 /* polynomial_radial_distortion.cc in Sources */,
 				0FD2025923575F3B00B3C342 /* distortion_mesh.cc in Sources */,
 				0FD2024623575F3B00B3C342 /* lowpass_filter.cc in Sources */,
+				65D9D59025DA7DED00A3F5E2 /* position_data.cc in Sources */,
 				0FD2024823575F3B00B3C342 /* neck_model.cc in Sources */,
 				0FD2024D23575F3B00B3C342 /* sensor_event_producer.mm in Sources */,
 				0F29AA62255AC3A200154BD0 /* is_initialized.cc in Sources */,
@@ -485,6 +504,7 @@
 				0FD2024723575F3B00B3C342 /* median_filter.cc in Sources */,
 				0FD2024523575F3B00B3C342 /* head_tracker.cc in Sources */,
 				0FD2024123575F3B00B3C342 /* matrix_4x4.cc in Sources */,
+				65D9D58F25DA7DED00A3F5E2 /* rotation_data.cc in Sources */,
 				0FD2024C23575F3B00B3C342 /* device_accelerometer_sensor.mm in Sources */,
 				0FD2025423575F3B00B3C342 /* qr_scan_view_controller.mm in Sources */,
 				0FD2025123575F3B00B3C342 /* cardboard.cc in Sources */,

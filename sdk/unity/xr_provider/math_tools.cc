@@ -132,6 +132,33 @@ UnityXRPose CardboardRotationToUnityPose(const std::array<float, 4>& rotation) {
   return result;
 }
 
+// Aryzon 6DoF added CardboardPoseToUnityPose to include also position instead of only rotation
+UnityXRPose CardboardPoseToUnityPose(const std::array<float, 4>& rotation, const std::array<float, 3>& position) {
+  UnityXRPose result;
+
+  // Sets Unity Pose's rotation. Unity expects forward as positive z axis,
+  // whereas OpenGL expects forward as negative z.
+  result.rotation.x = rotation.at(0);
+  result.rotation.y = rotation.at(1);
+  result.rotation.z = -rotation.at(2);
+  result.rotation.w = rotation.at(3);
+
+  result.position.x = position.at(0);
+  result.position.y = position.at(1);
+  result.position.z = -position.at(2);
+    
+  // Computes Unity Pose's position.
+  // Reasoning: It's easier to compute the position directly applying the neck
+  // model to Unity's rotation instead of using the one provided by the SDK. To
+  // use the provided position we should perform the following computation:
+  //   1. Compute inverse rotation quaternion (OpenGL's coordinates frame).
+  //   2. Apply the inverse rotation to the provided position.
+  //   3. Modify the position vector to suit Unity's coordinates frame.
+  //   4. Apply the new rotation (Unity's coordinates frame).
+
+  return result;
+}
+
 // TODO(b/155113586): refactor this function to be part of the same
 //                    transformation as the above.
 UnityXRPose CardboardTransformToUnityPose(

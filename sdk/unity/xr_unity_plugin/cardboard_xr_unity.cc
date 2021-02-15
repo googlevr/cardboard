@@ -276,6 +276,20 @@ class CardboardApi::CardboardApiImpl {
                                  position, orientation);
   }
 
+  // Aryzon 6DoF
+  void AddSixDoFData(int64_t timestamp_nano, float* position, float* orientation) {
+      //LOGW("Head tracker was queried when setting 6DoF data.");
+      if (head_tracker_ == nullptr) {
+        LOGW("Uninitialized head tracker was queried when setting 6DoF data.");
+        return;
+      }
+      // Convert from Unity space to Cardboard space
+      position[2] = -position[2];
+      orientation[2] = -orientation[2];
+        
+      CardboardHeadTracker_addSixDoFData(head_tracker_.get(), timestamp_nano, position, orientation);
+  }
+    
   static void ScanDeviceParams() {
     CardboardQrCode_scanQrCodeAndSaveDeviceParams();
   }
@@ -714,6 +728,11 @@ void CardboardApi::ResumeHeadTracker() { p_impl_->ResumeHeadTracker(); }
 
 void CardboardApi::GetHeadTrackerPose(float* position, float* orientation) {
   p_impl_->GetHeadTrackerPose(position, orientation);
+}
+
+// Aryzon 6DoF
+void CardboardApi::AddSixDoFData(int64_t timestamp_nano, float *position, float *orientation) {
+    p_impl_->AddSixDoFData(timestamp_nano, position, orientation);
 }
 
 void CardboardApi::ScanDeviceParams() { CardboardApiImpl::ScanDeviceParams(); }
