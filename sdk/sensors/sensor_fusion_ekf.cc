@@ -110,6 +110,10 @@ void SensorFusionEkf::ResetState() {
   // Reset biases.
   gyroscope_bias_estimator_.Reset();
   gyroscope_bias_estimate_ = {0, 0, 0};
+    
+  // Aryzon smooth velocity
+  // A cutoff frequency of 6 Hz seems to work well
+  velocityFilter = new LowpassFilter(6);
 }
 
 // Here I am doing something wrong relative to time stamps. The state timestamps
@@ -183,10 +187,19 @@ void SensorFusionEkf::ProcessGyroscopeSample(const GyroscopeData& sample) {
   // Saves gyroscope event for future prediction.
   current_state_.timestamp = sample.system_timestamp;
   current_gyroscope_sensor_timestamp_ns_ = sample.sensor_timestamp_ns;
-  current_state_.sensor_from_start_rotation_velocity.Set(
-      sample.data[0] - gyroscope_bias_estimate_[0],
-      sample.data[1] - gyroscope_bias_estimate_[1],
-      sample.data[2] - gyroscope_bias_estimate_[2]);
+    
+  // Aryzon smooth velocity
+  velocityFilter->AddSample(sample.data - gyroscope_bias_estimate_, current_gyroscope_sensor_timestamp_ns_);
+
+  if (velocityFilter->IsInitialized()) {
+    Vector3 filteredVelocity = velocityFilter->GetFilteredData();
+    current_state_.sensor_from_start_rotation_velocity.Set(filteredVelocity[0], filteredVelocity[1], filteredVelocity[2]);
+  } else {
+      current_state_.sensor_from_start_rotation_velocity.Set(
+          sample.data[0] - gyroscope_bias_estimate_[0],
+          sample.data[1] - gyroscope_bias_estimate_[1],
+          sample.data[2] - gyroscope_bias_estimate_[2]);
+    }
 }
 
 Vector3 SensorFusionEkf::ComputeInnovation(const Rotation& pose) {

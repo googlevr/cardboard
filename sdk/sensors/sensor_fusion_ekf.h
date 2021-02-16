@@ -29,6 +29,9 @@
 #include "util/rotation.h"
 #include "util/vector.h"
 
+// Aryzon smooth velocity
+#include "sensors/lowpass_filter.h"
+
 namespace cardboard {
 
 // Sensor fusion class that implements an Extended Kalman Filter (EKF) to
@@ -181,6 +184,9 @@ class SensorFusionEkf {
   // Current bias estimate_;
   Vector3 gyroscope_bias_estimate_;
 
+  // Aryzon smooth velocity
+  LowpassFilter *velocityFilter;
+    
   SensorFusionEkf(const SensorFusionEkf&) = delete;
   SensorFusionEkf& operator=(const SensorFusionEkf&) = delete;
 };
