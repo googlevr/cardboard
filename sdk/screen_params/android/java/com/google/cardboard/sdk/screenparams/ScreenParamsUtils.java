@@ -139,8 +139,14 @@ public abstract class ScreenParamsUtils {
 
     // This call takes a long time so we don't call this every frame, only when rotation changes
     private static int getCurrentOrientation (Context context) {
-      WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-      Display defaultDisplay = windowManager.getDefaultDisplay();
+        Display defaultDisplay;
+
+        if (VERSION.SDK_INT <= VERSION_CODES.Q) {
+          defaultDisplay = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
+                  .getDefaultDisplay();
+        } else {
+          defaultDisplay = context.getDisplay();
+        }
 
       int orientation = context.getResources().getConfiguration().orientation;
       int rotation = defaultDisplay.getRotation();
