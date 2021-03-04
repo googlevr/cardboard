@@ -31,7 +31,6 @@ jclass screen_params_utils_class_;
 
 // Aryzon multiple orientations
 jclass screen_orientation_class_;
-jmethodID get_screen_orientation_method;
 
 struct DisplayMetrics {
   float xdpi;
@@ -51,10 +50,6 @@ void LoadJNIResources(JNIEnv* env) {
       cardboard::jni::LoadJClass(env,
                                  "com/google/cardboard/sdk/screenparams/"
                                  "ScreenParamsUtils$ScreenOrientation");
-
-  get_screen_orientation_method = env->GetStaticMethodID(screen_params_utils_class_,
-                                                         "getScreenOrientation",
-                                                         "(Landroid/content/Context;)I");
 }
 
 DisplayMetrics getDisplayMetrics() {
@@ -102,10 +97,14 @@ ScreenOrientation getScreenOrientation() {
   JNIEnv* env;
   cardboard::jni::LoadJNIEnv(vm_, &env);
 
-  int screen_orientation = env->CallStaticIntMethod(
+  jmethodID get_screen_orientation_method = env->GetStaticMethodID(screen_params_utils_class_,
+                                            "getScreenOrientation",
+                                            "(Landroid/content/Context;)I");
+    
+  const int screen_orientation = env->CallStaticIntMethod(
           screen_params_utils_class_, get_screen_orientation_method, context_);
 
-  return (ScreenOrientation)screen_orientation;
+  return static_cast<ScreenOrientation>(screen_orientation);
 }
 
 }  // namespace screen_params

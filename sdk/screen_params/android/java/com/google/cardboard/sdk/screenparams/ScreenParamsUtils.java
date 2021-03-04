@@ -36,7 +36,7 @@ public abstract class ScreenParamsUtils {
     public final float xdpi;
     /** The exact number of pixels per inch in the y direction. */
     public final float ydpi;
-
+      
     /**
      * Constructor.
      *
@@ -78,29 +78,44 @@ public abstract class ScreenParamsUtils {
     
     // Aryzon multiple orientations
     public static class ScreenOrientation {
-      /**
-       * The screen orientation
-       * 0 = lanscape left
-       * 1 = portrait
-       * 2 = landscape right
-       * 3 = portrait upside-down
-       */
-      public static Context context;
-      public static int orientation;
-      public static int previousOrientation;
-      public static OrientationEventListener orientationEventListener;
+        
+      public static final int LandscapeLeft = 0;
+      public static final int Portrait = 1;
+      public static final int LandscapeRight = 2;
+      public static final int PortraitUpsideDown = 3;
+      public static final int Unknown = -1;
+        
+      private static Context context;
+      private static int orientation;
+      private static int previousOrientation;
+      private static OrientationEventListener orientationEventListener;
 
       public ScreenOrientation(final Context context) {
         this.context = context;
-        this.orientation = CurrentOrientation(context);
+        this.orientation = getCurrentOrientation(context);
 
         this.orientationEventListener = new OrientationEventListener(context, SensorManager.SENSOR_DELAY_UI) {
-          public void onOrientationChanged(int orientation_) {
+          public void onOrientationChanged(int orientationIn) {
+
+            // A call to getCurrentOrientation() can take a long time so we do not want to call it every frame.
+            // context.getResources().getConfiguration().orientation detects landscape to portrait changes, this
+            // is used to detect a change between any landscape (left or right) and any portrait (up or down).
+            // It does not tell us the difference between landscape left to landscape right. We therefore do
+            // another check near the range where a rotation change may occur from landscape left to right and vice
+            // versa. This is between 60 and 120 for landscape right and between 240 and 300 for landscape left.
 
             int newOrientation = context.getResources().getConfiguration().orientation;
-
-            if (orientation_ != ORIENTATION_UNKNOWN && previousOrientation != newOrientation) {
-              orientation = CurrentOrientation(ScreenOrientation.context);
+            if (orientationIn != ORIENTATION_UNKNOWN) {
+              if (previousOrientation != newOrientation) {
+                // Device rotate to/from landscape to/from portrait
+                orientation = getCurrentOrientation(ScreenOrientation.context);
+              } else if (orientationIn >= 60 && orientationIn <= 120 && orientation != LandscapeRight) {
+                // Device possibly rotated from landscape left to landscape right rotation
+                orientation = getCurrentOrientation(ScreenOrientation.context);
+              } else if (orientationIn <= 300 && orientationIn >= 240 && orientation != LandscapeLeft) {
+                // Device possibly rotated from landscape right to landscape left rotation
+                orientation = getCurrentOrientation(ScreenOrientation.context);
+              }
               previousOrientation = newOrientation;
             }
           }
@@ -112,7 +127,6 @@ public abstract class ScreenParamsUtils {
     }
 
     private static ScreenOrientation screenOrientation;
-    private static Display defaultDisplay;
     
     public static int getScreenOrientation(Context context) {
       if (screenOrientation == null) {
@@ -123,33 +137,26 @@ public abstract class ScreenParamsUtils {
 
     }
 
-    private static int CurrentOrientation (Context context) {
-      if (defaultDisplay == null) {
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        defaultDisplay = windowManager.getDefaultDisplay();
-      }
+    // This call takes a long time so we don't call this every frame, only when rotation changes
+    private static int getCurrentOrientation (Context context) {
+      WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+      Display defaultDisplay = windowManager.getDefaultDisplay();
 
       int orientation = context.getResources().getConfiguration().orientation;
-      // This call takes a long time so we don't call this every frame, only when rotation changes
       int rotation = defaultDisplay.getRotation();
 
-      if (orientation == Configuration.ORIENTATION_LANDSCAPE
-              &&  (rotation == Surface.ROTATION_0
-              ||  rotation == Surface.ROTATION_90)) {
-        return 0;
-      } else if (orientation == Configuration.ORIENTATION_PORTRAIT
-              &&  (rotation == Surface.ROTATION_0
-              ||  rotation == Surface.ROTATION_90)) {
-        return 1;
-      } else if (orientation == Configuration.ORIENTATION_LANDSCAPE
-              &&  (rotation == Surface.ROTATION_180
-              ||  rotation == Surface.ROTATION_270)) {
-        return 2;
-      } else if (orientation == Configuration.ORIENTATION_PORTRAIT
-              &&  (rotation == Surface.ROTATION_180
-              ||  rotation == Surface.ROTATION_270)) {
-        return 3;
+      if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) {
+          return ScreenOrientation.LandscapeLeft;
+        }
+        return ScreenOrientation.LandscapeRight;
+      } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) {
+          return ScreenOrientation.Portrait;
+        }
+        return ScreenOrientation.PortraitUpsideDown;
       }
-      return 3;
+    // Unexpected orientation value.
+    return ScreenOrientation.Unknown;
     }
 }

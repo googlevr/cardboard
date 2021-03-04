@@ -19,14 +19,14 @@
 #import <sys/utsname.h>
 
 // Aryzon multiple orientations
-@interface OrientationHelper : NSObject {
+@interface ScreenOrientationHelper : NSObject {
     
 }
 @property cardboard::screen_params::ScreenOrientation orientation;
 -(void) orientationChanged:(NSNotification *)note;
 @end
 
-@implementation OrientationHelper {
+@implementation ScreenOrientationHelper {
     
 }
 @synthesize orientation;
@@ -73,15 +73,16 @@
         }
     }
     
-    if (orientation == UIDeviceOrientationPortrait && (supportedInterfaces & UIInterfaceOrientationMaskPortrait) != 0) {
-        NSLog(@"Setting portrait");
-        self.orientation = cardboard::screen_params::Portrait;
-    } else if (orientation == UIDeviceOrientationLandscapeLeft && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeRight) != 0) {
-        NSLog(@"Setting landscapeleft");
+    if (orientation == UIDeviceOrientationLandscapeLeft && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeRight) != 0) {
         self.orientation = cardboard::screen_params::LandscapeLeft;
     } else if (orientation == UIDeviceOrientationLandscapeRight && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeLeft) != 0) {
-        NSLog(@"Setting landscaperight");
         self.orientation = cardboard::screen_params::LandscapeRight;
+    } else if (orientation == UIDeviceOrientationPortrait && (supportedInterfaces & UIInterfaceOrientationMaskPortrait) != 0) {
+        self.orientation = cardboard::screen_params::Portrait;
+    } else if (orientation == UIDeviceOrientationPortraitUpsideDown && (supportedInterfaces & UIInterfaceOrientationMaskPortraitUpsideDown) != 0) {
+        self.orientation = cardboard::screen_params::PortraitUpsideDown;
+    } else {
+        self.orientation = cardboard::screen_params::Unknown;
     }
 }
 @end
@@ -132,7 +133,7 @@ static CGFloat const kIPhoneXsMaxDpi = 456.0f;
 static CGFloat const kIPhone12MiniDpi = 476.0f;
 static CGFloat const kIPhone12Dpi = 460.0f;
 
-static OrientationHelper *helper = [[OrientationHelper alloc] init];
+static ScreenOrientationHelper *helper = [[ScreenOrientationHelper alloc] init];
 
 ScreenOrientation getScreenOrientation() {
     return [helper orientation];

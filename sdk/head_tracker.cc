@@ -21,6 +21,9 @@
 #include "util/vector.h"
 #include "util/vectorutils.h"
 
+// Aryzon multiple orientations
+#include "screen_params.h"
+
 namespace cardboard {
 
 HeadTracker::HeadTracker()
@@ -28,8 +31,7 @@ HeadTracker::HeadTracker()
       sensor_fusion_(new SensorFusionEkf()),
       latest_gyroscope_data_({0, 0, Vector3::Zero()}),
       accel_sensor_(new SensorEventProducer<AccelerometerData>()),
-      gyro_sensor_(new SensorEventProducer<GyroscopeData>()),
-      start_orientation_(screen_params::getScreenOrientation()) { // Aryzon multiple orientations
+      gyro_sensor_(new SensorEventProducer<GyroscopeData>()) {
   sensor_fusion_->SetBiasEstimationEnabled(/*kGyroBiasEstimationEnabled*/ true);
   on_accel_callback_ = [&](const AccelerometerData& event) {
     OnAccelerometerData(event);
@@ -37,15 +39,17 @@ HeadTracker::HeadTracker()
   on_gyro_callback_ = [&](const GyroscopeData& event) {
     OnGyroscopeData(event);
   };
-          
-  // Aryzon multiple orientations
-  if (start_orientation_ == screen_params::LandscapeLeft) {
-      ekf_to_head_tracker = Rotation::FromYawPitchRoll(-M_PI / 2.0, 0, -M_PI / 2.0);
-  } else if (start_orientation_ == screen_params::LandscapeRight) {
-      ekf_to_head_tracker = Rotation::FromYawPitchRoll(M_PI / 2.0, 0, M_PI / 2.0);
-  } else {
-      // Portrait
-      ekf_to_head_tracker = Rotation::FromYawPitchRoll(M_PI / 2.0, M_PI / 2.0, M_PI / 2.0);
+                 
+  switch(screen_params::getScreenOrientation()) {
+    case screen_params::LandscapeLeft:
+      ekf_to_head_tracker_ = Rotation::FromYawPitchRoll(-M_PI / 2.0, 0, -M_PI / 2.0);
+      break;
+    case screen_params::LandscapeRight:
+      ekf_to_head_tracker_ = Rotation::FromYawPitchRoll(M_PI / 2.0, 0, M_PI / 2.0);
+      break;
+    default: // Portrait
+      ekf_to_head_tracker_ = Rotation::FromYawPitchRoll(M_PI / 2.0, M_PI / 2.0, M_PI / 2.0);
+      break;
   }
 }
 
@@ -86,19 +90,19 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
   // space.
   Rotation sensor_to_display;
 
-  // Aryzon multiple orientations
-  // Very fast implementation on iOS, pretty fast for Android
-  screen_params::ScreenOrientation orientation = screen_params::getScreenOrientation();
-
-  if (orientation == screen_params::LandscapeLeft) {
+  switch(screen_params::getScreenOrientation()) {
+    case screen_params::LandscapeLeft:
       sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), M_PI / 2.0);
-  } else  if (orientation == screen_params::LandscapeRight) {
+      break;
+    case screen_params::LandscapeRight:
       sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), -M_PI / 2.0);
-  } else { // Portrait
-      sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), 0.0);
+      break;
+    default: // Portrait
+      sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), 0.);
+      break;
   }
- 
-  Rotation rotation = sensor_to_display * predicted_rotation * ekf_to_head_tracker;
+
+  const Rotation rotation = sensor_to_display * predicted_rotation * ekf_to_head_tracker_;
 
   out_orientation[0] = static_cast<float>(rotation.GetQuaternion()[0]);
   out_orientation[1] = static_cast<float>(rotation.GetQuaternion()[1]);

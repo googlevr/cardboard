@@ -26,9 +26,6 @@
 #include "sensors/sensor_fusion_ekf.h"
 #include "util/rotation.h"
 
-// Aryzon multiple orientations
-#include "screen_params.h"
-
 namespace cardboard {
 
 // HeadTracker encapsulates pose tracking by connecting sensors
@@ -88,8 +85,7 @@ class HeadTracker {
   std::function<void(GyroscopeData)> on_gyro_callback_;
     
   // Aryzon multiple orientations
-  Rotation ekf_to_head_tracker;
-  const screen_params::ScreenOrientation start_orientation_;
+  Rotation ekf_to_head_tracker_;
 };
 
 }  // namespace cardboard

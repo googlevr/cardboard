@@ -42,6 +42,20 @@ typedef enum CardboardEye {
   kRight = 1,
 } CardboardEye;
 
+/// Enum to distinguish device screen orientations
+typedef enum CardboardScreenOrientation {
+  /// Landscape Left orientation.
+  kLandscapeLeft = 0,
+  /// Portrait orientation.
+  kPortrait = 1,
+  /// Landscape Right orientation.
+  kLandscapeRight = 2,
+  /// Portrait Upside Down orientation.
+  kPortraitUpsideDown = 3,
+  /// Orientation unknown
+  kUnknown = -1,
+} CardboardScreenOrientation;
+
 /// Struct representing a 3D mesh with 3D vertices and corresponding UV
 /// coordinates.
 typedef struct CardboardMesh {
@@ -124,6 +138,18 @@ extern "C" {
 void Cardboard_initializeAndroid(JavaVM* vm, jobject context);
 #endif
 
+/// @}
+
+/////////////////////////////////////////////////////////////////////////////
+// Screen Parameters
+/////////////////////////////////////////////////////////////////////////////
+/// @defgroup screen-parameters Screen Parameters
+/// @brief This module calculates the screen size and current screen orientation
+/// @{
+/// Returns the current device screen orientation
+///
+/// @return         CardboardScreenOrientation enum
+CardboardScreenOrientation CardboardScreenParameters_getScreenOrientation();
 /// @}
 
 /////////////////////////////////////////////////////////////////////////////

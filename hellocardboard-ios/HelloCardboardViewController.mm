@@ -85,9 +85,14 @@
   return true;
 }
 
+- (void)viewLayoutMarginsDidChange {
+  [super viewLayoutMarginsDidChange];
+  _updateParams = YES;
+}
+
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-  // Cardboard only supports landscape right orientation for inserting the phone in the viewer.
-  return UIInterfaceOrientationMaskLandscapeRight;
+  // Cardboard supports all screen orientations except Portrait Upside Down
+  return UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
@@ -118,13 +123,6 @@
   CGFloat screenScale = UIScreen.mainScreen.nativeScale;
   int height = screenRect.size.height * screenScale;
   int width = screenRect.size.width * screenScale;
-
-  // Rendering coordinates asumes landscape orientation.
-  if (height > width) {
-    int temp = height;
-    height = width;
-    width = temp;
-  }
 
   // Create CardboardLensDistortion.
   CardboardLensDistortion_destroy(_cardboardLensDistortion);
