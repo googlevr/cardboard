@@ -160,5 +160,5 @@ public abstract class ScreenParamsUtils {
     }
     // Unexpected orientation value.
     return ScreenOrientation.UNKNOWN;
-    }
+  }
 }
