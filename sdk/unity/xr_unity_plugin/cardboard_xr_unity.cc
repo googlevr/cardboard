@@ -390,6 +390,7 @@ class CardboardApi::CardboardApiImpl {
 
   static void SetUnityScreenParams(int x, int y, int width, int height) {
     unity_screen_params_ = ScreenParams{x, y, width, height};
+    SetDeviceParametersChanged();
   }
 
   static void GetUnityScreenParams(int* width, int* height) {
