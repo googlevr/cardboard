@@ -29,7 +29,6 @@ jobject context_;
 jclass screen_pixel_density_class_;
 jclass screen_params_utils_class_;
 
-// Aryzon multiple orientations
 jclass screen_orientation_class_;
 
 struct DisplayMetrics {
@@ -45,7 +44,6 @@ void LoadJNIResources(JNIEnv* env) {
                                  "com/google/cardboard/sdk/screenparams/"
                                  "ScreenParamsUtils$ScreenPixelDensity");
     
-  // Aryzon multiple orientations
   screen_orientation_class_ =
       cardboard::jni::LoadJClass(env,
                                  "com/google/cardboard/sdk/screenparams/"
@@ -91,8 +89,7 @@ void getScreenSizeInMeters(int width_pixels, int height_pixels,
   *out_height_meters = (height_pixels / display_metrics.ydpi) * kMetersPerInch;
 }
 
-// Aryzon multiple orientations
-ScreenOrientation getScreenOrientation() {
+CardboardScreenOrientation getScreenOrientation() {
 
   JNIEnv* env;
   cardboard::jni::LoadJNIEnv(vm_, &env);
@@ -104,7 +101,7 @@ ScreenOrientation getScreenOrientation() {
   const int screen_orientation = env->CallStaticIntMethod(
           screen_params_utils_class_, get_screen_orientation_method, context_);
 
-  return static_cast<ScreenOrientation>(screen_orientation);
+  return static_cast<CardboardScreenOrientation>(screen_orientation);
 }
 
 }  // namespace screen_params

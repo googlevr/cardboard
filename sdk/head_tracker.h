@@ -84,7 +84,6 @@ class HeadTracker {
   std::function<void(AccelerometerData)> on_accel_callback_;
   std::function<void(GyroscopeData)> on_gyro_callback_;
     
-  // Aryzon multiple orientations
   Rotation ekf_to_head_tracker_;
 };
 

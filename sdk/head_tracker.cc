@@ -20,8 +20,6 @@
 #include "util/logging.h"
 #include "util/vector.h"
 #include "util/vectorutils.h"
-
-// Aryzon multiple orientations
 #include "screen_params.h"
 
 namespace cardboard {
@@ -41,13 +39,13 @@ HeadTracker::HeadTracker()
   };
                  
   switch(screen_params::getScreenOrientation()) {
-    case screen_params::LandscapeLeft:
+    case kLandscapeLeft:
       ekf_to_head_tracker_ = Rotation::FromYawPitchRoll(-M_PI / 2.0, 0, -M_PI / 2.0);
       break;
-    case screen_params::LandscapeRight:
+    case kLandscapeRight:
       ekf_to_head_tracker_ = Rotation::FromYawPitchRoll(M_PI / 2.0, 0, M_PI / 2.0);
       break;
-    default: // Portrait
+    default: // Portrait and PortraitUpsideDown
       ekf_to_head_tracker_ = Rotation::FromYawPitchRoll(M_PI / 2.0, M_PI / 2.0, M_PI / 2.0);
       break;
   }
@@ -91,13 +89,13 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
   Rotation sensor_to_display;
 
   switch(screen_params::getScreenOrientation()) {
-    case screen_params::LandscapeLeft:
+    case kLandscapeLeft:
       sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), M_PI / 2.0);
       break;
-    case screen_params::LandscapeRight:
+    case kLandscapeRight:
       sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), -M_PI / 2.0);
       break;
-    default: // Portrait
+    default: // Portrait and PortraitUpsideDown
       sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), 0.);
       break;
   }

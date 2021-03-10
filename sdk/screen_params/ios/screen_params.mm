@@ -18,11 +18,10 @@
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>
 
-// Aryzon multiple orientations
 @interface ScreenOrientationHelper : NSObject {
     
 }
-@property cardboard::screen_params::ScreenOrientation orientation;
+@property CardboardScreenOrientation orientation;
 -(void) orientationChanged:(NSNotification *)note;
 @end
 
@@ -74,15 +73,15 @@
     }
     
     if (orientation == UIDeviceOrientationLandscapeLeft && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeRight) != 0) {
-        self.orientation = cardboard::screen_params::LandscapeLeft;
+        self.orientation = kLandscapeLeft;
     } else if (orientation == UIDeviceOrientationLandscapeRight && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeLeft) != 0) {
-        self.orientation = cardboard::screen_params::LandscapeRight;
+        self.orientation = kLandscapeRight;
     } else if (orientation == UIDeviceOrientationPortrait && (supportedInterfaces & UIInterfaceOrientationMaskPortrait) != 0) {
-        self.orientation = cardboard::screen_params::Portrait;
+        self.orientation = kPortrait;
     } else if (orientation == UIDeviceOrientationPortraitUpsideDown && (supportedInterfaces & UIInterfaceOrientationMaskPortraitUpsideDown) != 0) {
-        self.orientation = cardboard::screen_params::PortraitUpsideDown;
+        self.orientation = kPortraitUpsideDown;
     } else {
-        self.orientation = cardboard::screen_params::Unknown;
+        self.orientation = kUnknown;
     }
 }
 @end
@@ -135,7 +134,7 @@ static CGFloat const kIPhone12Dpi = 460.0f;
 
 static ScreenOrientationHelper *helper = [[ScreenOrientationHelper alloc] init];
 
-ScreenOrientation getScreenOrientation() {
+CardboardScreenOrientation getScreenOrientation() {
     return [helper orientation];
 }
 

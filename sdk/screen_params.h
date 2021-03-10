@@ -20,18 +20,11 @@
 #include <jni.h>
 #endif
 
+#include "cardboard.h"
+
 namespace cardboard {
 namespace screen_params {
 static constexpr float kMetersPerInch = 0.0254f;
-
-/// @brief Enumerates the possible screen orientations.
-enum ScreenOrientation {
-    LandscapeLeft,
-    Portrait,
-    LandscapeRight,
-    PortraitUpsideDown,
-    Unknown
-};
 
 #ifdef __ANDROID__
 void initializeAndroid(JavaVM* vm, jobject context);
@@ -40,7 +33,7 @@ void getScreenSizeInMeters(int width_pixels, int height_pixels,
                            float* out_width_meters, float* out_height_meters);
 
 /// @brief Returns the current screen orientation.
-ScreenOrientation getScreenOrientation();
+CardboardScreenOrientation getScreenOrientation();
 
 }  // namespace screen_params
 }  // namespace cardboard

@@ -120,19 +120,10 @@ void Cardboard_initializeAndroid(JavaVM* vm, jobject context) {
 #endif
 
 CardboardScreenOrientation CardboardScreenParameters_getScreenOrientation() {
-    switch (cardboard::screen_params::getScreenOrientation()) {
-        case cardboard::screen_params::LandscapeLeft:
-            return kLandscapeLeft;
-        case cardboard::screen_params::LandscapeRight:
-            return kLandscapeRight;
-        case cardboard::screen_params::Portrait:
-            return kPortrait;
-        case cardboard::screen_params::PortraitUpsideDown:
-            return kPortraitUpsideDown;
-        default:
-            break;
-    }
+  if (CARDBOARD_IS_NOT_INITIALIZED()) {
     return kUnknown;
+  }
+  return cardboard::screen_params::getScreenOrientation();
 }
 
 CardboardLensDistortion* CardboardLensDistortion_create(
