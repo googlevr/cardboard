@@ -344,6 +344,17 @@ void CardboardQrCode_destroy(const uint8_t* encoded_device_params) {
   delete[] encoded_device_params;
 }
 
+void CardboardQrCode_saveDeviceParams(const uint8_t* uri, int size) {
+  if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(uri)) {
+        return;
+  }
+  if (size <= 0) {
+      CARDBOARD_LOGE("[%s : %d] Argument size is not valid. It must be higher than zero.", __FILE__, __LINE__);
+      return;
+  }
+  cardboard::qrcode::saveDeviceParams(uri, size);
+}
+
 void CardboardQrCode_scanQrCodeAndSaveDeviceParams() {
   if (CARDBOARD_IS_NOT_INITIALIZED()) {
     return;
@@ -351,11 +362,11 @@ void CardboardQrCode_scanQrCodeAndSaveDeviceParams() {
   cardboard::qrcode::scanQrCodeAndSaveDeviceParams();
 }
 
-int CardboardQrCode_getQrCodeScanCount() {
+int CardboardQrCode_getDeviceParamsChangedCount() {
   if (CARDBOARD_IS_NOT_INITIALIZED()) {
     return 0;
   }
-  return cardboard::qrcode::getQrCodeScanCount();
+  return cardboard::qrcode::getDeviceParamsChangedCount();
 }
 
 void CardboardQrCode_getCardboardV1DeviceParams(uint8_t** encoded_device_params,

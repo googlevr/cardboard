@@ -433,17 +433,44 @@ void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
 ///     using cardboard_device.proto.
 void CardboardQrCode_destroy(const uint8_t* encoded_device_params);
 
+/// Saves the encoded device parameters provided by an URI.
+///
+/// @details This function gets the device parameters from the URI passed as a
+///          parameter. Then saves the encoded device parameters provided by
+///          the uri.
+///          Expected URI format for:
+///          Cardboard Viewer v1: https://g.co/cardboard
+///          Cardboard Viewer v2: https://google.com/cardboard/cfd?p=<deviceParams>
+///          URI example for Cardboard Viewer v2:
+///          "https://google.com/cardboard/cfg?p=CgZHb29nbGUSEkNhcmRib2FyZCBJL
+///          08gMjAxNR0rGBU9JQHegj0qEAAASEIAAEhCAABIQgAASEJYADUpXA89OggeZnc-Ej
+///          6aPlAAYAM"
+///          Redirection is also supported up to a maximum of 5 possible
+///          redirects to reach the proper pattern.
+///          URI must have the HTTPS protocol. HTTP is not supported.
+///          Upon termination, it will increment a counter that can be queried
+///          via @see CardboardQrCode_getDeviceParamsChangedCount() when new device
+///          parameters were succesfully saved.
+///
+/// @pre @p uri Must not be null.
+/// @pre @p size Must be greater than 0.
+///
+/// @param[in]      uri                     UTF-8 URI string. See above for
+///                                         supported formats.
+/// @param[in]      size                    Size in bytes of @p uri
+void CardboardQrCode_saveDeviceParams(const uint8_t* uri, int size);
+
 /// Scans a QR code and saves the encoded device parameters.
 ///
 /// @details Upon termination, it will increment a counter that can be queried
-///          via @see CardboardQrCode_getQrCodeScanCount() when new device
-///          parameters where succesfully saved.
+///          via @see CardboardQrCode_getDeviceParamsChangedCount() when new device
+///          parameters were succesfully saved.
 void CardboardQrCode_scanQrCodeAndSaveDeviceParams();
 
 /// Gets the count of successful device parameters read and save operations.
 ///
 /// @return The count of successful device parameters read and save operations.
-int CardboardQrCode_getQrCodeScanCount();
+int CardboardQrCode_getDeviceParamsChangedCount();
 
 /// Gets Cardboard V1 device parameters.
 ///

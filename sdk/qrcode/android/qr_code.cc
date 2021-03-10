@@ -34,7 +34,7 @@ jobject context_;
 jclass cardboard_params_utils_class_;
 jclass intent_class_;
 jclass component_name_class_;
-std::atomic<int> qr_code_scan_count_(0);
+std::atomic<int> device_params_changed_count_(0);
 
 void LoadJNIResources(JNIEnv* env) {
   cardboard_params_utils_class_ = cardboard::jni::LoadJClass(
@@ -108,16 +108,44 @@ void scanQrCodeAndSaveDeviceParams() {
   env->CallVoidMethod(context_, startActivity, intentObject);
 }
 
-int getQrCodeScanCount() { return qr_code_scan_count_; }
+void saveDeviceParams(const uint8_t* uri, int size){
+  // Get JNI environment pointer
+  JNIEnv* env;
+  cardboard::jni::LoadJNIEnv(vm_, &env);
+
+  // Allocate memory for uri_jbyte_array
+  jbyteArray uri_jbyte_array = env->NewByteArray(size);
+
+  // Copy the uint8_t* to a jbyteArray
+  jbyte *java_data_ptr = env->GetByteArrayElements(uri_jbyte_array, 0);
+  memcpy(java_data_ptr, uri, size);
+  env->SetByteArrayRegion(uri_jbyte_array, 0, size, java_data_ptr);
+
+  // Get the Java class method to be called
+  jmethodID save_params_from_uri_method =
+        env->GetStaticMethodID(cardboard_params_utils_class_, "saveParamsFromUri",
+                               "([BLandroid/content/Context;)V");
+
+  // Call the Java class method
+  env->CallStaticVoidMethod(cardboard_params_utils_class_,
+                   save_params_from_uri_method, uri_jbyte_array, context_);
+
+  // Release memory allocated by uri_jbyte_array
+  env->ReleaseByteArrayElements(uri_jbyte_array, java_data_ptr, 0);
+
+  device_params_changed_count_++;
+}
+
+int getDeviceParamsChangedCount() { return device_params_changed_count_; }
 
 }  // namespace qrcode
 }  // namespace cardboard
 
 extern "C" {
 
-void IncrementQrCodeScanCount() { cardboard::qrcode::qr_code_scan_count_++; }
+void IncrementDeviceParamsChangedCount() { cardboard::qrcode::device_params_changed_count_++; }
 
-JNI_METHOD(void, QrCodeCaptureActivity, nativeIncrementQrCodeScanCount)
-(JNIEnv* env, jobject obj) { IncrementQrCodeScanCount(); }
+JNI_METHOD(void, QrCodeCaptureActivity, nativeIncrementDeviceParamsChangedCount)
+(JNIEnv* env, jobject obj) { IncrementDeviceParamsChangedCount(); }
 
 }  // extern "C"

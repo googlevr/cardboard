@@ -97,6 +97,9 @@ void scanQrCodeAndSaveDeviceParams() {
   }
 }
 
+// TODO(arilow): Implementation needed. See qr_code.cc
+void saveDeviceParams(const uint8_t* uri, int size){}
+
 int getQrCodeScanCount() { return qrCodeScanCount; }
 
 }  // namespace qrcode

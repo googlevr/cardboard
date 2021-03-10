@@ -275,7 +275,7 @@ public class QrCodeCaptureActivity extends AppCompatActivity
     if (status) {
       Log.d(TAG, "Device parameters saved in external storage.");
       cameraSourcePreview.stop();
-      nativeIncrementQrCodeScanCount();
+      nativeIncrementDeviceParamsChangedCount();
       finish();
     } else {
       Log.e(TAG, "Device parameters not saved in external storage.");
@@ -283,5 +283,5 @@ public class QrCodeCaptureActivity extends AppCompatActivity
     qrCodeSaved = false;
   }
 
-  private native void nativeIncrementQrCodeScanCount();
+  private native void nativeIncrementDeviceParamsChangedCount();
 }

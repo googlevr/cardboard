@@ -30,7 +30,8 @@ void initializeAndroid(JavaVM* vm, jobject context);
 #endif
 std::vector<uint8_t> getCurrentSavedDeviceParams();
 void scanQrCodeAndSaveDeviceParams();
-int getQrCodeScanCount();
+void saveDeviceParams(const uint8_t* uri, int size);
+int getDeviceParamsChangedCount();
 }  // namespace qrcode
 }  // namespace cardboard
 
