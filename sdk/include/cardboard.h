@@ -148,6 +148,8 @@ void Cardboard_initializeAndroid(JavaVM* vm, jobject context);
 /// @{
 /// Returns the current device screen orientation
 ///
+/// @pre If the SDK is not initialized, this function will always return kUnknown
+///
 /// @return         CardboardScreenOrientation enum
 CardboardScreenOrientation CardboardScreenParameters_getScreenOrientation();
 /// @}
