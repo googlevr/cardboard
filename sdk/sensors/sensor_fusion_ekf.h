@@ -24,13 +24,11 @@
 #include "sensors/accelerometer_data.h"
 #include "sensors/gyroscope_bias_estimator.h"
 #include "sensors/gyroscope_data.h"
+#include "sensors/lowpass_filter.h"
 #include "sensors/pose_state.h"
 #include "util/matrix_3x3.h"
 #include "util/rotation.h"
 #include "util/vector.h"
-
-// Aryzon smooth velocity
-#include "sensors/lowpass_filter.h"
 
 namespace cardboard {
 
@@ -184,8 +182,8 @@ class SensorFusionEkf {
   // Current bias estimate_;
   Vector3 gyroscope_bias_estimate_;
 
-  // Aryzon smooth velocity
-  LowpassFilter *velocityFilter;
+  // Filter to smooth velocity vector
+  LowpassFilter velocity_filter_;
     
   SensorFusionEkf(const SensorFusionEkf&) = delete;
   SensorFusionEkf& operator=(const SensorFusionEkf&) = delete;

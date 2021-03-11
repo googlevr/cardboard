@@ -51,6 +51,8 @@ const double kMaxAccelNormChange = 0.15;
 const double kTimestepFilterCoeff = 0.95;
 // Minimum number of sample for timestep filtering.
 const int kTimestepFilterMinSamples = 10;
+// 6 Hz cutoff frequency for the lowpass filter on the velocity vector
+const int kVelocityFilterCutoffFrequency = 6;
 
 // Z direction in start space.
 const Vector3 kCanonicalZDirection(0.0, 0.0, 1.0);
@@ -72,7 +74,8 @@ Rotation RotationFromVector(const Vector3& a) {
 SensorFusionEkf::SensorFusionEkf()
     : execute_reset_with_next_accelerometer_sample_(false),
       bias_estimation_enabled_(true),
-      gyroscope_bias_estimate_({0, 0, 0}) {
+      gyroscope_bias_estimate_({0, 0, 0}),
+      velocity_filter_(kVelocityFilterCutoffFrequency) {
   ResetState();
 }
 
@@ -111,9 +114,7 @@ void SensorFusionEkf::ResetState() {
   gyroscope_bias_estimator_.Reset();
   gyroscope_bias_estimate_ = {0, 0, 0};
     
-  // Aryzon smooth velocity
-  // A cutoff frequency of 6 Hz seems to work well
-  velocityFilter = new LowpassFilter(6);
+  velocity_filter_.Reset();
 }
 
 // Here I am doing something wrong relative to time stamps. The state timestamps
@@ -188,12 +189,11 @@ void SensorFusionEkf::ProcessGyroscopeSample(const GyroscopeData& sample) {
   current_state_.timestamp = sample.system_timestamp;
   current_gyroscope_sensor_timestamp_ns_ = sample.sensor_timestamp_ns;
     
-  // Aryzon smooth velocity
-  velocityFilter->AddSample(sample.data - gyroscope_bias_estimate_, current_gyroscope_sensor_timestamp_ns_);
+  velocity_filter_.AddSample(sample.data - gyroscope_bias_estimate_, current_gyroscope_sensor_timestamp_ns_);
 
-  if (velocityFilter->IsInitialized()) {
-    Vector3 filteredVelocity = velocityFilter->GetFilteredData();
-    current_state_.sensor_from_start_rotation_velocity.Set(filteredVelocity[0], filteredVelocity[1], filteredVelocity[2]);
+  if (velocity_filter_.IsInitialized()) {
+    Vector3 filtered_velocity = velocity_filter_.GetFilteredData();
+    current_state_.sensor_from_start_rotation_velocity.Set(filtered_velocity[0], filtered_velocity[1], filtered_velocity[2]);
   } else {
       current_state_.sensor_from_start_rotation_velocity.Set(
           sample.data[0] - gyroscope_bias_estimate_[0],
