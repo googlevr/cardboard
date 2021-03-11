@@ -48,6 +48,8 @@ file(GLOB screen_params_srcs "screen_params/android/*.cc")
 file(GLOB device_params_srcs "device_params/android/*.cc")
 # Rendering Sources
 file(GLOB rendering_srcs "rendering/*.cc")
+# 6DoF sources
+file(GLOB sixdof_srcs "sixdof/*.cc")
 
 # === Cardboard Unity JNI ===
 file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")
@@ -71,6 +73,7 @@ add_library(cardboard_api SHARED
     ${screen_params_srcs}
     ${device_params_srcs}
     ${rendering_srcs}
+    ${sixdof_srcs}
     # Cardboard Unity JNI sources
     ${cardboard_unity_jni_srcs}
     # Cardboard Unity Wrapper sources
