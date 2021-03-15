@@ -177,6 +177,13 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     inflater.inflate(R.menu.settings_menu, popup.getMenu());
     popup.setOnMenuItemClickListener(this);
     popup.show();
+    /**
+     * Proof of concept: retrieving and changing vsync value through jni
+     */
+    Log.i(TAG, "Test print");
+    boolean nativeVsync = nativeGetVsyncEnabled(nativeApp);
+    Log.i(TAG, "onPause: Native vsync set to: " + nativeVsync + " Flipping.");
+    nativeSetVsyncEnabled(nativeApp, !nativeVsync);
   }
 
   @Override
@@ -262,4 +269,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   private native void nativeSetScreenParams(long nativeApp, int width, int height);
 
   private native void nativeSwitchViewer(long nativeApp);
+
+  private native void nativeSetVsyncEnabled(long nativeApp, boolean vsyncEnabled);
+
+  private native boolean nativeGetVsyncEnabled(long nativeApp);
 }

@@ -51,6 +51,16 @@ JNI_METHOD(jlong, nativeOnCreate)
   return jptr(new ndk_hello_cardboard::HelloCardboardApp(javaVm, obj, asset_mgr));
 }
 
+JNI_METHOD(void, nativeSetVsyncEnabled)
+(JNIEnv * env, jobject obj, jlong native_app, jboolean patch_enabled) {
+    native(native_app)->SetVsyncEnabled(patch_enabled);
+}
+
+JNI_METHOD(bool, nativeGetVsyncEnabled)
+(JNIEnv * env, jobject obj, jlong native_app) {
+  return native(native_app)->GetVsyncEnabled();
+}
+
 JNI_METHOD(void, nativeOnDestroy)
 (JNIEnv* env, jobject obj, jlong native_app) { delete native(native_app); }
 

@@ -7,7 +7,7 @@ buildscript {
         
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.1'
+        classpath 'com.android.tools.build:gradle:4.1.2'
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
         
         // NOTE: Do not place your application dependencies here; they belong
