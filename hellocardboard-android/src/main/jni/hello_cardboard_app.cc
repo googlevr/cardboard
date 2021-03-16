@@ -31,7 +31,7 @@ namespace {
 // The objects are about 1 meter in radius, so the min/max target distance are
 // set so that the objects are always within the room (which is about 5 meters
 // across) and the reticle is always closer than any objects.
-constexpr float kMinTargetDistance = 2.5f;
+constexpr float kMinTargetDistance = -2.5f;
 constexpr float kMaxTargetDistance = 3.5f;
 constexpr float kMinTargetHeight = 0.5f;
 constexpr float kMaxTargetHeight = kMinTargetHeight + 3.0f;
@@ -102,7 +102,6 @@ HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_
 
   Cardboard_initializeAndroid(vm, obj);
   head_tracker_ = CardboardHeadTracker_create();
-
 }
 
 HelloCardboardApp::~HelloCardboardApp() {
@@ -172,11 +171,12 @@ void HelloCardboardApp::OnDrawFrame() {
   }
 
   // Update Head Pose.
-  head_view_ = GetPose();
+  //head_view_ = GetPose();
 
   // Incorporate the floor height into the head_view
-  head_view_ =
-      head_view_ * GetTranslationMatrix({0.0f, kDefaultFloorHeight, 0.0f});
+  //head_view_ =  head_view_ * GetTranslationMatrix({0.0f, kDefaultFloorHeight, 0.0f});
+
+  head_view_ = GetTranslationMatrix({0.0f, kDefaultFloorHeight, 0.0f});
 
   // Bind buffer
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
@@ -212,6 +212,18 @@ void HelloCardboardApp::OnDrawFrame() {
       screen_width_, screen_height_, &left_eye_texture_description_,
       &right_eye_texture_description_);
 
+
+  GLint FRAME_HEIGHT = 1140;
+  GLint VSYNC_HEIGHT = 40;
+  GLint VSYNC_WIDTH = 40;
+
+  glEnable(GL_SCISSOR_TEST);
+  glClearColor(255, 255, 255, 255);
+  glScissor(screen_width_/2, screen_height_- VSYNC_HEIGHT, VSYNC_WIDTH, VSYNC_HEIGHT);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glDisable(GL_SCISSOR_TEST);
+  glClearColor(0, 0, 0, 255); //set clear color back to black
+
   CHECKGLERROR("onDrawFrame");
 }
 
@@ -230,7 +242,7 @@ bool HelloCardboardApp::GetVsyncEnabled() {
 }
 
 void HelloCardboardApp::OnPause() {
-  CardboardHeadTracker_pause(head_tracker_);
+    CardboardHeadTracker_pause(head_tracker_);
 }
 
 void HelloCardboardApp::OnResume() {
@@ -384,7 +396,7 @@ Matrix4x4 HelloCardboardApp::GetPose() {
 }
 
 void HelloCardboardApp::DrawWorld() {
-  DrawRoom();
+  //DrawRoom();
   DrawTarget();
 }
 
@@ -401,7 +413,6 @@ void HelloCardboardApp::DrawTarget() {
     target_object_not_selected_textures_[cur_target_object_].Bind();
   }
   target_object_meshes_[cur_target_object_].Draw();
-
 
   CHECKGLERROR("DrawTarget");
 }

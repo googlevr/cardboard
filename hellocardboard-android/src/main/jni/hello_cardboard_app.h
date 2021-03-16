@@ -178,7 +178,7 @@ private:
   int screen_width_;
   int screen_height_;
 
-  bool vsync_patch_enabled;
+    bool vsync_patch_enabled;
 
   float projection_matrices_[2][16];
   float eye_matrices_[2][16];
@@ -200,7 +200,6 @@ private:
 
   TexturedMesh room_;
   Texture room_tex_;
-
 
   std::vector<TexturedMesh> target_object_meshes_;
   std::vector<Texture> target_object_not_selected_textures_;
