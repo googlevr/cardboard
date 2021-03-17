@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.XR;
 
-using Google.XR.Cardboard;
-
-namespace Aryzon
+namespace Google.XR.Cardboard
 {
-
-    public class CardboardSubsystemLoader : MonoBehaviour
+    /// <summary>
+    /// Initializes Cardboard XR Plugin for 6DoF use.
+    /// </summary>
+    public class SixDoFCardboardStartup : MonoBehaviour
     {
         private static IntPtr _inputPointer;
         public static IntPtr inputPointer
@@ -33,7 +33,6 @@ namespace Aryzon
         public static bool isStarted = false;
 
         private string inputMatch = "Input";
-        private string displayMatch = "Display";
 
         private void Start()
         {
@@ -42,6 +41,12 @@ namespace Aryzon
 
         public void StartCardboard()
         {
+            // Configures the app to not shut down the screen and sets the brightness to maximum.
+            // Brightness control is expected to work only in iOS, see:
+            // https://docs.unity3d.com/ScriptReference/Screen-brightness.html.
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+            Screen.brightness = 1.0f;
+            
             if (!loader)
             {
                 loader = new XRLoader();

@@ -6,22 +6,23 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.XR;
-#if ARYZON_ARFOUNDATION
 using UnityEngine.XR.ARFoundation;
-#endif
-using Google.XR.Cardboard;
 
-namespace Aryzon
+namespace Google.XR.Cardboard
 {
     public class SixDoFPoseDriver : MonoBehaviour
     {
-        [DllImport(Constants.CardboardApi)]
+#if UNITY_ANDROID
+        public const string CardboardApi = "cardboard_api";
+#elif UNITY_IOS
+        public const string CardboardApi = "__Internal";
+#else
+        public const string CardboardApi = "NOT_AVAILABLE";
+#endif
+
+        [DllImport(CardboardApi)]
         private static extern void CardboardUnity_AddSixDoFData(IntPtr ptr, Int64 timestamp, [In] float[] position, [In] float[] orientation);
 
-#if UNITY_EDITOR
-        public Transform editorPoseProviderTransform;
-#endif
-#if ARYZON_ARFOUNDATION
         private ARCameraManager _arCameraManager;
         public ARCameraManager arCameraManager
         {
@@ -46,7 +47,6 @@ namespace Aryzon
             }
             set { _arCameraManager = value; }
         }
-#endif
 
         internal struct NullablePose
         {
@@ -57,9 +57,7 @@ namespace Aryzon
         public void OnEnable()
         {
             Application.onBeforeRender += OnBeforeRender;
-#if ARYZON_ARFOUNDATION
             arCameraManager.frameReceived += ArCameraManager_frameReceived;
-#endif
 #if UNITY_2020_1_OR_NEWER
             List<InputDevice> devices = new List<InputDevice>();
             InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.TrackedDevice, devices);
@@ -78,24 +76,18 @@ namespace Aryzon
         public void OnDisable()
         {
             Application.onBeforeRender -= OnBeforeRender;
-#if ARYZON_ARFOUNDATION
             arCameraManager.frameReceived -= ArCameraManager_frameReceived;
-#endif
+
 #if UNITY_2020_1_OR_NEWER
             InputDevices.deviceConnected -= OnInputDeviceConnected;
 #endif // UNITY_UNITY_2020_1_OR_NEWER
         }
 
-        //void Update() => PerformUpdate();
-
         void OnBeforeRender() => PerformUpdate();
 
         void PerformUpdate()
         {
-#if UNITY_EDITOR
-            pose.position = editorPoseProviderTransform.position;
-            pose.rotation = editorPoseProviderTransform.rotation;
-#else
+#if !UNITY_EDITOR
             var updatedPose = GetPoseData();
 
             if (updatedPose.position.HasValue)
@@ -130,14 +122,9 @@ namespace Aryzon
                 {
                     s_InputTrackingDevice = device;
                 }
-                else
+                else if (s_CardboardHMDInputTrackingDevice == null && device.name == "Cardboard HMD")
                 {
-                    Debug.LogWarning($"An input device {device.name} with the TrackedDevice characteristic was registered but the ARPoseDriver is already consuming data from {s_InputTrackingDevice.Value.name}.");
-                    if (s_CardboardHMDInputTrackingDevice == null && device.name == "Cardboard HMD")
-                    {
-                        s_CardboardHMDInputTrackingDevice = device;
-                        //arCameraManager.frameReceived += ArCameraManager_frameReceived;                        
-                    }
+                    s_CardboardHMDInputTrackingDevice = device;                     
                 }
             }
         }
@@ -150,14 +137,12 @@ namespace Aryzon
         {
             float[] positionArray = { position.x, position.y, position.z };
             float[] rotationArray = { rotation.x, rotation.y, rotation.z, rotation.w };
-            CardboardUnity_AddSixDoFData(AryzonCardboardSubsystemLoader.inputPointer, timestampNs, positionArray, rotationArray);
+            CardboardUnity_AddSixDoFData(SixDoFCardboardStartup.inputPointer, timestampNs, positionArray, rotationArray);
         }
-
-#if ARYZON_ARFOUNDATION
 
         private void ArCameraManager_frameReceived(ARCameraFrameEventArgs obj)
         {
-            if (!AryzonCardboardSubsystemLoader.isStarted)
+            if (!SixDoFCardboardStartup.isStarted)
             {
             return;
             }
@@ -198,13 +183,13 @@ namespace Aryzon
             }
 #endif
         }
-#endif
+
         static internal NullablePose GetPoseData()
         {
             NullablePose resultPose = new NullablePose();
 
 #if UNITY_2020_1_OR_NEWER
-            if (!AryzonCardboardSubsystemLoader.isStarted && s_CardboardHMDInputTrackingDevice != null)
+            if (!SixDoFCardboardStartup.isStarted && s_CardboardHMDInputTrackingDevice != null)
             {
                 s_CardboardHMDInputTrackingDevice = null;
             }
@@ -254,7 +239,7 @@ namespace Aryzon
 
             List<UnityEngine.XR.XRNodeState> states = new List<UnityEngine.XR.XRNodeState>();
 
-            if (!AryzonCardboardSubsystemLoader.isStarted)
+            if (!SixDoFCardboardStartup.isStarted)
             {
                 foreach (UnityEngine.XR.XRNodeState nodeState in nodeStates)
                 {

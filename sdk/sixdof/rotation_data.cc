@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,15 +36,14 @@ void RotationData::AddSample(const Vector4& sample, const int64_t timestamp_ns) 
 
 bool RotationData::IsValid() const { return buffer_.size() == buffer_size_; }
 
-    Vector4 RotationData::GetLatestData() const {
-        if (buffer_.size() > 0) {
-            return buffer_[buffer_.size() -1];
-        }
-        return Vector4::Zero();
+Vector4 RotationData::GetLatestData() const {
+    if (buffer_.size() > 0) {
+        return buffer_[buffer_.size() -1];
     }
+    return {0.0,0.0,0.0,1.0};
+}
 
-
-Vector4 RotationData::GetInterpolatedForTimeStamp(const int64_t timestamp_ns) const{
+Vector4 RotationData::GetInterpolatedForTimeStamp(const int64_t timestamp_ns) const {
   
     if (!IsValid()) {
         return {0.0,0.0,0.0,1.0};
@@ -52,36 +51,26 @@ Vector4 RotationData::GetInterpolatedForTimeStamp(const int64_t timestamp_ns) co
     int64_t smaller = -1;
     int64_t larger = -1;
     
-    bool didPassLarger = false;
+    bool did_pass_larger = false;
     int i=0;
     
-    while (!didPassLarger && i < buffer_size_) {
-        int64_t currentTs = timestamp_buffer_[i];
-        if (currentTs <= timestamp_ns) {
-            smaller = currentTs;
+    while (!did_pass_larger && i < buffer_size_) {
+        int64_t current_ts = timestamp_buffer_[i];
+        if (current_ts <= timestamp_ns) {
+            smaller = current_ts;
         } else {
-            larger = currentTs;
-            didPassLarger = true;
+            larger = current_ts;
+            did_pass_larger = true;
         }
         i++;
     }
-
-    float interpolationValue = 0.5f;
-    Vector4 q;
-    Vector4 q0;
-    Vector4 q1;
     
     if (smaller > 0 && larger > 0) {
-        int64_t delta = larger - smaller;
-        interpolationValue = (timestamp_ns - smaller) / (double)(delta);
-        q0 = buffer_[i-1];
-        q1 = buffer_[i];
-        q = interpolationValue*(q1-q0) + q0;
-    } else {
-        q = buffer_[buffer_size_];
+        const float interpolation_value = (timestamp_ns - smaller) / (double)(larger - smaller);
+        return buffer_[i-1] + interpolation_value * (buffer_[i] - buffer_[i-1]);
     }
     
-    return q;
+    return buffer_[buffer_size_-1];
 }
 
 }  // namespace cardboard

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// Aryzon 6DoF
 
 #ifndef rotation_data_h
 #define rotation_data_h
@@ -41,6 +39,11 @@ class RotationData {
   // Returns the latest value stored in the internal buffer.
   Vector4 GetLatestData() const;
 
+  // Returns a rotation linearly interpolated from the data stored in the internal buffer.
+  // It returns an identity rotation when not fully initialised.
+  // It returns the last value added to the buffer when the requested timestamp is
+  // outside the buffered timestamps.
+  // @param timestamp_ns the time in nanoseconds to get a rotation value for.
   Vector4 GetInterpolatedForTimeStamp(const int64_t timestamp_ns) const;
     
  private:

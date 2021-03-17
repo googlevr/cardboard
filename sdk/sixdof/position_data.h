@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@
 
 namespace cardboard {
 
-// Fixed window FIFO mean filter for vectors of the given dimension.
+// This class holds a buffer of position data samples with corresponding timestamp samples
 class PositionData {
  public:
-  // Create a buffer to hold rotation data of size buffer_size.
+  // Create a buffer to hold position data of size buffer_size.
   // @param buffer_size size of samples to buffer.
   explicit PositionData(size_t buffer_size);
 
@@ -40,8 +40,17 @@ class PositionData {
 
   // Returns the latest value stored in the internal buffer.
   Vector3 GetLatestData() const;
+    
+  // Returns the latest timestamp value stored in the internal timestampbuffer.
   long long GetLatestTimestamp() const;
+    
+  // Returns the position extrapolated from data stored in the internal buffers.
+  // A buffer size of 2 is required to work.
+  // It returns a zero Vector3 when not fully initialised.
+  // @param timestamp_ns the time in nanoseconds to get a position value for.
   Vector3 GetExtrapolatedForTimeStamp(const int64_t timestamp_ns);
+  
+  // Clear the internal buffers.
   void Reset();
  private:
   const size_t buffer_size_;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,23 +55,15 @@ Vector3 PositionData::GetLatestData() const {
 Vector3 PositionData::GetExtrapolatedForTimeStamp(const int64_t timestamp_ns) {
   
     if (!IsValid() || buffer_size_ < 2) {
-        return {0.0,0.0,1.0};
+        return {0.0,0.0,0.0};
     }
     
-    Vector3 vSum = {0,0,0};
-    
-    for (int i=1; i<buffer_size_; i++) {
-        double dT = timestamp_buffer_[i] - timestamp_buffer_[i-1];
-        Vector3 dX = buffer_[i] - buffer_[i-1];
-        vSum += dX / dT;
+    if (timestamp_ns > timestamp_buffer_[buffer_size_-1]) {
+        const Vector3 v = (buffer_[buffer_size_-1] - buffer_[buffer_size_-2]) / (timestamp_buffer_[buffer_size_-1] - timestamp_buffer_[buffer_size_-2]);
+        return buffer_[buffer_size_-1] + v * (timestamp_ns - timestamp_buffer_[buffer_size_ - 1]);
     }
     
-    Vector3 v = vSum / (double)buffer_size_;
-    
-    double dTTs = timestamp_ns - timestamp_buffer_[buffer_size_ - 1];
-    Vector3 xTs = buffer_[buffer_size_-1] + v * dTTs;
-    
-    return xTs;
+    return buffer_[buffer_size_-1];
 }
 
 void PositionData::Reset() {
