@@ -217,12 +217,15 @@ void HelloCardboardApp::OnDrawFrame() {
   GLint VSYNC_HEIGHT = 40;
   GLint VSYNC_WIDTH = 40;
 
-  glEnable(GL_SCISSOR_TEST);
-  glClearColor(255, 255, 255, 255);
-  glScissor(screen_width_/2, screen_height_- VSYNC_HEIGHT, VSYNC_WIDTH, VSYNC_HEIGHT);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glDisable(GL_SCISSOR_TEST);
-  glClearColor(0, 0, 0, 255); //set clear color back to black
+  if(vsync_patch_enabled) {
+      glEnable(GL_SCISSOR_TEST);
+      glClearColor(255, 255, 255, 255);
+      glScissor(screen_width_/2, screen_height_- VSYNC_HEIGHT, VSYNC_WIDTH, VSYNC_HEIGHT);
+      glClear(GL_COLOR_BUFFER_BIT);
+      glDisable(GL_SCISSOR_TEST);
+      glClearColor(0, 0, 0, 255); //set clear color back to black
+  }
+
 
   CHECKGLERROR("onDrawFrame");
 }
