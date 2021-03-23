@@ -63,6 +63,8 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
   // Object for retrieving parameters from Native App
   private class NativeAppParams{
     int screenWidth;
+    int screenHeight;
+    float[] headView;
   }
   private NativeAppParams nativeAppParams;
 
@@ -170,7 +172,11 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
     public void onDrawFrame(GL10 gl10) {
       nativeStartFrame(nativeApp);
       nativeGetParams(nativeApp,nativeAppParams); //fetch params from JNI
-      Log.d(TAG, "Fetched screen_width: " + nativeAppParams.screenWidth);
+      Log.d(TAG, "Fetched screenWidth: "  + nativeAppParams.screenWidth);
+      Log.d(TAG, "Fetched screenHeight: " + nativeAppParams.screenHeight);
+      Log.d(TAG, "Fetched headView: "     + nativeAppParams.headView);
+
+
 
 //      //TODO get eye matrix compute for each eye
 //      for (int eye = 0; eye < 2; ++eye) {

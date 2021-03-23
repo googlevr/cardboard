@@ -74,12 +74,21 @@ JNI_METHOD(void, nativeGetParams)
     // Get the class of the input object
     jclass clazz = env->GetObjectClass(return_obj);
 
-    // Get Field references
-    jfieldID screenWidthField = env->GetFieldID(clazz, "screenWidth", "I");
-     //jfieldID param2Field = env->GetFieldID(clazz, "param2", "F");
+    // Set the simple fields for object
+    env->SetIntField(return_obj, env->GetFieldID(clazz, "screenWidth", "I"),  app_params.screen_width);
+    env->SetIntField(return_obj, env->GetFieldID(clazz, "screenHeight", "I"), app_params.screen_height);
 
-    // Set fields for object
-    env->SetIntField(return_obj, screenWidthField, app_params.screen_width);
+    // Set the array fields
+
+    // Transfer head_view array Matrix4x4 -> jfloatArray[16]
+    float* c_arr      = app_params.headView.ToGlArray().data();  //data coming in from C
+    jfloatArray j_arr = env->NewFloatArray(16);            //data going out to Java
+    // Get the object field, returns JObject (because Array is instance of Object)
+    // move from the temp structure to the java structure
+    env->SetFloatArrayRegion(j_arr, 0, 16, reinterpret_cast<const jfloat *>(c_arr));
+    // Cast it to a jdoublearray
+    env->SetObjectField(return_obj, env->GetFieldID(clazz, "headView", "[F"), j_arr);
+
 }
 
 JNI_METHOD(void, nativeFinishFrame)

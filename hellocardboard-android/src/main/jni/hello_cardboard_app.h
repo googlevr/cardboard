@@ -33,12 +33,10 @@
 namespace ndk_hello_cardboard {
 
     struct AppParams_t{
-//      bool screen_params_changed;
-//      bool device_params_changed;
-        int  screen_width;
-//      int  screen_height;
-//      bool vsync_patch_enabled;
-//      float* projection_matrices_eye0;
+      int  screen_width;
+      int  screen_height;
+      Matrix4x4 headView;
+      //jfloat* projection_matrices_eye0;
         //float eye_matrices[2][16];
     };
 

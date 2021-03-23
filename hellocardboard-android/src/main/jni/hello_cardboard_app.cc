@@ -210,12 +210,14 @@ void HelloCardboardApp::StartFrame() {
 }
 
 ndk_hello_cardboard::AppParams_t HelloCardboardApp::GetAppParams() {
-    //Matrix4x4 eye_matrix = GetMatrixFromGlArray(eye_matrices_[eye]);
-    //Matrix4x4 eye_view = eye_matrix * head_view_;
-    //return eye_view.T; //TODO
-    //app_params.projection_matrices_eye0 = projection_matrices_[0]; //assign pointer
-    app_params.screen_width = screen_width_;
-    return app_params;
+  //Matrix4x4 eye_matrix = GetMatrixFromGlArray(eye_matrices_[eye]);
+  //Matrix4x4 eye_view = eye_matrix * head_view_;
+  //return eye_view.T; //TODO
+  //app_params.projection_matrices_eye0 = projection_matrices_[0]; //assign pointer
+  app_params.screen_width  = screen_width_;
+  app_params.screen_height = screen_height_;
+  app_params.headView = head_view_;
+  return app_params;
 }
 
 
