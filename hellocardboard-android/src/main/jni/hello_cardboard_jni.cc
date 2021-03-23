@@ -83,10 +83,7 @@ JNI_METHOD(void, nativeGetParams)
     // Transfer head_view array Matrix4x4 -> jfloatArray[16]
     float* c_arr      = app_params.headView.ToGlArray().data();  //data coming in from C
     jfloatArray j_arr = env->NewFloatArray(16);            //data going out to Java
-    // Get the object field, returns JObject (because Array is instance of Object)
-    // move from the temp structure to the java structure
     env->SetFloatArrayRegion(j_arr, 0, 16, reinterpret_cast<const jfloat *>(c_arr));
-    // Cast it to a jdoublearray
     env->SetObjectField(return_obj, env->GetFieldID(clazz, "headView", "[F"), j_arr);
 
 }
