@@ -166,7 +166,7 @@ void HelloCardboardApp::SetScreenParams(int width, int height) {
   screen_params_changed_ = true;
 }
 
-void HelloCardboardApp::OnDrawFrame() {
+void HelloCardboardApp::StartFrame() {
   if (!UpdateDeviceParams()) {
     return;
   }
@@ -189,46 +189,59 @@ void HelloCardboardApp::OnDrawFrame() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Draw eyes views
-  for (int eye = 0; eye < 2; ++eye) {
-    glViewport(eye == kLeft ? 0 : screen_width_ / 2, 0, screen_width_ / 2,
-               screen_height_);
+    // Draw eyes views
+    for (int eye = 0; eye < 2; ++eye) {
+        glViewport(eye == kLeft ? 0 : screen_width_ / 2, 0, screen_width_ / 2,
+                   screen_height_);
 
-    Matrix4x4 eye_matrix = GetMatrixFromGlArray(eye_matrices_[eye]);
-    Matrix4x4 eye_view = eye_matrix * head_view_;
+        Matrix4x4 eye_matrix = GetMatrixFromGlArray(eye_matrices_[eye]);
+        Matrix4x4 eye_view = eye_matrix * head_view_;
 
-    Matrix4x4 projection_matrix =
-        GetMatrixFromGlArray(projection_matrices_[eye]);
-    Matrix4x4 modelview_target = eye_view * model_target_;
-    modelview_projection_target_ = projection_matrix * modelview_target;
-    modelview_projection_room_ = projection_matrix * eye_view;
+        Matrix4x4 projection_matrix =
+                GetMatrixFromGlArray(projection_matrices_[eye]);
+        Matrix4x4 modelview_target = eye_view * model_target_;
+        modelview_projection_target_ = projection_matrix * modelview_target;
+        modelview_projection_room_ = projection_matrix * eye_view;
 
-    // Draw room and target
-    DrawWorld();
-  }
+        // Draw room and target
+        DrawWorld();
+    }
 
-  // Render
-  CardboardDistortionRenderer_renderEyeToDisplay(
-      distortion_renderer_, /* target_display = */ 0, /* x = */ 0, /* y = */ 0,
-      screen_width_, screen_height_, &left_eye_texture_description_,
-      &right_eye_texture_description_);
-
-
-  GLint VSYNC_HEIGHT = 40;
-  GLint VSYNC_WIDTH = 40;
-
-  if(vsync_patch_enabled) {
-      glEnable(GL_SCISSOR_TEST);
-      glClearColor(255, 255, 255, 255);
-      glScissor(screen_width_/2, screen_height_- VSYNC_HEIGHT, VSYNC_WIDTH, VSYNC_HEIGHT);
-      glClear(GL_COLOR_BUFFER_BIT);
-      glDisable(GL_SCISSOR_TEST);
-      glClearColor(0, 0, 0, 255); //set clear color back to black
-  }
-
-
-  CHECKGLERROR("onDrawFrame");
 }
+
+HelloCardboardApp::AppParams_t HelloCardboardApp::GetAppParams() {
+    //Matrix4x4 eye_matrix = GetMatrixFromGlArray(eye_matrices_[eye]);
+    //Matrix4x4 eye_view = eye_matrix * head_view_;
+    //return eye_view.T; //TODO
+    appParams.projection_matrices_eye0 = projection_matrices_[0]; //assign pointer
+    return appParams;
+}
+
+
+void HelloCardboardApp::FinishFrame() {
+    // Render
+    CardboardDistortionRenderer_renderEyeToDisplay(
+            distortion_renderer_, /* target_display = */ 0, /* x = */ 0, /* y = */ 0,
+            screen_width_, screen_height_, &left_eye_texture_description_,
+            &right_eye_texture_description_);
+
+
+    GLint VSYNC_HEIGHT = 40;
+    GLint VSYNC_WIDTH = 40;
+
+    if(vsync_patch_enabled) {
+        glEnable(GL_SCISSOR_TEST);
+        glClearColor(255, 255, 255, 255);
+        glScissor(screen_width_/2, screen_height_- VSYNC_HEIGHT, VSYNC_WIDTH, VSYNC_HEIGHT);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_SCISSOR_TEST);
+        glClearColor(0, 0, 0, 255); //set clear color back to black
+    }
+
+
+    CHECKGLERROR("onFinishFrame");
+}
+
 
 void HelloCardboardApp::OnTriggerEvent() {
   if (IsPointingAtTarget()) {

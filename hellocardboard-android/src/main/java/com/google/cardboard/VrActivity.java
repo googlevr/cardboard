@@ -160,7 +160,15 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-      nativeOnDrawFrame(nativeApp);
+      nativeStartFrame(nativeApp);
+//      //TODO get eye matrix compute for each eye
+//      for (int eye = 0; eye < 2; ++eye) {
+//        gl10.glViewport(eye == 0 ? 0 : screen_width_ / 2, 0, screen_width_ / 2,
+//                screen_height_);
+//        nativeGetEyeView(nativeApp, eye);
+//        //TODO call the renderers
+//      }
+      nativeFinishFrame(nativeApp);
     }
   }
 
@@ -258,7 +266,9 @@ public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuIte
 
   private native void nativeOnSurfaceCreated(long nativeApp);
 
-  private native void nativeOnDrawFrame(long nativeApp);
+  private native void nativeStartFrame(long nativeApp);
+  
+  private native void nativeFinishFrame(long nativeApp);
 
   private native void nativeOnTriggerEvent(long nativeApp);
 

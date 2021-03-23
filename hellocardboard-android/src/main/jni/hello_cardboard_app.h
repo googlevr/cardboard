@@ -38,6 +38,15 @@ namespace ndk_hello_cardboard {
  */
 class HelloCardboardApp {
  public:
+    struct AppParams_t{
+//    bool screen_params_changed;
+//    bool device_params_changed;
+//    int  screen_width_
+//    int  screen_height;
+//    bool vsync_patch_enabled;
+        float* projection_matrices_eye0;
+        //float eye_matrices[2][16];
+    } appParams;
   /**
    * Creates a HelloCardboardApp.
    *
@@ -68,7 +77,9 @@ class HelloCardboardApp {
   /**
    * Draws the scene. This should be called on the rendering thread.
    */
-  void OnDrawFrame();
+  void        StartFrame();
+  AppParams_t GetAppParams();
+  void        FinishFrame();
 
   /**
    * Hides the target object if it's being targeted.
@@ -99,6 +110,8 @@ class HelloCardboardApp {
    * Gets the state of the vsync patch
    */
   bool GetVsyncEnabled();
+
+
 
 private:
   /**
@@ -179,7 +192,7 @@ private:
   int screen_width_;
   int screen_height_;
 
-    bool vsync_patch_enabled;
+  bool vsync_patch_enabled;
 
   float projection_matrices_[2][16];
   float eye_matrices_[2][16];
@@ -206,7 +219,9 @@ private:
   std::vector<Texture> target_object_not_selected_textures_;
   std::vector<Texture> target_object_selected_textures_;
   int cur_target_object_;
+
 };
+
 
 }  // namespace ndk_hello_cardboard
 

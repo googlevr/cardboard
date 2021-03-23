@@ -59,9 +59,29 @@ JNI_METHOD(void, nativeOnSurfaceCreated)
   native(native_app)->OnSurfaceCreated(env);
 }
 
-JNI_METHOD(void, nativeOnDrawFrame)
+JNI_METHOD(void, nativeStartFrame)
 (JNIEnv* env, jobject obj, jlong native_app) {
-  native(native_app)->OnDrawFrame();
+    native(native_app)->StartFrame();
+}
+
+//JNI_METHOD(jobject, nativeGetParams)
+//(JNIEnv *env, jobject obj, jobject return_obj)
+//{
+//    // Get the class of the input object
+//    jclass clazz = (*env)->GetObjectClass(env, return_obj);
+//
+//    // Get Field references
+//    jfieldID param1Field = (*env)->GetFieldID(env, clazz, "param1", "F");
+//    jfieldID param2Field = (*env)->GetFieldID(env, clazz, "param2", "F");
+//
+//    // Set fields for object
+//    (*env)->SetFloatField(env, obj, param1Field, param1);
+//    (*env)->SetFloatField(env, obj, param2Field, param2);
+//}
+
+JNI_METHOD(void, nativeFinishFrame)
+(JNIEnv* env, jobject obj, jlong native_app) {
+  native(native_app)->FinishFrame();
 }
 
 JNI_METHOD(void, nativeOnTriggerEvent)
