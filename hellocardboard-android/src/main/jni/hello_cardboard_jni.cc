@@ -64,20 +64,23 @@ JNI_METHOD(void, nativeStartFrame)
     native(native_app)->StartFrame();
 }
 
-//JNI_METHOD(jobject, nativeGetParams)
-//(JNIEnv *env, jobject obj, jobject return_obj)
-//{
-//    // Get the class of the input object
-//    jclass clazz = (*env)->GetObjectClass(env, return_obj);
-//
-//    // Get Field references
-//    jfieldID param1Field = (*env)->GetFieldID(env, clazz, "param1", "F");
-//    jfieldID param2Field = (*env)->GetFieldID(env, clazz, "param2", "F");
-//
-//    // Set fields for object
-//    (*env)->SetFloatField(env, obj, param1Field, param1);
-//    (*env)->SetFloatField(env, obj, param2Field, param2);
-//}
+// REF https://stackoverflow.com/a/1086633
+JNI_METHOD(void, nativeGetParams)
+(JNIEnv* env, jobject obj,  jlong native_app, jobject return_obj)
+{
+    //Get the Params struct from the C++ app
+    ndk_hello_cardboard::AppParams_t app_params = native(native_app)->GetAppParams();
+
+    // Get the class of the input object
+    jclass clazz = env->GetObjectClass(return_obj);
+
+    // Get Field references
+    jfieldID screenWidthField = env->GetFieldID(clazz, "screenWidth", "I");
+     //jfieldID param2Field = env->GetFieldID(clazz, "param2", "F");
+
+    // Set fields for object
+    env->SetIntField(return_obj, screenWidthField, app_params.screen_width);
+}
 
 JNI_METHOD(void, nativeFinishFrame)
 (JNIEnv* env, jobject obj, jlong native_app) {

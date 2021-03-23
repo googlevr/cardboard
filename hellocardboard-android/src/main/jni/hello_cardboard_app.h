@@ -32,21 +32,22 @@
 
 namespace ndk_hello_cardboard {
 
+    struct AppParams_t{
+//      bool screen_params_changed;
+//      bool device_params_changed;
+        int  screen_width;
+//      int  screen_height;
+//      bool vsync_patch_enabled;
+//      float* projection_matrices_eye0;
+        //float eye_matrices[2][16];
+    };
+
 /**
  * This is a sample app for the Cardboard SDK. It loads a simple environment and
  * objects that you can click on.
  */
 class HelloCardboardApp {
  public:
-    struct AppParams_t{
-//    bool screen_params_changed;
-//    bool device_params_changed;
-//    int  screen_width_
-//    int  screen_height;
-//    bool vsync_patch_enabled;
-        float* projection_matrices_eye0;
-        //float eye_matrices[2][16];
-    } appParams;
   /**
    * Creates a HelloCardboardApp.
    *
@@ -220,6 +221,7 @@ private:
   std::vector<Texture> target_object_selected_textures_;
   int cur_target_object_;
 
+  AppParams_t app_params;
 };
 
 
