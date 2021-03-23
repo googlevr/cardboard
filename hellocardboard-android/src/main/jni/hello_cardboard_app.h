@@ -28,6 +28,7 @@
 #include <GLES2/gl2.h>
 #include "cardboard.h"
 #include "util.h"
+#include "../../../../sdk/include/cardboard.h"
 
 namespace ndk_hello_cardboard {
 

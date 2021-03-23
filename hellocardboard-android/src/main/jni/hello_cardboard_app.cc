@@ -15,6 +15,7 @@
  */
 
 #include "hello_cardboard_app.h"
+#include "../../../../sdk/include/cardboard.h"
 
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -213,7 +214,6 @@ void HelloCardboardApp::OnDrawFrame() {
       &right_eye_texture_description_);
 
 
-  GLint FRAME_HEIGHT = 1140;
   GLint VSYNC_HEIGHT = 40;
   GLint VSYNC_WIDTH = 40;
 
