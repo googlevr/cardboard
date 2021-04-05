@@ -321,6 +321,14 @@ void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
   std::memcpy(orientation, &out_orientation[0], 4 * sizeof(float));
 }
 
+void CardboardHeadTracker_recenter(CardboardHeadTracker* head_tracker){
+if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(head_tracker)) {
+    return;
+  }
+  static_cast<cardboard::HeadTracker*>(head_tracker)->Recenter();
+}
+
+
 void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
                                           int* size) {
   if (CARDBOARD_IS_NOT_INITIALIZED() ||

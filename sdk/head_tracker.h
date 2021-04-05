@@ -47,6 +47,9 @@ class HeadTracker {
   void GetPose(int64_t timestamp_ns, std::array<float, 3>& out_position,
                std::array<float, 4>& out_orientation) const;
 
+  // Recenters the head tracker
+  void Recenter();
+
  private:
   // Function called when receiving AccelerometerData.
   //

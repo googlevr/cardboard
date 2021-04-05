@@ -129,4 +129,8 @@ void HeadTracker::OnGyroscopeData(const GyroscopeData& event) {
   sensor_fusion_->ProcessGyroscopeSample(event);
 }
 
+void Recenter(){
+    CARDBOARD_LOGI("This function is not implemented yet.");
+}
+
 }  // namespace cardboard

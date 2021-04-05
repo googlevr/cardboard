@@ -398,6 +398,19 @@ void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
                                   int64_t timestamp_ns, float* position,
                                   float* orientation);
 
+/// Recenters the head tracker.
+///
+/// @details        Let Q_0 be the rotation quaternion that makes the an
+///                 arbitrary orientation aligned with a zero yaw angle. 
+///                 This function computes Q_0 with the current pose, i.e. the 
+///                 output of CardboardHeadTracker_getPose() when the timestamp 
+///                 is set to zero nanoseconds.
+///                 Future calls to CardboardHeadTracker_getPose() will be 
+///                 affected by Q_0.
+/// @pre @p head_tracker Must not be null.
+/// @param[in]      head_tracker            Head tracker object pointer.
+void CardboardHeadTracker_recenter(CardboardHeadTracker* head_tracker);
+
 /// @}
 
 /////////////////////////////////////////////////////////////////////////////
