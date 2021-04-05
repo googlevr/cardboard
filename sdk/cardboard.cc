@@ -328,7 +328,6 @@ if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(head_tracker)) {
   static_cast<cardboard::HeadTracker*>(head_tracker)->Recenter();
 }
 
-
 void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
                                           int* size) {
   if (CARDBOARD_IS_NOT_INITIALIZED() ||
