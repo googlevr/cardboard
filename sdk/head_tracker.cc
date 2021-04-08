@@ -75,44 +75,15 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
   out_position = ApplyNeckModel(out_orientation, 1.0);
 }
 
-Rotation HeadTracker::GetDefaultOrientation() const {
-  return Rotation::FromRotationMatrix(
-      Matrix3x3(0.0, -1.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0));
-}
-
-void HeadTracker::RegisterCallbacks() {
-  accel_sensor_->StartSensorPolling(&on_accel_callback_);
-  gyro_sensor_->StartSensorPolling(&on_gyro_callback_);
-}
-
-void HeadTracker::UnregisterCallbacks() {
-  accel_sensor_->StopSensorPolling();
-  gyro_sensor_->StopSensorPolling();
-}
-
-void HeadTracker::OnAccelerometerData(const AccelerometerData& event) {
-  if (!is_tracking_) {
-    return;
-  }
-  sensor_fusion_->ProcessAccelerometerSample(event);
-}
-
-void HeadTracker::OnGyroscopeData(const GyroscopeData& event) {
-  if (!is_tracking_) {
-    return;
-  }
-  latest_gyroscope_data_ = event;
-  sensor_fusion_->ProcessGyroscopeSample(event);
-}
-
-void Recenter(){
-    CARDBOARD_LOGI("This function is not implemented yet.");
-}
-
 void HeadTracker::Recenter() {
   Rotation r = GetPose(0);
   double yaw_angle = r.GetYawAngle();
   recenter_rotation_ = recenter_rotation_ * Rotation::FromYawPitchRoll(-yaw_angle,0,0);
+}
+
+Rotation HeadTracker::GetDefaultOrientation() const {
+  return Rotation::FromRotationMatrix(
+      Matrix3x3(0.0, -1.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0));
 }
 
 Rotation HeadTracker::GetPose(int timestamp_ns) const {
@@ -139,6 +110,31 @@ Rotation HeadTracker::GetPose(int timestamp_ns) const {
   const Rotation out_orientation =
         (sensor_to_display * predicted_rotation * ekf_to_head_tracker * recenter_rotation_);
   return out_orientation;
+}
+
+void HeadTracker::RegisterCallbacks() {
+  accel_sensor_->StartSensorPolling(&on_accel_callback_);
+  gyro_sensor_->StartSensorPolling(&on_gyro_callback_);
+}
+
+void HeadTracker::UnregisterCallbacks() {
+  accel_sensor_->StopSensorPolling();
+  gyro_sensor_->StopSensorPolling();
+}
+
+void HeadTracker::OnAccelerometerData(const AccelerometerData& event) {
+  if (!is_tracking_) {
+    return;
+  }
+  sensor_fusion_->ProcessAccelerometerSample(event);
+}
+
+void HeadTracker::OnGyroscopeData(const GyroscopeData& event) {
+  if (!is_tracking_) {
+    return;
+  }
+  latest_gyroscope_data_ = event;
+  sensor_fusion_->ProcessGyroscopeSample(event);
 }
 
 }  // namespace cardboard
