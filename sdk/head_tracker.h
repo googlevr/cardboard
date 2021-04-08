@@ -42,8 +42,9 @@ class HeadTracker {
   // Resumes tracking ans sensors.
   void Resume();
 
-  // Gets the predicted pose for a given timestamp.
-  // TODO(b/135488467): Support different display to sensor orientations.
+  // Gets the predicted pose as a rotation for a given timestamp by forwarding a call 
+  // to the private method @see GetPose().
+  // Then pases the rotation information to @p out_position and @p out_orientation.
   void GetPose(int64_t timestamp_ns, std::array<float, 3>& out_position,
                std::array<float, 4>& out_orientation) const;
 
@@ -72,6 +73,10 @@ class HeadTracker {
 
   Rotation GetDefaultOrientation() const;
 
+  // Gets the predicted pose for a given timestamp.
+  // TODO(b/135488467): Support different display to sensor orientations.
+  Rotation GetPose(int timestamp_ns) const;
+  
   std::atomic<bool> is_tracking_;
   // Sensor Fusion object that stores the internal state of the filter.
   std::unique_ptr<SensorFusionEkf> sensor_fusion_;
@@ -86,6 +91,10 @@ class HeadTracker {
   // Callback functions registered to the input SingleTypeEventProducer.
   std::function<void(AccelerometerData)> on_accel_callback_;
   std::function<void(GyroscopeData)> on_gyro_callback_;
+
+  // Quaternion to recenter the head tracker.
+  // It is initialized as an identity rotation.
+  Rotation recenter_rotation_ = Rotation();
 };
 
 }  // namespace cardboard

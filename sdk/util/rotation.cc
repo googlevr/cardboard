@@ -112,4 +112,47 @@ Rotation::VectorType Rotation::operator*(const Rotation::VectorType& v) const {
   return ApplyToVector(v);
 }
 
+double Rotation::GetYawAngle(){
+  // unnecessary variables used to make you think less
+  double x = quat_[0];
+  double y = quat_[1];
+  double z = quat_[2];
+  double w = quat_[3];
+
+
+  double siny_cosp = 2 * (w * y + z * x);
+  double cosy_cosp = 1 - 2 * (x * x + y * y);
+
+  return std::atan2(siny_cosp, cosy_cosp);
+}
+
+double Rotation::GetPitchAngle(){
+  // unnecessary variables used to make you think less
+  double x = quat_[0];
+  double y = quat_[1];
+  double z = quat_[2];
+  double w = quat_[3];
+  double pitch_angle;
+
+  double sinp = 2 * (w * x - y * z);
+  if (std::abs(sinp) >= 1)
+    pitch_angle = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+  else
+    pitch_angle = std::asin(sinp);
+
+  return pitch_angle;
+}
+
+double Rotation::GetRollAngle(){
+  // unnecessary variables used to make you think less
+  double x = quat_[0];
+  double y = quat_[1];
+  double z = quat_[2];
+  double w = quat_[3];
+
+  double sinr_cosp = 2 * (w * z + x * y);
+  double cosr_cosp = 1 - 2 * (z * z + x * x);
+  return std::atan2(sinr_cosp, cosr_cosp);
+}
+
 }  // namespace cardboard

@@ -65,31 +65,7 @@ void HeadTracker::Resume() {
 void HeadTracker::GetPose(int64_t timestamp_ns,
                           std::array<float, 3>& out_position,
                           std::array<float, 4>& out_orientation) const {
-  Rotation predicted_rotation;
-  const PoseState pose_state = sensor_fusion_->GetLatestPoseState();
-  if (!sensor_fusion_->IsFullyInitialized()) {
-    CARDBOARD_LOGI(
-        "Head Tracker not fully initialized yet. Using pose prediction only.");
-    predicted_rotation = pose_prediction::PredictPose(timestamp_ns, pose_state);
-  } else {
-    predicted_rotation = pose_state.sensor_from_start_rotation;
-  }
-
-  // In order to update our pose as the sensor changes, we begin with the
-  // inverse default orientation (the orientation returned by a reset sensor),
-  // apply the current sensor transformation, and then transform into display
-  // space.
-  // TODO(b/135488467): Support different screen orientations.
-  const Rotation ekf_to_head_tracker =
-      Rotation::FromYawPitchRoll(-M_PI / 2.0, 0, -M_PI / 2.0);
-  const Rotation sensor_to_display =
-      Rotation::FromAxisAndAngle(Vector3(0, 0, 1), M_PI / 2.0);
-
-  const Vector4 q =
-      (sensor_to_display * predicted_rotation * ekf_to_head_tracker)
-          .GetQuaternion();
-  Rotation rotation;
-  rotation.SetQuaternion(q);
+  Rotation rotation = GetPose(timestamp_ns);
 
   out_orientation[0] = static_cast<float>(rotation.GetQuaternion()[0]);
   out_orientation[1] = static_cast<float>(rotation.GetQuaternion()[1]);
@@ -131,6 +107,38 @@ void HeadTracker::OnGyroscopeData(const GyroscopeData& event) {
 
 void Recenter(){
     CARDBOARD_LOGI("This function is not implemented yet.");
+}
+
+void HeadTracker::Recenter() {
+  Rotation r = GetPose(0);
+  double yaw_angle = r.GetYawAngle();
+  recenter_rotation_ = recenter_rotation_ * Rotation::FromYawPitchRoll(-yaw_angle,0,0);
+}
+
+Rotation HeadTracker::GetPose(int timestamp_ns) const {
+  Rotation predicted_rotation;
+  const PoseState pose_state = sensor_fusion_->GetLatestPoseState();
+  if (!sensor_fusion_->IsFullyInitialized()) {
+    CARDBOARD_LOGI(
+        "Head Tracker not fully initialized yet. Using pose prediction only.");
+    predicted_rotation = pose_prediction::PredictPose(timestamp_ns, pose_state);
+  } else {
+    predicted_rotation = pose_state.sensor_from_start_rotation;
+  }
+
+  // In order to update our pose as the sensor changes, we begin with the
+  // inverse default orientation (the orientation returned by a reset sensor),
+  // apply the current sensor transformation, and then transform into display
+  // space.
+  // TODO(b/135488467): Support different screen orientations.
+  const Rotation ekf_to_head_tracker =
+      Rotation::FromYawPitchRoll(-M_PI / 2.0, 0, -M_PI / 2.0);
+  const Rotation sensor_to_display =
+      Rotation::FromAxisAndAngle(Vector3(0, 0, 1), M_PI / 2.0);
+
+  const Rotation out_orientation =
+        (sensor_to_display * predicted_rotation * ekf_to_head_tracker * recenter_rotation_);
+  return out_orientation;
 }
 
 }  // namespace cardboard
