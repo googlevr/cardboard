@@ -112,13 +112,12 @@ Rotation::VectorType Rotation::operator*(const Rotation::VectorType& v) const {
   return ApplyToVector(v);
 }
 
-double Rotation::GetYawAngle(){
-  // unnecessary variables used to make you think less
+double Rotation::GetYawAngle() {
+  // Variables used for a better understanding of the method
   double x = quat_[0];
   double y = quat_[1];
   double z = quat_[2];
   double w = quat_[3];
-
 
   double siny_cosp = 2 * (w * y + z * x);
   double cosy_cosp = 1 - 2 * (x * x + y * y);
@@ -126,8 +125,8 @@ double Rotation::GetYawAngle(){
   return std::atan2(siny_cosp, cosy_cosp);
 }
 
-double Rotation::GetPitchAngle(){
-  // unnecessary variables used to make you think less
+double Rotation::GetPitchAngle() {
+  // Variables used for a better understanding of the method
   double x = quat_[0];
   double y = quat_[1];
   double z = quat_[2];
@@ -143,8 +142,8 @@ double Rotation::GetPitchAngle(){
   return pitch_angle;
 }
 
-double Rotation::GetRollAngle(){
-  // unnecessary variables used to make you think less
+double Rotation::GetRollAngle() {
+  // Variables used for a better understanding of the method
   double x = quat_[0];
   double y = quat_[1];
   double z = quat_[2];
