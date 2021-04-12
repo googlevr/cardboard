@@ -73,7 +73,7 @@ class HeadTracker {
 
   Rotation GetDefaultOrientation() const;
 
-  // Gets the predicted pose for a given timestamp.
+  // Gets the predicted rotation for a given timestamp.
   // TODO(b/135488467): Support different display to sensor orientations.
   Rotation GetRotation(int timestamp_ns) const;
   
