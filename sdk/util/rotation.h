@@ -127,12 +127,18 @@ class Rotation {
   VectorType operator*(const VectorType& v) const;
 
   // Functions that return the Yaw, Pitch and Roll angle from the current 
-  // value of @p quat_. Method borred from:
+  // value of quat_. 
+  //
+  // @details     Yaw: rotation around the y-axis. Range: from -π to π
+  //              Pitch: rotation around the x-axis. Range: from -π/2 to π/2
+  //              Roll: rotation around the z-axis. Range: from -π to π
+  //
+  // Method borred from:
   // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
   // and adapted to the openGL frame convention
-  double GetYawAngle();
-  double GetPitchAngle();
-  double GetRollAngle();
+  double GetYawAngle() const;
+  double GetPitchAngle() const;
+  double GetRollAngle() const;
 
  private:
   // Private constructor that builds a Rotation from quaternion components.

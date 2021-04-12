@@ -49,9 +49,8 @@ Rotation GetRotationFromGyroscope(const Vector3& gyroscope_value,
 
 Rotation PredictPose(int64_t requested_pose_timestamp,
                      const PoseState& current_state) {
-  // If the required timestamp is equal or less than the current one,
-  // return the actual pose
-  if (requested_pose_timestamp <= current_state.timestamp) {
+  // If the required timestamp is equal to zero, return the actual pose
+  if (requested_pose_timestamp == 0) {
     return current_state.sensor_from_start_rotation;
   }
 
@@ -66,9 +65,8 @@ Rotation PredictPose(int64_t requested_pose_timestamp,
 
 Rotation PredictPoseInv(int64_t requested_pose_timestamp,
                         const PoseState& current_state) {
-  // If the required timestamp is equal or less than the current one,
-  // return the actual rotation
-  if (requested_pose_timestamp <= current_state.timestamp) {
+  // If the required timestamp is equal to zero, return the actual pose
+  if (requested_pose_timestamp == 0) {
     return current_state.sensor_from_start_rotation;
   }
 

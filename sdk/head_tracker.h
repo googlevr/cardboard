@@ -48,7 +48,7 @@ class HeadTracker {
   void GetPose(int64_t timestamp_ns, std::array<float, 3>& out_position,
                std::array<float, 4>& out_orientation) const;
 
-  // Recenters the head tracker
+  // Recenters the head tracker.
   void Recenter();
 
  private:
@@ -75,7 +75,7 @@ class HeadTracker {
 
   // Gets the predicted pose for a given timestamp.
   // TODO(b/135488467): Support different display to sensor orientations.
-  Rotation GetPose(int timestamp_ns) const;
+  Rotation GetRotation(int timestamp_ns) const;
   
   std::atomic<bool> is_tracking_;
   // Sensor Fusion object that stores the internal state of the filter.

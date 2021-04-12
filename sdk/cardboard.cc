@@ -322,7 +322,7 @@ void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
 }
 
 void CardboardHeadTracker_recenter(CardboardHeadTracker* head_tracker) {
-if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(head_tracker)) {
+  if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(head_tracker)) {
     return;
   }
   static_cast<cardboard::HeadTracker*>(head_tracker)->Recenter();

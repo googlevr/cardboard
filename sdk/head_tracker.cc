@@ -65,8 +65,7 @@ void HeadTracker::Resume() {
 void HeadTracker::GetPose(int64_t timestamp_ns,
                           std::array<float, 3>& out_position,
                           std::array<float, 4>& out_orientation) const {
-  Rotation rotation = GetPose(timestamp_ns);
-
+  Rotation rotation = GetRotation(timestamp_ns);
   out_orientation[0] = static_cast<float>(rotation.GetQuaternion()[0]);
   out_orientation[1] = static_cast<float>(rotation.GetQuaternion()[1]);
   out_orientation[2] = static_cast<float>(rotation.GetQuaternion()[2]);
@@ -76,7 +75,7 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
 }
 
 void HeadTracker::Recenter() {
-  Rotation r = GetPose(0);
+  const Rotation r = GetRotation(0 /* now */);
   double yaw_angle = r.GetYawAngle();
   recenter_rotation_ = recenter_rotation_ * Rotation::FromYawPitchRoll(-yaw_angle,0,0);
 }
@@ -86,7 +85,7 @@ Rotation HeadTracker::GetDefaultOrientation() const {
       Matrix3x3(0.0, -1.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0));
 }
 
-Rotation HeadTracker::GetPose(int timestamp_ns) const {
+Rotation HeadTracker::GetRotation(int timestamp_ns) const {
   Rotation predicted_rotation;
   const PoseState pose_state = sensor_fusion_->GetLatestPoseState();
   if (!sensor_fusion_->IsFullyInitialized()) {
@@ -107,9 +106,9 @@ Rotation HeadTracker::GetPose(int timestamp_ns) const {
   const Rotation sensor_to_display =
       Rotation::FromAxisAndAngle(Vector3(0, 0, 1), M_PI / 2.0);
 
-  const Rotation out_orientation =
-        (sensor_to_display * predicted_rotation * ekf_to_head_tracker * recenter_rotation_);
-  return out_orientation;
+  const Rotation rotation =
+        sensor_to_display * predicted_rotation * ekf_to_head_tracker * recenter_rotation_;
+  return rotation;
 }
 
 void HeadTracker::RegisterCallbacks() {
