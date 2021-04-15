@@ -136,6 +136,8 @@ class Rotation {
   // Method borred from:
   // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
   // and adapted to the openGL frame convention.
+  //
+  // @return Angle in radians.
   double GetYawAngle() const;
   double GetPitchAngle() const;
   double GetRollAngle() const;
