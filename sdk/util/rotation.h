@@ -126,18 +126,46 @@ class Rotation {
   // Multiply a Rotation and a Vector to get a Vector.
   VectorType operator*(const VectorType& v) const;
 
-  // Functions that return the Yaw, Pitch and Roll angle from the current 
-  // value of quat_. 
+  // Functions that return the Yaw, Pitch and Roll angle from the current
+  // value of quat_.
   //
-  // @details     Yaw: rotation around the y-axis. Range: from -π to π
-  //              Pitch: rotation around the x-axis. Range: from -π/2 to π/2
-  //              Roll: rotation around the z-axis. Range: from -π to π
+  // @details     Yaw: rotation around the y-axis. Range: [-M_PI, M_PI).
+  //              Pitch: rotation around the x-axis. Range: [-M_PI / 2, M_PI / 2).
+  //              Roll: rotation around the z-axis. Range: [-M_PI, M_PI).
   //
   // Method borred from:
   // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-  // and adapted to the openGL frame convention
+  // and adapted to the openGL frame convention.
+
+
+  // Computes the Euler Yaw angle (rotation around the y-axis) given
+  // the current value of quat_.
+  // @see https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+  // for further information.
+  //
+  // @details     Range: [-M_PI, M_PI).
+  //
+  // @return angle in radians.
   double GetYawAngle() const;
+
+  // Computes the Euler Pitch angle (rotation around the x-axis) given
+  // the current value of quat_.
+  // @see https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+  // for further information.
+  //
+  // @details     Range: [-M_PI / 2, M_PI / 2).
+  //
+  // @return angle in radians.
   double GetPitchAngle() const;
+
+  // Computes the Euler Roll angle (rotation around the z-axis) given
+  // the current value of quat_.
+  // @see https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+  // for further information.
+  //
+  // @details     Range: [-M_PI, M_PI).
+  //
+  // @return angle in radians.
   double GetRollAngle() const;
 
  private:

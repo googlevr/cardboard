@@ -43,8 +43,8 @@ Rotation GetRotationFromGyroscope(const Vector3& gyroscope_value,
 // @param requested_pose_timestamp time at which you want the pose.
 // @param current_state current state that stores the pose and linear model at a
 //        given time prior to requested_pose_timestamp_ns.
-// @return if the requested timestamp equal to zero, returns the actual pose. Otherwise, 
-//         it returns the pose from Start to Sensor Space
+// @return if the requested timestamp is equal to zero, returns the actual pose. Otherwise,
+//         it returns the pose from Start to Sensor Space.
 Rotation PredictPose(int64_t requested_pose_timestamp,
                      const PoseState& current_state);
 

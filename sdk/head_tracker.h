@@ -42,9 +42,7 @@ class HeadTracker {
   // Resumes tracking ans sensors.
   void Resume();
 
-  // Gets the predicted pose as a rotation for a given timestamp by forwarding a call 
-  // to the private method @see GetPose().
-  // Then pases the rotation information to @p out_position and @p out_orientation.
+  // Gets the predicted pose for a given timestamp.
   void GetPose(int64_t timestamp_ns, std::array<float, 3>& out_position,
                std::array<float, 4>& out_orientation) const;
 
@@ -94,7 +92,7 @@ class HeadTracker {
 
   // Quaternion to recenter the head tracker.
   // It is initialized as an identity rotation.
-  Rotation recenter_rotation_ = Rotation();
+  Rotation recenter_rotation_;
 };
 
 }  // namespace cardboard

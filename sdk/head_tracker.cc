@@ -76,7 +76,7 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
 
 void HeadTracker::Recenter() {
   const Rotation r = GetRotation(0 /* now */);
-  double yaw_angle = r.GetYawAngle();
+  const double yaw_angle = r.GetYawAngle();
   recenter_rotation_ = recenter_rotation_ * Rotation::FromYawPitchRoll(-yaw_angle,0,0);
 }
 
@@ -106,9 +106,7 @@ Rotation HeadTracker::GetRotation(int timestamp_ns) const {
   const Rotation sensor_to_display =
       Rotation::FromAxisAndAngle(Vector3(0, 0, 1), M_PI / 2.0);
 
-  const Rotation rotation =
-        sensor_to_display * predicted_rotation * ekf_to_head_tracker * recenter_rotation_;
-  return rotation;
+  return sensor_to_display * predicted_rotation * ekf_to_head_tracker * recenter_rotation_;
 }
 
 void HeadTracker::RegisterCallbacks() {

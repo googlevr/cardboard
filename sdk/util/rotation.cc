@@ -118,8 +118,8 @@ double Rotation::GetYawAngle() const {
   const double z = quat_[2];
   const double w = quat_[3];
 
-  double siny_cosp = 2 * (w * y + z * x);
-  double cosy_cosp = 1 - 2 * (x * x + y * y);
+  double siny_cosp = 2. * (w * y + z * x);
+  double cosy_cosp = 1. - 2. * (x * x + y * y);
   return std::atan2(siny_cosp, cosy_cosp);
 }
 
@@ -129,7 +129,7 @@ double Rotation::GetPitchAngle() const {
   const double z = quat_[2];
   const double w = quat_[3];
 
-  double sinp = 2 * (w * x - y * z);
+  double sinp = 2. * (w * x - y * z);
   return std::abs(sinp) >= 1. ? std::copysign(M_PI / 2., sinp) : std::asin(sinp);
 }
 
@@ -139,8 +139,8 @@ double Rotation::GetRollAngle() const {
   const double z = quat_[2];
   const double w = quat_[3];
 
-  double sinr_cosp = 2 * (w * z + x * y);
-  double cosr_cosp = 1 - 2 * (z * z + x * x);
+  double sinr_cosp = 2. * (w * z + x * y);
+  double cosr_cosp = 1. - 2. * (z * z + x * x);
   return std::atan2(sinr_cosp, cosr_cosp);
 }
 
