@@ -273,6 +273,7 @@ class CardboardApi::CardboardApiImpl {
     CardboardHeadTracker_getPose(head_tracker_.get(),
                                  CardboardApiImpl::GetMonotonicTimeNano() +
                                      kPredictionTimeWithoutVsyncNanos,
+                                 CardboardViewportOrientation_LandscapeLeft,
                                  position, orientation);
   }
 

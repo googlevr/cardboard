@@ -42,6 +42,13 @@ typedef enum CardboardEye {
   kRight = 1,
 } CardboardEye;
 
+typedef enum CardboardViewportOrientation {
+  CardboardViewportOrientation_LandscapeLeft = 0,
+  CardboardViewportOrientation_LandscapeRight = 1,
+  CardboardViewportOrientation_Portrait = 2,
+  CardboardViewportOrientation_PortraitUpsideDown = 3,
+} CardboardViewportOrientation;
+
 /// Struct representing a 3D mesh with 3D vertices and corresponding UV
 /// coordinates.
 typedef struct CardboardMesh {
@@ -383,21 +390,28 @@ void CardboardHeadTracker_resume(CardboardHeadTracker* head_tracker);
 
 /// Gets the predicted head pose for a given timestamp.
 ///
+/// @details  @p viewport_orientation will incur in an extra rotation to the head rotation to
+///           align the pose with the viewport orientation. 
+///           CardboardViewportOrientation_LandscapeLeft introduces an identity rotation to the
+///           head tracker pose.
+///
 /// @pre @p head_tracker Must not be null.
 /// @pre @p position Must not be null.
 /// @pre @p orientation Must not be null.
+/// @pre @p viewport_orientation Must be a valid CardboardViewportOrientation.
 /// When it is unmet, a call to this function results in a no-op and default
 /// values are returned (zero values and identity quaternion, respectively).
 ///
 /// @param[in]      head_tracker            Head tracker object pointer.
 /// @param[in]      timestamp_ns            The timestamp for the pose in
-///     nanoseconds in system monotonic clock.
+///                                         nanoseconds.
+/// @param[in]      viewport_orientation    The viewport orientation.
 /// @param[out]     position                3 floats for (x, y, z).
 /// @param[out]     orientation             4 floats for quaternion
 void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
-                                  int64_t timestamp_ns, float* position,
-                                  float* orientation);
-
+                                  int64_t timestamp_ns,
+                                  CardboardViewportOrientation viewport_orientation,
+                                  float* position, float* orientation);
 /// @}
 
 /////////////////////////////////////////////////////////////////////////////

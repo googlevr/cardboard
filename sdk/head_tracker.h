@@ -25,6 +25,7 @@
 #include "sensors/sensor_event_producer.h"
 #include "sensors/sensor_fusion_ekf.h"
 #include "util/rotation.h"
+#include "include/cardboard.h"
 
 namespace cardboard {
 
@@ -44,7 +45,8 @@ class HeadTracker {
 
   // Gets the predicted pose for a given timestamp.
   // TODO(b/135488467): Support different display to sensor orientations.
-  void GetPose(int64_t timestamp_ns, std::array<float, 3>& out_position,
+  void GetPose(int64_t timestamp_ns, CardboardViewportOrientation viewport_orientation,
+               std::array<float, 3>& out_position,
                std::array<float, 4>& out_orientation) const;
 
  private:

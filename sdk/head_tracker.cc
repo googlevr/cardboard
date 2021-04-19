@@ -63,6 +63,7 @@ void HeadTracker::Resume() {
 }
 
 void HeadTracker::GetPose(int64_t timestamp_ns,
+                          CardboardViewportOrientation viewport_orientation,
                           std::array<float, 3>& out_position,
                           std::array<float, 4>& out_orientation) const {
   Rotation predicted_rotation;

@@ -365,7 +365,8 @@ Matrix4x4 HelloCardboardApp::GetPose() {
   std::array<float, 3> out_position;
   long monotonic_time_nano = GetMonotonicTimeNano();
   monotonic_time_nano += kPredictionTimeWithoutVsyncNanos;
-  CardboardHeadTracker_getPose(head_tracker_, monotonic_time_nano,
+  CardboardHeadTracker_getPose(head_tracker_,monotonic_time_nano,
+                               CardboardViewportOrientation_LandscapeLeft,
                                &out_position[0], &out_orientation[0]);
   return GetTranslationMatrix(out_position) *
          Quatf::FromXYZW(&out_orientation[0]).ToMatrix();
