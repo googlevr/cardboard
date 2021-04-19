@@ -43,10 +43,10 @@ typedef enum CardboardEye {
 } CardboardEye;
 
 typedef enum CardboardViewportOrientation {
-  CardboardViewportOrientation_LandscapeLeft = 0,
-  CardboardViewportOrientation_LandscapeRight = 1,
-  CardboardViewportOrientation_Portrait = 2,
-  CardboardViewportOrientation_PortraitUpsideDown = 3,
+  kCardboardViewportOrientationLandscapeLeft = 0,
+  kCardboardViewportOrientationLandscapeRight = 1,
+  kCardboardViewportOrientationPortrait = 2,
+  kCardboardViewportOrientationPortraitUpsideDown = 3,
 } CardboardViewportOrientation;
 
 /// Struct representing a 3D mesh with 3D vertices and corresponding UV

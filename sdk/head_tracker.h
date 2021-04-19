@@ -44,7 +44,6 @@ class HeadTracker {
   void Resume();
 
   // Gets the predicted pose for a given timestamp.
-  // TODO(b/135488467): Support different display to sensor orientations.
   void GetPose(int64_t timestamp_ns, CardboardViewportOrientation viewport_orientation,
                std::array<float, 3>& out_position,
                std::array<float, 4>& out_orientation) const;

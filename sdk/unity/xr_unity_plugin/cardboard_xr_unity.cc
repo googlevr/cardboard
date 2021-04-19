@@ -709,9 +709,9 @@ void CardboardApi::PauseHeadTracker() { p_impl_->PauseHeadTracker(); }
 
 void CardboardApi::ResumeHeadTracker() { p_impl_->ResumeHeadTracker(); }
 
-void CardboardApi::GetHeadTrackerPose(CardboardViewportOrientation viewportOrientation,
+void CardboardApi::GetHeadTrackerPose(CardboardViewportOrientation viewport_orientation,
                                       float* position, float* orientation) {
-  p_impl_->GetHeadTrackerPose(viewportOrientation, position, orientation);
+  p_impl_->GetHeadTrackerPose(viewport_orientation, position, orientation);
 }
 
 void CardboardApi::ScanDeviceParams() { CardboardApiImpl::ScanDeviceParams(); }
