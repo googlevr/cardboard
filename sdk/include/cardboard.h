@@ -42,6 +42,7 @@ typedef enum CardboardEye {
   kRight = 1,
 } CardboardEye;
 
+/// Enum to distinguish the possible orientation of the viewport
 typedef enum CardboardViewportOrientation {
   kCardboardViewportOrientationLandscapeLeft = 0,
   kCardboardViewportOrientationLandscapeRight = 1,
