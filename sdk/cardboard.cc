@@ -27,8 +27,6 @@
 #include "util/is_initialized.h"
 #include "util/logging.h"
 #ifdef __ANDROID__
-#include "device_params/android/device_params.h"
-#include "../hellocardboard-android/libraries/cardboard.h"
 
 #endif
 

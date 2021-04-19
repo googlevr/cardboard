@@ -258,7 +258,8 @@ class CardboardApi::CardboardApiImpl {
     CardboardHeadTracker_resume(head_tracker_.get());
   }
 
-  void GetHeadTrackerPose(float* position, float* orientation) {
+  void GetHeadTrackerPose(CardboardViewportOrientation viewportOrientation,
+                          float* position, float* orientation) {
     if (head_tracker_ == nullptr) {
       LOGW("Uninitialized head tracker was queried for the pose.");
       position[0] = 0.0f;
@@ -273,7 +274,7 @@ class CardboardApi::CardboardApiImpl {
     CardboardHeadTracker_getPose(head_tracker_.get(),
                                  CardboardApiImpl::GetMonotonicTimeNano() +
                                      kPredictionTimeWithoutVsyncNanos,
-                                 CardboardViewportOrientation_LandscapeLeft,
+                                 viewportOrientation,
                                  position, orientation);
   }
 
@@ -708,8 +709,9 @@ void CardboardApi::PauseHeadTracker() { p_impl_->PauseHeadTracker(); }
 
 void CardboardApi::ResumeHeadTracker() { p_impl_->ResumeHeadTracker(); }
 
-void CardboardApi::GetHeadTrackerPose(float* position, float* orientation) {
-  p_impl_->GetHeadTrackerPose(position, orientation);
+void CardboardApi::GetHeadTrackerPose(CardboardViewportOrientation viewportOrientation,
+                                      float* position, float* orientation) {
+  p_impl_->GetHeadTrackerPose(viewportOrientation, position, orientation);
 }
 
 void CardboardApi::ScanDeviceParams() { CardboardApiImpl::ScanDeviceParams(); }
