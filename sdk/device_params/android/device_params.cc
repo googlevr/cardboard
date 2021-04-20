@@ -20,20 +20,27 @@
 #include <cstdint>
 
 #include "jni_utils/android/jni_utils.h"
+#include "qrcode/cardboard_v1/cardboard_v1.h"
+#include "util/logging.h"
 
 namespace cardboard {
 
 namespace {
+
 JavaVM* vm_;
 jobject context_;
 jclass device_params_utils_class_;
 
+// TODO(b/180938531): Release this global reference.
 void LoadJNIResources(JNIEnv* env) {
-  device_params_utils_class_ = jni::LoadJClass(
-      env, "com/google/cardboard/sdk/deviceparams/DeviceParamsUtils");
+  device_params_utils_class_ =
+      reinterpret_cast<jclass>(env->NewGlobalRef(jni::LoadJClass(
+          env, "com/google/cardboard/sdk/deviceparams/DeviceParamsUtils")));
 }
+
 }  // anonymous namespace
 
+// TODO(b/181575962): Add C++ unit tests.
 DeviceParams::~DeviceParams() {
   JNIEnv* env;
   jni::LoadJNIEnv(vm_, &env);
@@ -72,14 +79,25 @@ void DeviceParams::ParseFromArray(const uint8_t* encoded_device_params,
   java_device_params_ = env->NewGlobalRef(device_params_obj);
 }
 
+// TODO(b/181658993): Check if JNI "execution + exception check" could be
+// wrapped within a reusable function or macro.
 float DeviceParams::screen_to_lens_distance() const {
   JNIEnv* env;
   jni::LoadJNIEnv(vm_, &env);
 
   jclass cls = env->GetObjectClass(java_device_params_);
+  jni::CheckExceptionInJava(env);
   jmethodID mid = env->GetMethodID(cls, "getScreenToLensDistance", "()F");
-
-  return env->CallFloatMethod(java_device_params_, mid);
+  jni::CheckExceptionInJava(env);
+  const float screen_to_lens_distance =
+      env->CallFloatMethod(java_device_params_, mid);
+  if (jni::CheckExceptionInJava(env)) {
+    CARDBOARD_LOGE(
+        "Cannot retrieve ScreenToLensDistance from device parameters. Using "
+        "Cardboard Viewer v1 parameter.");
+    return qrcode::kCardboardV1ScreenToLensDistance;
+  }
+  return screen_to_lens_distance;
 }
 
 float DeviceParams::inter_lens_distance() const {
@@ -90,8 +108,15 @@ float DeviceParams::inter_lens_distance() const {
   jni::CheckExceptionInJava(env);
   jmethodID mid = env->GetMethodID(cls, "getInterLensDistance", "()F");
   jni::CheckExceptionInJava(env);
-
-  return env->CallFloatMethod(java_device_params_, mid);
+  const float inter_lens_distance =
+      env->CallFloatMethod(java_device_params_, mid);
+  if (jni::CheckExceptionInJava(env)) {
+    CARDBOARD_LOGE(
+        "Cannot retrieve InterLensDistance from device parameters. Using "
+        "Cardboard Viewer v1 parameter.");
+    return qrcode::kCardboardV1InterLensDistance;
+  }
+  return inter_lens_distance;
 }
 
 float DeviceParams::tray_to_lens_distance() const {
@@ -102,7 +127,15 @@ float DeviceParams::tray_to_lens_distance() const {
   jni::CheckExceptionInJava(env);
   jmethodID mid = env->GetMethodID(cls, "getTrayToLensDistance", "()F");
   jni::CheckExceptionInJava(env);
-  return env->CallFloatMethod(java_device_params_, mid);
+  const float tray_to_lens_distance =
+      env->CallFloatMethod(java_device_params_, mid);
+  if (jni::CheckExceptionInJava(env)) {
+    CARDBOARD_LOGE(
+        "Cannot retrieve TrayToLensDistance from device parameters. Using "
+        "Cardboard Viewer v1 parameter.");
+    return qrcode::kCardboardV1TrayToLensDistance;
+  }
+  return tray_to_lens_distance;
 }
 
 int DeviceParams::vertical_alignment() const {
@@ -121,7 +154,15 @@ int DeviceParams::vertical_alignment() const {
   jmethodID get_enum_value_mid = env->GetMethodID(
       env->GetObjectClass(vertical_alignment), "ordinal", "()I");
   jni::CheckExceptionInJava(env);
-  return env->CallIntMethod(vertical_alignment, get_enum_value_mid);
+  const int vertical_alignment_type =
+      env->CallIntMethod(vertical_alignment, get_enum_value_mid);
+  if (jni::CheckExceptionInJava(env)) {
+    CARDBOARD_LOGE(
+        "Cannot retrieve VerticalAlignmentType from device parameters. Using "
+        "Cardboard Viewer v1 parameter.");
+    return qrcode::kCardboardV1VerticalAlignmentType;
+  }
+  return vertical_alignment_type;
 }
 
 float DeviceParams::distortion_coefficients(int index) const {
@@ -132,7 +173,15 @@ float DeviceParams::distortion_coefficients(int index) const {
   jni::CheckExceptionInJava(env);
   jmethodID mid = env->GetMethodID(cls, "getDistortionCoefficients", "(I)F");
   jni::CheckExceptionInJava(env);
-  return env->CallFloatMethod(java_device_params_, mid, index);
+  const float distortion_coefficient =
+      env->CallFloatMethod(java_device_params_, mid, index);
+  if (jni::CheckExceptionInJava(env)) {
+    CARDBOARD_LOGE(
+        "Cannot retrieve DistortionCoefficient from device parameters. Using "
+        "Cardboard Viewer v1 parameter.");
+    return qrcode::kCardboardV1DistortionCoeffs[index];
+  }
+  return distortion_coefficient;
 }
 
 int DeviceParams::distortion_coefficients_size() const {
@@ -144,7 +193,15 @@ int DeviceParams::distortion_coefficients_size() const {
   jmethodID mid =
       env->GetMethodID(cls, "getDistortionCoefficientsCount", "()I");
   jni::CheckExceptionInJava(env);
-  return env->CallIntMethod(java_device_params_, mid);
+  const int distortion_coefficients_size =
+      env->CallIntMethod(java_device_params_, mid);
+  if (jni::CheckExceptionInJava(env)) {
+    CARDBOARD_LOGE(
+        "Cannot retrieve DistortionCoefficientsCount from device parameters. "
+        "Using Cardboard Viewer v1 parameter.");
+    return qrcode::kCardboardV1DistortionCoeffsSize;
+  }
+  return distortion_coefficients_size;
 }
 
 float DeviceParams::left_eye_field_of_view_angles(int index) const {
@@ -155,7 +212,15 @@ float DeviceParams::left_eye_field_of_view_angles(int index) const {
   jni::CheckExceptionInJava(env);
   jmethodID mid = env->GetMethodID(cls, "getLeftEyeFieldOfViewAngles", "(I)F");
   jni::CheckExceptionInJava(env);
-  return env->CallFloatMethod(java_device_params_, mid, index);
+  const float left_eye_field_of_view_angle =
+      env->CallFloatMethod(java_device_params_, mid, index);
+  if (jni::CheckExceptionInJava(env)) {
+    CARDBOARD_LOGE(
+        "Cannot retrieve LeftEyeFieldOfViewAngle from device parameters. "
+        "Using Cardboard Viewer v1 parameter.");
+    return qrcode::kCardboardV1FovHalfDegrees[index];
+  }
+  return left_eye_field_of_view_angle;
 }
 
 }  // namespace cardboard

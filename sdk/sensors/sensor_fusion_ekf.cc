@@ -20,7 +20,7 @@
 
 #include "sensors/accelerometer_data.h"
 #include "sensors/gyroscope_data.h"
-#include "sensors/pose_prediction.h"
+#include "util/logging.h"
 #include "util/matrixutils.h"
 
 namespace cardboard {
@@ -67,11 +67,44 @@ Rotation RotationFromVector(const Vector3& a) {
   return Rotation::FromAxisAndAngle(a / norm_a, norm_a);
 }
 
+// Computes a rotation matrix based on the integration of the gyroscope_value
+// over the @p timestep_s in seconds.
+//
+// @param gyroscope_value gyroscope sensor values.
+// @param timestep_s integration period in seconds.
+// @return Integration of the gyroscope value the rotation is from Start to
+//         Sensor Space.
+Rotation GetRotationFromGyroscope(const Vector3& gyroscope_value,
+                                  double timestep_s) {
+  const double velocity = Length(gyroscope_value);
+
+  // When there is no rotation data return an identity rotation.
+  if (velocity < kEpsilon) {
+    CARDBOARD_LOGI(
+        "PosePrediction::GetRotationFromGyroscope: Velocity really small, "
+        "returning identity rotation.");
+    return Rotation::Identity();
+  }
+  // Since the gyroscope_value is a start from sensor transformation we need to
+  // invert it to have a sensor from start transformation, hence the minus sign.
+  // For more info:
+  // - http://developer.android.com/guide/topics/sensors/sensors_motion.html#sensors-motion-gyro
+  // - https://developer.apple.com/documentation/coremotion/getting_raw_gyroscope_events
+  return Rotation::FromAxisAndAngle(gyroscope_value / velocity,
+                                    -timestep_s * velocity);
+}
+
+// Returns the difference of @p timestamp_ns_a and @p timestamp_ns_b in
+// nanoseconds, and returns a floating point result in seconds.
+constexpr double ComputeTimeDifferenceInSeconds(int64_t timestamp_ns_a,
+                                                int64_t timestamp_ns_b) {
+  return static_cast<double>(timestamp_ns_a - timestamp_ns_b) * 1.e-9;
+}
+
 }  // namespace
 
 SensorFusionEkf::SensorFusionEkf()
     : execute_reset_with_next_accelerometer_sample_(false),
-      bias_estimation_enabled_(true),
       gyroscope_bias_estimate_({0, 0, 0}) {
   ResetState();
 }
@@ -115,9 +148,21 @@ void SensorFusionEkf::ResetState() {
 // Here I am doing something wrong relative to time stamps. The state timestamps
 // always correspond to the gyrostamps because it would require additional
 // extrapolation if I wanted to do otherwise.
-PoseState SensorFusionEkf::GetLatestPoseState() const {
+RotationState SensorFusionEkf::GetLatestRotationState() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return current_state_;
+}
+
+Rotation SensorFusionEkf::PredictRotation(int64_t requested_timestamp) const {
+  std::unique_lock<std::mutex> lock(mutex_);
+
+  // Subtracting unsigned numbers is bad when the result is negative.
+  const double timestep_s = ComputeTimeDifferenceInSeconds(
+      requested_timestamp, current_state_.timestamp);
+
+  const Rotation update = GetRotationFromGyroscope(
+      current_state_.sensor_from_start_rotation_velocity, timestep_s);
+  return update * current_state_.sensor_from_start_rotation;
 }
 
 void SensorFusionEkf::ProcessGyroscopeSample(const GyroscopeData& sample) {
@@ -152,21 +197,21 @@ void SensorFusionEkf::ProcessGyroscopeSample(const GyroscopeData& sample) {
       FilterGyroscopeTimestep(current_timestep_s);
     }
 
-    if (bias_estimation_enabled_) {
-      gyroscope_bias_estimator_.ProcessGyroscope(sample.data,
-                                                 sample.sensor_timestamp_ns);
+    // { Process gyroscope bias estimation
+    gyroscope_bias_estimator_.ProcessGyroscope(sample.data,
+                                               sample.sensor_timestamp_ns);
 
-      if (gyroscope_bias_estimator_.IsCurrentEstimateValid()) {
-        // As soon as the device is considered to be static, the bias estimator
-        // should have a precise estimate of the gyroscope bias.
-        gyroscope_bias_estimate_ = gyroscope_bias_estimator_.GetGyroscopeBias();
-      }
+    if (gyroscope_bias_estimator_.IsCurrentEstimateValid()) {
+      // As soon as the device is considered to be static, the bias estimator
+      // should have a precise estimate of the gyroscope bias.
+      gyroscope_bias_estimate_ = gyroscope_bias_estimator_.GetGyroscopeBias();
     }
+    // }
 
     // Only integrate after receiving a accelerometer sample.
     if (is_aligned_with_gravity_) {
       const Rotation rotation_from_gyroscope =
-          pose_prediction::GetRotationFromGyroscope(
+          GetRotationFromGyroscope(
               {sample.data[0] - gyroscope_bias_estimate_[0],
                sample.data[1] - gyroscope_bias_estimate_[1],
                sample.data[2] - gyroscope_bias_estimate_[2]},
@@ -189,8 +234,8 @@ void SensorFusionEkf::ProcessGyroscopeSample(const GyroscopeData& sample) {
       sample.data[2] - gyroscope_bias_estimate_[2]);
 }
 
-Vector3 SensorFusionEkf::ComputeInnovation(const Rotation& pose) {
-  const Vector3 predicted_down_direction = pose * kCanonicalZDirection;
+Vector3 SensorFusionEkf::ComputeInnovation(const Rotation& rotation_in) {
+  const Vector3 predicted_down_direction = rotation_in * kCanonicalZDirection;
 
   const Rotation rotation = Rotation::RotateInto(predicted_down_direction,
                                                  accelerometer_measurement_);
@@ -236,10 +281,9 @@ void SensorFusionEkf::ProcessAccelerometerSample(
                                  sample.data[2]);
   current_accelerometer_sensor_timestamp_ns_ = sample.sensor_timestamp_ns;
 
-  if (bias_estimation_enabled_) {
-    gyroscope_bias_estimator_.ProcessAccelerometer(sample.data,
-                                                   sample.sensor_timestamp_ns);
-  }
+  // Process gyroscope bias estimation.
+  gyroscope_bias_estimator_.ProcessAccelerometer(sample.data,
+                                                 sample.sensor_timestamp_ns);
 
   if (!is_aligned_with_gravity_) {
     // This is the first accelerometer measurement so it initializes the
@@ -276,7 +320,7 @@ void SensorFusionEkf::ProcessAccelerometerSample(
                        kalman_gain_ * accelerometer_measurement_jacobian_) *
                       state_covariance_;
 
-  // Updates pose and associate covariance matrix.
+  // Updates rotation and associate covariance matrix.
   const Rotation rotation_from_state_update = RotationFromVector(state_update_);
 
   current_state_.sensor_from_start_rotation =
@@ -334,18 +378,6 @@ void SensorFusionEkf::UpdateMeasurementCovariance() {
   accelerometer_measurement_covariance_ = Matrix3x3::Identity() *
                                           accelerometer_noise_sigma *
                                           accelerometer_noise_sigma;
-}
-
-bool SensorFusionEkf::IsBiasEstimationEnabled() const {
-  return bias_estimation_enabled_;
-}
-
-void SensorFusionEkf::SetBiasEstimationEnabled(bool enable) {
-  if (bias_estimation_enabled_ != enable) {
-    bias_estimation_enabled_ = enable;
-    gyroscope_bias_estimate_ = {0, 0, 0};
-    gyroscope_bias_estimator_.Reset();
-  }
 }
 
 }  // namespace cardboard

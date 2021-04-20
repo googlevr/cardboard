@@ -93,11 +93,11 @@ float AngleBetweenVectors(const std::array<float, 4>& vec1,
                           const std::array<float, 4>& vec2);
 
 /**
- * Gets monotonic time in nanoseconds.
+ * Gets system boot time in nanoseconds.
  *
- * @return Monotonic time in nanoseconds
+ * @return System boot time in nanoseconds
  */
-long GetMonotonicTimeNano();
+int64_t GetBootTimeNano();
 
 /**
  * Generates a random floating point number between |min| and |max|.
@@ -139,14 +139,13 @@ GLuint LoadGLShader(GLenum type, const char* shader_source);
 
 class TexturedMesh {
  public:
-  TexturedMesh();
+  TexturedMesh() = default;
 
   // Initializes the mesh from a .obj file.
   //
   // @return True if initialization was successful.
-  bool Initialize(JNIEnv* env, AAssetManager* asset_mgr,
-                  const std::string& obj_file_path, GLuint position_attrib,
-                  GLuint uv_attrib);
+  bool Initialize(GLuint position_attrib, GLuint uv_attrib,
+                  const std::string& obj_file_path, AAssetManager* asset_mgr);
 
   // Draws the mesh. The u_MVP uniform should be set before calling this using
   // glUniformMatrix4fv(), and a texture should be bound to GL_TEXTURE0.
@@ -156,13 +155,13 @@ class TexturedMesh {
   std::vector<GLfloat> vertices_;
   std::vector<GLfloat> uv_;
   std::vector<GLushort> indices_;
-  GLuint position_attrib_;
-  GLuint uv_attrib_;
+  GLuint position_attrib_{0};
+  GLuint uv_attrib_{0};
 };
 
 class Texture {
  public:
-  Texture();
+  Texture() = default;
 
   ~Texture();
 
@@ -180,7 +179,7 @@ class Texture {
   void Bind() const;
 
  private:
-  GLuint texture_id_;
+  GLuint texture_id_{0};
 };
 
 }  // namespace ndk_hello_cardboard

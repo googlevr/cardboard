@@ -75,7 +75,8 @@ constexpr const char* kObjFragmentShader =
 
 }  // anonymous namespace
 
-HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj, jobject asset_mgr_obj)
+HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj,
+                                     jobject asset_mgr_obj)
     : head_tracker_(nullptr),
       lens_distortion_(nullptr),
       distortion_renderer_(nullptr),
@@ -129,24 +130,24 @@ void HelloCardboardApp::OnSurfaceCreated(JNIEnv* env) {
 
   CHECKGLERROR("Obj program params");
 
-  HELLOCARDBOARD_CHECK(room_.Initialize(env, asset_mgr_, "CubeRoom.obj",
-                                 obj_position_param_, obj_uv_param_));
+  HELLOCARDBOARD_CHECK(room_.Initialize(obj_position_param_, obj_uv_param_,
+                                        "CubeRoom.obj", asset_mgr_));
   HELLOCARDBOARD_CHECK(
       room_tex_.Initialize(env, java_asset_mgr_, "CubeRoom_BakedDiffuse.png"));
   HELLOCARDBOARD_CHECK(target_object_meshes_[0].Initialize(
-      env, asset_mgr_, "Icosahedron.obj", obj_position_param_, obj_uv_param_));
+      obj_position_param_, obj_uv_param_, "Icosahedron.obj", asset_mgr_));
   HELLOCARDBOARD_CHECK(target_object_not_selected_textures_[0].Initialize(
       env, java_asset_mgr_, "Icosahedron_Blue_BakedDiffuse.png"));
   HELLOCARDBOARD_CHECK(target_object_selected_textures_[0].Initialize(
       env, java_asset_mgr_, "Icosahedron_Pink_BakedDiffuse.png"));
   HELLOCARDBOARD_CHECK(target_object_meshes_[1].Initialize(
-      env, asset_mgr_, "QuadSphere.obj", obj_position_param_, obj_uv_param_));
+      obj_position_param_, obj_uv_param_, "QuadSphere.obj", asset_mgr_));
   HELLOCARDBOARD_CHECK(target_object_not_selected_textures_[1].Initialize(
       env, java_asset_mgr_, "QuadSphere_Blue_BakedDiffuse.png"));
   HELLOCARDBOARD_CHECK(target_object_selected_textures_[1].Initialize(
       env, java_asset_mgr_, "QuadSphere_Pink_BakedDiffuse.png"));
   HELLOCARDBOARD_CHECK(target_object_meshes_[2].Initialize(
-      env, asset_mgr_, "TriSphere.obj", obj_position_param_, obj_uv_param_));
+      obj_position_param_, obj_uv_param_, "TriSphere.obj", asset_mgr_));
   HELLOCARDBOARD_CHECK(target_object_not_selected_textures_[2].Initialize(
       env, java_asset_mgr_, "TriSphere_Blue_BakedDiffuse.png"));
   HELLOCARDBOARD_CHECK(target_object_selected_textures_[2].Initialize(
@@ -259,8 +260,8 @@ bool HelloCardboardApp::UpdateDeviceParams() {
   }
 
   CardboardLensDistortion_destroy(lens_distortion_);
-  lens_distortion_ = CardboardLensDistortion_create(
-      buffer, size, screen_width_, screen_height_);
+  lens_distortion_ = CardboardLensDistortion_create(buffer, size, screen_width_,
+                                                    screen_height_);
 
   CardboardQrCode_destroy(buffer);
 
@@ -281,14 +282,14 @@ bool HelloCardboardApp::UpdateDeviceParams() {
                                       kRight);
 
   // Get eye matrices
-  CardboardLensDistortion_getEyeFromHeadMatrix(
-      lens_distortion_, kLeft, eye_matrices_[0]);
-  CardboardLensDistortion_getEyeFromHeadMatrix(
-      lens_distortion_, kRight, eye_matrices_[1]);
-  CardboardLensDistortion_getProjectionMatrix(
-      lens_distortion_, kLeft, kZNear, kZFar, projection_matrices_[0]);
-  CardboardLensDistortion_getProjectionMatrix(
-      lens_distortion_, kRight, kZNear, kZFar, projection_matrices_[1]);
+  CardboardLensDistortion_getEyeFromHeadMatrix(lens_distortion_, kLeft,
+                                               eye_matrices_[0]);
+  CardboardLensDistortion_getEyeFromHeadMatrix(lens_distortion_, kRight,
+                                               eye_matrices_[1]);
+  CardboardLensDistortion_getProjectionMatrix(lens_distortion_, kLeft, kZNear,
+                                              kZFar, projection_matrices_[0]);
+  CardboardLensDistortion_getProjectionMatrix(lens_distortion_, kRight, kZNear,
+                                              kZFar, projection_matrices_[1]);
 
   screen_params_changed_ = false;
   device_params_changed_ = false;
@@ -363,10 +364,9 @@ void HelloCardboardApp::GlTeardown() {
 Matrix4x4 HelloCardboardApp::GetPose() {
   std::array<float, 4> out_orientation;
   std::array<float, 3> out_position;
-  long monotonic_time_nano = GetMonotonicTimeNano();
-  monotonic_time_nano += kPredictionTimeWithoutVsyncNanos;
-  CardboardHeadTracker_getPose(head_tracker_, monotonic_time_nano,
-                               &out_position[0], &out_orientation[0]);
+  CardboardHeadTracker_getPose(
+      head_tracker_, GetBootTimeNano() + kPredictionTimeWithoutVsyncNanos,
+      &out_position[0], &out_orientation[0]);
   return GetTranslationMatrix(out_position) *
          Quatf::FromXYZW(&out_orientation[0]).ToMatrix();
 }

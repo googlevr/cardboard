@@ -7,6 +7,7 @@
 #pragma once
 #include "IUnityInterface.h"
 
+// Has to match the GfxDeviceRenderer enum
 typedef enum UnityGfxRenderer
 {
     //kUnityGfxRendererOpenGL            =  0, // Legacy OpenGL, removed
@@ -23,7 +24,11 @@ typedef enum UnityGfxRenderer
     kUnityGfxRendererD3D12             = 18, // Direct3D 12
     kUnityGfxRendererVulkan            = 21, // Vulkan
     kUnityGfxRendererNvn               = 22, // Nintendo Switch NVN API
-    kUnityGfxRendererXboxOneD3D12      = 23  // MS XboxOne Direct3D 12
+    kUnityGfxRendererXboxOneD3D12      = 23,  // MS XboxOne Direct3D 12
+    kUnityGfxRendererGameCoreXboxOne   = 24, // GameCore Xbox One
+    kUnityGfxRendererGameCoreScarlett  = 25, // GameCore Scarlett
+    kUnityGfxRendererPS5               = 26, // PS5
+    kUnityGfxRendererPS5NGGC           = 27  // PS5 NGGC
 } UnityGfxRenderer;
 
 typedef enum UnityGfxDeviceEventType

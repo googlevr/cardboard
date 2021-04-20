@@ -34,13 +34,15 @@ struct DisplayMetrics {
   float ydpi;
 };
 
+// TODO(b/180938531): Release these global references.
 void LoadJNIResources(JNIEnv* env) {
-  screen_params_utils_class_ = cardboard::jni::LoadJClass(
-      env, "com/google/cardboard/sdk/screenparams/ScreenParamsUtils");
-  screen_pixel_density_class_ =
+  screen_params_utils_class_ =
+      reinterpret_cast<jclass>(env->NewGlobalRef(cardboard::jni::LoadJClass(
+          env, "com/google/cardboard/sdk/screenparams/ScreenParamsUtils")));
+  screen_pixel_density_class_ = reinterpret_cast<jclass>(env->NewGlobalRef(
       cardboard::jni::LoadJClass(env,
                                  "com/google/cardboard/sdk/screenparams/"
-                                 "ScreenParamsUtils$ScreenPixelDensity");
+                                 "ScreenParamsUtils$ScreenPixelDensity")));
 }
 
 DisplayMetrics getDisplayMetrics() {

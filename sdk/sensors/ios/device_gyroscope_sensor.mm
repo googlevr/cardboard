@@ -42,7 +42,7 @@ DeviceGyroscopeSensor::DeviceGyroscopeSensor() : sensor_info_(new SensorInfo()) 
 
 DeviceGyroscopeSensor::~DeviceGyroscopeSensor() {}
 
-void DeviceGyroscopeSensor::PollForSensorData(int timeout_ms,
+void DeviceGyroscopeSensor::PollForSensorData(int /*timeout_ms*/,
                                               std::vector<GyroscopeData>* results) const {
   results->clear();
   @autoreleasepool {

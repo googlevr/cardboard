@@ -15,7 +15,9 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 # C++ flags.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+add_compile_options(-Wall -Wextra)
 
 # Standard Android dependencies
 find_library(android-lib android)
@@ -47,7 +49,7 @@ file(GLOB screen_params_srcs "screen_params/android/*.cc")
 # Device Params Sources
 file(GLOB device_params_srcs "device_params/android/*.cc")
 # Rendering Sources
-file(GLOB rendering_srcs "rendering/*.cc")
+file(GLOB rendering_srcs "rendering/opengl_*.cc")
 
 # === Cardboard Unity JNI ===
 file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")

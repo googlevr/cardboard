@@ -67,8 +67,6 @@ class HeadTracker {
   // polling for data.
   void UnregisterCallbacks();
 
-  Rotation GetDefaultOrientation() const;
-
   std::atomic<bool> is_tracking_;
   // Sensor Fusion object that stores the internal state of the filter.
   std::unique_ptr<SensorFusionEkf> sensor_fusion_;
@@ -83,6 +81,9 @@ class HeadTracker {
   // Callback functions registered to the input SingleTypeEventProducer.
   std::function<void(AccelerometerData)> on_accel_callback_;
   std::function<void(GyroscopeData)> on_gyro_callback_;
+
+  static const Rotation kEkfToHeadTrackerRotation;
+  static const Rotation kSensorToDisplayRotation;
 };
 
 }  // namespace cardboard

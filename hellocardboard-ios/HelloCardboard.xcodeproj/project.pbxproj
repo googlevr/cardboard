@@ -20,6 +20,8 @@
 		0FD2028D23576AC200B3C342 /* cardboard_api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD20284235768A000B3C342 /* cardboard_api.a */; };
 		0FD2029323576FAB00B3C342 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD2029223576FAB00B3C342 /* AVFoundation.framework */; };
 		0FD2029523576FBC00B3C342 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD2029423576FBC00B3C342 /* CoreMotion.framework */; };
+		0FECE29C25BB279B009C662C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FECE29B25BB279B009C662C /* Metal.framework */; };
+		0FECE29E25BB27A5009C662C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FECE29D25BB27A5009C662C /* MetalKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +62,8 @@
 		0FD2027E235767E100B3C342 /* sdk.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = sdk.xcodeproj; path = ../sdk/sdk.xcodeproj; sourceTree = "<group>"; };
 		0FD2029223576FAB00B3C342 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		0FD2029423576FBC00B3C342 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		0FECE29B25BB279B009C662C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		0FECE29D25BB27A5009C662C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +74,8 @@
 				0FD2028D23576AC200B3C342 /* cardboard_api.a in Frameworks */,
 				0FD2029523576FBC00B3C342 /* CoreMotion.framework in Frameworks */,
 				0FD2029323576FAB00B3C342 /* AVFoundation.framework in Frameworks */,
+				0FECE29C25BB279B009C662C /* Metal.framework in Frameworks */,
+				0FECE29E25BB27A5009C662C /* MetalKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,6 +117,8 @@
 		0FD2027D235767E100B3C342 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0FECE29D25BB27A5009C662C /* MetalKit.framework */,
+				0FECE29B25BB279B009C662C /* Metal.framework */,
 				0FD2029423576FBC00B3C342 /* CoreMotion.framework */,
 				0FD2029223576FAB00B3C342 /* AVFoundation.framework */,
 				0FD2027E235767E100B3C342 /* sdk.xcodeproj */,
@@ -153,7 +161,7 @@
 		0FD20092235751D600B3C342 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1220;
 				TargetAttributes = {
 					0FD20099235751D600B3C342 = {
 						CreatedOnToolsVersion = 10.1;
@@ -259,6 +267,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -288,6 +297,10 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+				);
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -318,6 +331,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -340,6 +354,10 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+				);
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -353,6 +371,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C5M9TX4B3U;
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					GLES_SILENCE_DEPRECATION,
+				);
 				HEADER_SEARCH_PATHS = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				INFOPLIST_FILE = "$(SRCROOT)/HelloCardboard-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -373,6 +396,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = C5M9TX4B3U;
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				HEADER_SEARCH_PATHS = "$(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
 				INFOPLIST_FILE = "$(SRCROOT)/HelloCardboard-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

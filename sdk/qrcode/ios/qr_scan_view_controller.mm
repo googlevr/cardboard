@@ -180,7 +180,7 @@ static const CGFloat kGuidanceHeight = 116.0f;
 
   // Add find text.
   UILabel *findLabel = [[UILabel alloc] init];
-  findLabel.text = @"Find this symbol on your viewer";
+  findLabel.text = @"Find this Cardboard symbol on your viewer";
   findLabel.font = [UIFont systemFontOfSize:16];
   [findLabel sizeToFit];
   frame = findLabel.frame;
@@ -339,7 +339,7 @@ static const CGFloat kGuidanceHeight = 116.0f;
                             withCompletion:^(BOOL success, NSError *error) {
                               if (success) {
                                 [self finishCapture];
-                                _completion(YES);
+                                self->_completion(YES);
                               } else {
                                 if (error) {
                                   [self showShortMessage:[error localizedDescription]];
@@ -358,18 +358,17 @@ static const CGFloat kGuidanceHeight = 116.0f;
   }
 
   _showingHUDMessage = YES;
-  UIAlertView *toast = [[UIAlertView alloc] initWithTitle:nil
-                                                  message:text
-                                                 delegate:nil
-                                        cancelButtonTitle:nil
-                                        otherButtonTitles:nil, nil];
-  [toast show];
+  UIAlertController *alert =
+      [UIAlertController alertControllerWithTitle:nil
+                                          message:text
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  [self presentViewController:alert animated:YES completion:nil];
   int duration = 1;  // duration in seconds
 
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, duration * NSEC_PER_SEC),
                  dispatch_get_main_queue(), ^{
-                   _showingHUDMessage = NO;
-                   [toast dismissWithClickedButtonIndex:0 animated:YES];
+                   self->_showingHUDMessage = NO;
+                   [alert dismissViewControllerAnimated:YES completion:nil];
                  });
 }
 

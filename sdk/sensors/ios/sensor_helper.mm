@@ -75,35 +75,35 @@ static const NSTimeInterval kGyroUpdateInterval = 0.01;
     case SensorHelperTypeAccelerometer: {
       [self
           invokeBlock:^{
-            [_accelerometerCallbacks addObject:callback];
+            [self->_accelerometerCallbacks addObject:callback];
           }
              withLock:_accelerometerLock];
 
       if (_motionManager.isAccelerometerActive) break;
 
       _motionManager.accelerometerUpdateInterval = kAccelerometerUpdateInterval;
-      [_motionManager
-          startAccelerometerUpdatesToQueue:_queue
-                               withHandler:^(CMAccelerometerData *accelerometerData,
-                                             NSError *error) {
-                                 if (self.accelerometerData.timestamp !=
-                                     accelerometerData.timestamp) {
-                                   self.accelerometerData = accelerometerData;
-                                   [self
-                                       invokeBlock:^{
-                                         for (void (^callback)(void) in _accelerometerCallbacks) {
-                                           callback();
-                                         }
-                                       }
-                                          withLock:_accelerometerLock];
-                                 }
-                               }];
+      [_motionManager startAccelerometerUpdatesToQueue:_queue
+                                           withHandler:^(CMAccelerometerData *accelerometerData,
+                                                         NSError * /*error*/) {
+                                             if (self.accelerometerData.timestamp !=
+                                                 accelerometerData.timestamp) {
+                                               self.accelerometerData = accelerometerData;
+                                               [self
+                                                   invokeBlock:^{
+                                                     for (void (^callback)(void)
+                                                              in self->_accelerometerCallbacks) {
+                                                       callback();
+                                                     }
+                                                   }
+                                                      withLock:self->_accelerometerLock];
+                                             }
+                                           }];
     } break;
 
     case SensorHelperTypeGyro: {
       [self
           invokeBlock:^{
-            [_deviceMotionCallbacks addObject:callback];
+            [self->_deviceMotionCallbacks addObject:callback];
           }
              withLock:_deviceMotionLock];
 
@@ -112,16 +112,17 @@ static const NSTimeInterval kGyroUpdateInterval = 0.01;
       _motionManager.deviceMotionUpdateInterval = kGyroUpdateInterval;
       [_motionManager
           startDeviceMotionUpdatesToQueue:_queue
-                              withHandler:^(CMDeviceMotion *motionData, NSError *error) {
+                              withHandler:^(CMDeviceMotion *motionData, NSError * /*error*/) {
                                 if (self.deviceMotion.timestamp != motionData.timestamp) {
                                   self.deviceMotion = motionData;
                                   [self
                                       invokeBlock:^{
-                                        for (void (^callback)(void) in _deviceMotionCallbacks) {
+                                        for (void (^callback)(void)
+                                                 in self->_deviceMotionCallbacks) {
                                           callback();
                                         }
                                       }
-                                         withLock:_deviceMotionLock];
+                                         withLock:self->_deviceMotionLock];
                                 }
                               }];
     } break;
@@ -133,7 +134,7 @@ static const NSTimeInterval kGyroUpdateInterval = 0.01;
     case SensorHelperTypeAccelerometer: {
       [self
           invokeBlock:^{
-            [_accelerometerCallbacks removeObject:callback];
+            [self->_accelerometerCallbacks removeObject:callback];
           }
              withLock:_accelerometerLock];
       if (_accelerometerCallbacks.count == 0) {
@@ -144,7 +145,7 @@ static const NSTimeInterval kGyroUpdateInterval = 0.01;
     case SensorHelperTypeGyro: {
       [self
           invokeBlock:^{
-            [_deviceMotionCallbacks removeObject:callback];
+            [self->_deviceMotionCallbacks removeObject:callback];
           }
              withLock:_deviceMotionLock];
       if (_deviceMotionCallbacks.count == 0) {
