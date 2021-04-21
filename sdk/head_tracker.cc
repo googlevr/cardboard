@@ -24,7 +24,7 @@
 namespace cardboard {
 namespace {
 
-void GetViewportOrientationRotation(
+void GetRotationsFromViewportOrientation(
         const CardboardViewportOrientation Viewport_orientation,
         Rotation* ekf_to_head_tracker,
         Rotation* sensor_to_display) {
@@ -79,6 +79,7 @@ void GetViewportOrientationRotation(
       break;
 
     default:
+      break;
   }
 }
 
@@ -143,7 +144,7 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
   // space.
   Rotation ekf_to_head_tracker;
   Rotation sensor_to_display;
-  GetViewportOrientationRotation(viewport_orientation,
+  GetRotationsFromViewportOrientation(viewport_orientation,
                         &ekf_to_head_tracker, &sensor_to_display);
 
   const Vector4 q =
