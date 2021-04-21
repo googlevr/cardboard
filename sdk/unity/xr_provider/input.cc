@@ -128,9 +128,7 @@ class CardboardInputProvider {
   UnitySubsystemErrorCode Tick() {
     std::array<float, 4> out_orientation;
     std::array<float, 3> out_position;
-    cardboard_api_->GetHeadTrackerPose(kCardboardViewportOrientationLandscapeLeft,
-                                       out_position.data(),
-                                       out_orientation.data());
+    cardboard_api_->GetHeadTrackerPose(out_position.data(), out_orientation.data());
     // TODO(b/151817737): Compute pose position within SDK with custom rotation.
     head_pose_ = cardboard::unity::CardboardRotationToUnityPose(out_orientation);
     return kUnitySubsystemErrorCodeSuccess;

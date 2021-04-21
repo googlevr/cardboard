@@ -42,12 +42,16 @@ typedef enum CardboardEye {
   kRight = 1,
 } CardboardEye;
 
-/// Enum to distinguish the possible orientation of the viewport
+/// Enum to describe the possible orientation of the viewport.
 typedef enum CardboardViewportOrientation {
-  kCardboardViewportOrientationLandscapeLeft = 0,
-  kCardboardViewportOrientationLandscapeRight = 1,
-  kCardboardViewportOrientationPortrait = 2,
-  kCardboardViewportOrientationPortraitUpsideDown = 3,
+  /// Landscape left orientation.
+  kLandscapeLeft = 0,
+  /// Landscape right orientation.
+  kLandscapeRight = 1,
+  /// Portrait orientation.
+  kPortrait = 2,
+  /// Portrait upside down orientation.
+  kPortraitUpsideDown = 3,
 } CardboardViewportOrientation;
 
 /// Struct representing a 3D mesh with 3D vertices and corresponding UV
@@ -393,13 +397,11 @@ void CardboardHeadTracker_resume(CardboardHeadTracker* head_tracker);
 ///
 /// @details  @p viewport_orientation will incur in an extra rotation to the head rotation to
 ///           align the pose with the viewport orientation. 
-///           CardboardViewportOrientation_LandscapeLeft introduces an identity rotation to the
-///           head tracker pose.
+///           kLandscapeLeft introduces an identity rotation to the head tracker pose.
 ///
 /// @pre @p head_tracker Must not be null.
 /// @pre @p position Must not be null.
 /// @pre @p orientation Must not be null.
-/// @pre @p viewport_orientation Must be a valid CardboardViewportOrientation.
 /// When it is unmet, a call to this function results in a no-op and default
 /// values are returned (zero values and identity quaternion, respectively).
 ///

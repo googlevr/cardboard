@@ -17,7 +17,6 @@
 #define CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_XR_UNITY_H_
 
 #include <memory>
-#include "include/cardboard.h"
 
 /// @brief Determines the supported graphics APIs.
 typedef enum CardboardGraphicsApi {
@@ -83,8 +82,9 @@ class CardboardApi {
   /// @param[out] orientation A pointer to an array with four floats to fill in
   ///             the quaternion that denotes the orientation of the head.
   // TODO(b/154305848): Move argument types to std::array*.
-  void GetHeadTrackerPose(CardboardViewportOrientation viewport_orientation,
-                          float* position, float* orientation);
+  // TODO(arilow): Support different display to sensor orientations
+  //  for Unity.
+  void GetHeadTrackerPose(float* position, float* orientation);
 
   /// @brief Triggers a device parameters scan.
   /// @pre When using Android, the pointer to `JavaVM` must be previously set.
