@@ -25,39 +25,38 @@ namespace cardboard {
 namespace {
 
 void GetRotationsFromViewportOrientation(
-        const CardboardViewportOrientation Viewport_orientation,
-        Rotation* ekf_to_head_tracker,
-        Rotation* sensor_to_display) {
-
+    const CardboardViewportOrientation viewport_orientation,
+    Rotation* ekf_to_head_tracker, Rotation* sensor_to_display) {
   // This is the same than initializing the rotation from
   // Rotation::FromYawPitchRoll(-M_PI / 2., 0, -M_PI / 2.).
   static const Rotation kEkftoHeadTrackerLandscapeLeft =
-          Rotation::FromQuaternion(Rotation::QuaternionType(0.5, -0.5, -0.5, 0.5));
+      Rotation::FromQuaternion(Rotation::QuaternionType(0.5, -0.5, -0.5, 0.5));
   static const Rotation kSensorToDisplayLandscapeLeft =
-          Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), M_PI / 2.);
+      Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), M_PI / 2.);
 
   // This is the same than initializing the rotation from
   // Rotation::FromYawPitchRoll(M_PI / 2., 0, M_PI / 2.).
   static const Rotation kEkftoHeadTrackerLandscapeRight =
-          Rotation::FromQuaternion(Rotation::QuaternionType(0.5, 0.5, 0.5, 0.5));
+      Rotation::FromQuaternion(Rotation::QuaternionType(0.5, 0.5, 0.5, 0.5));
   static const Rotation kSensorToDisplayLandscapeRight =
-          Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), -M_PI / 2.);
+      Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), -M_PI / 2.);
 
   // This is the same than initializing the rotation from
   // Rotation::FromYawPitchRoll(M_PI / 2., M_PI / 2., M_PI / 2.).
-  static const Rotation kEkftoHeadTrackerPortrait =
-          Rotation::FromQuaternion(Rotation::QuaternionType(0.707107, 0, 0, 0.707107));
+  static const Rotation kEkftoHeadTrackerPortrait = Rotation::FromQuaternion(
+      Rotation::QuaternionType(0.7071067811865476, 0., 0., 0.7071067811865476));
   static const Rotation kSensorToDisplayPortrait =
-          Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), 0.);
+      Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), 0.);
 
   // This is the same than initializing the rotation from
   // Rotation::FromYawPitchRoll(-M_PI / 2., -M_PI / 2., -M_PI / 2.).
   static const Rotation kEkftoHeadTrackerPortraitUpsideDown =
-          Rotation::FromQuaternion(Rotation::QuaternionType(0, -0.707107, -0.707107, 0));
+      Rotation::FromQuaternion(Rotation::QuaternionType(
+          0., -0.7071067811865476, -0.7071067811865476, 0.));
   static const Rotation kSensorToDisplayPortraitUpsideDown =
-          Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), M_PI);
+      Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), M_PI);
 
-  switch (Viewport_orientation) {
+  switch (viewport_orientation) {
     case kLandscapeLeft:
       *ekf_to_head_tracker = kEkftoHeadTrackerLandscapeLeft;
       *sensor_to_display = kSensorToDisplayLandscapeLeft;
@@ -145,7 +144,7 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
   Rotation ekf_to_head_tracker;
   Rotation sensor_to_display;
   GetRotationsFromViewportOrientation(viewport_orientation,
-                        &ekf_to_head_tracker, &sensor_to_display);
+                                      &ekf_to_head_tracker, &sensor_to_display);
 
   const Vector4 q =
       (sensor_to_display * predicted_rotation * ekf_to_head_tracker)

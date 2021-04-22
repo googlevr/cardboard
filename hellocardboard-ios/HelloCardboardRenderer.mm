@@ -197,8 +197,7 @@ void HelloCardboardRenderer::DrawFrame() {
   // Head tracker cardboard.
   float position[3];
   float orientation[4];
-  CardboardHeadTracker_getPose(_headTracker, targetTime,
-                            kLandscapeLeft, position, orientation);
+  CardboardHeadTracker_getPose(_headTracker, targetTime, kLandscapeLeft, position, orientation);
   _headView =
       GLKMatrix4Multiply(GLKMatrix4MakeTranslation(position[0], position[1], position[2]),
                          GLKMatrix4MakeWithQuaternion(GLKQuaternionMakeWithArray(orientation)));

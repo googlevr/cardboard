@@ -82,7 +82,7 @@ class CardboardApi {
   /// @param[out] orientation A pointer to an array with four floats to fill in
   ///             the quaternion that denotes the orientation of the head.
   // TODO(b/154305848): Move argument types to std::array*.
-  // TODO(arilow): Support different display to sensor orientations
+  // TODO(b/135488467): Support different display to sensor orientations
   //  for Unity.
   void GetHeadTrackerPose(float* position, float* orientation);
 
