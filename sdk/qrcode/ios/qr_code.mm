@@ -16,8 +16,9 @@
 #import "qr_code.h"
 
 #import <AVFoundation/AVFoundation.h>
-#import <libkern/OSAtomic.h>
 #import <UIKit/UIKit.h>
+
+#import <atomic>
 
 #import "qrcode/ios/device_params_helper.h"
 #import "qrcode/ios/qr_scan_view_controller.h"
@@ -26,9 +27,9 @@ namespace cardboard {
 namespace qrcode {
 namespace {
 
-volatile int32_t qrCodeScanCount = 0;
+std::atomic<int32_t> qrCodeScanCount = {0};
 
-void incrementQrCodeScanCount() { OSAtomicIncrement32Barrier(&qrCodeScanCount); }
+void incrementQrCodeScanCount() { std::atomic_fetch_add(&qrCodeScanCount, 1); }
 
 void showQRScanViewController() {
   UIViewController *presentingViewController = nil;
@@ -41,7 +42,7 @@ void showQRScanViewController() {
   }
 
   __block CardboardQRScanViewController *qrViewController =
-      [[CardboardQRScanViewController alloc] initWithCompletion:^(BOOL succeeded) {
+      [[CardboardQRScanViewController alloc] initWithCompletion:^(BOOL /*succeeded*/) {
         incrementQrCodeScanCount();
         [qrViewController dismissViewControllerAnimated:YES completion:nil];
       }];
@@ -52,7 +53,7 @@ void showQRScanViewController() {
 
 void requestPermissionInSettings() {
   NSURL *settingURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
-  [UIApplication.sharedApplication openURL:settingURL];
+  [UIApplication.sharedApplication openURL:settingURL options:@{} completionHandler:nil];
 }
 
 void prerequestCameraPermissionForQRScan() {

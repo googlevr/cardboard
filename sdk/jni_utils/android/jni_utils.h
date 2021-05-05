@@ -21,9 +21,16 @@
 namespace cardboard {
 namespace jni {
 
-/// @brief Logs a Java exception and clears JNI flag if any exception occured.
+/// @brief Initializes Java class refences used by this module.
+/// @param vm The JavaVM pointer. It must not be nullptr.
+/// @param context The Andoird context. It is not used and left here just for
+///        function prototype standarization.
+void initializeAndroid(JavaVM* vm, jobject context);
+
+/// @brief Logs a Java exception and clears JNI flag if any exception occurred.
 /// @param java_env The pointer to the JNI Environmnent.
-void CheckExceptionInJava(JNIEnv* env);
+/// @return Whether an exception has occurred.
+bool CheckExceptionInJava(JNIEnv* env);
 
 /// @brief Retrieves the JNI environment.
 /// @details JavaVM::GetEnv() might return JNI_OK, JNI_EDETACHED or other value.
@@ -38,6 +45,12 @@ void LoadJNIEnv(JavaVM* vm, JNIEnv** env);
 /// @param class_name A char pointer holding the Java full class name.
 /// @return A global referenced jclass pointing to the @p class_name Java class.
 jclass LoadJClass(JNIEnv* env, const char* class_name);
+
+/// @brief Throws a RuntimeException in Java with @p msg.
+/// @details The exception will be thrown as soon as the JNI execution returns.
+/// @param env The JNI Environment context. It must not be nullptr.
+/// @param msg Exception's message. It must not be nullptr.
+void ThrowJavaRuntimeException(JNIEnv* env, const char* msg);
 
 }  // namespace jni
 }  // namespace cardboard

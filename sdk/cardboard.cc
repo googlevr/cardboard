@@ -237,14 +237,6 @@ CardboardUv CardboardLensDistortion_distortedUvForUndistortedUv(
   return ret;
 }
 
-CardboardDistortionRenderer* CardboardMetalDistortionRenderer_create() {
-  if (CARDBOARD_IS_NOT_INITIALIZED()) {
-    return nullptr;
-  }
-  CARDBOARD_LOGE("Metal rendering API not available");
-  return nullptr;
-}
-
 CardboardDistortionRenderer* CardboardVulkanDistortionRenderer_create() {
   if (CARDBOARD_IS_NOT_INITIALIZED()) {
     return nullptr;
@@ -272,7 +264,7 @@ void CardboardDistortionRenderer_setMesh(CardboardDistortionRenderer* renderer,
 }
 
 void CardboardDistortionRenderer_renderEyeToDisplay(
-    CardboardDistortionRenderer* renderer, int target_display, int x, int y,
+    CardboardDistortionRenderer* renderer, uint64_t target, int x, int y,
     int width, int height, const CardboardEyeTextureDescription* left_eye,
     const CardboardEyeTextureDescription* right_eye) {
   if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(renderer) ||
@@ -280,7 +272,7 @@ void CardboardDistortionRenderer_renderEyeToDisplay(
     return;
   }
   static_cast<cardboard::DistortionRenderer*>(renderer)->RenderEyeToDisplay(
-      target_display, x, y, width, height, left_eye, right_eye);
+      target, x, y, width, height, left_eye, right_eye);
 }
 
 CardboardHeadTracker* CardboardHeadTracker_create() {
@@ -338,7 +330,7 @@ void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
   }
   std::vector<uint8_t> device_params =
       cardboard::qrcode::getCurrentSavedDeviceParams();
-  *size = device_params.size();
+  *size = static_cast<int>(device_params.size());
   *encoded_device_params = new uint8_t[*size];
   memcpy(*encoded_device_params, &device_params[0], *size);
 }
@@ -367,8 +359,7 @@ int CardboardQrCode_getQrCodeScanCount() {
 
 void CardboardQrCode_getCardboardV1DeviceParams(uint8_t** encoded_device_params,
                                                 int* size) {
-  if (CARDBOARD_IS_NOT_INITIALIZED() ||
-      CARDBOARD_IS_ARG_NULL(encoded_device_params) ||
+  if (CARDBOARD_IS_ARG_NULL(encoded_device_params) ||
       CARDBOARD_IS_ARG_NULL(size)) {
     GetDefaultEncodedDeviceParams(encoded_device_params, size);
     return;
@@ -376,7 +367,7 @@ void CardboardQrCode_getCardboardV1DeviceParams(uint8_t** encoded_device_params,
   static std::vector<uint8_t> cardboard_v1_device_param =
       cardboard::qrcode::getCardboardV1DeviceParams();
   *encoded_device_params = cardboard_v1_device_param.data();
-  *size = cardboard_v1_device_param.size();
+  *size = static_cast<int>(cardboard_v1_device_param.size());
 }
 
 }  // extern "C"

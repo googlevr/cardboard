@@ -36,12 +36,15 @@ jclass intent_class_;
 jclass component_name_class_;
 std::atomic<int> qr_code_scan_count_(0);
 
+// TODO(b/180938531): Release these global references.
 void LoadJNIResources(JNIEnv* env) {
-  cardboard_params_utils_class_ = cardboard::jni::LoadJClass(
-      env, "com/google/cardboard/sdk/qrcode/CardboardParamsUtils");
-  intent_class_ = cardboard::jni::LoadJClass(env, "android/content/Intent");
-  component_name_class_ =
-      cardboard::jni::LoadJClass(env, "android/content/ComponentName");
+  cardboard_params_utils_class_ =
+      reinterpret_cast<jclass>(env->NewGlobalRef(cardboard::jni::LoadJClass(
+          env, "com/google/cardboard/sdk/qrcode/CardboardParamsUtils")));
+  intent_class_ = reinterpret_cast<jclass>(env->NewGlobalRef(
+      cardboard::jni::LoadJClass(env, "android/content/Intent")));
+  component_name_class_ = reinterpret_cast<jclass>(env->NewGlobalRef(
+      cardboard::jni::LoadJClass(env, "android/content/ComponentName")));
 }
 
 }  // anonymous namespace
@@ -118,6 +121,6 @@ extern "C" {
 void IncrementQrCodeScanCount() { cardboard::qrcode::qr_code_scan_count_++; }
 
 JNI_METHOD(void, QrCodeCaptureActivity, nativeIncrementQrCodeScanCount)
-(JNIEnv* env, jobject obj) { IncrementQrCodeScanCount(); }
+(JNIEnv* /*env*/, jobject /*obj*/) { IncrementQrCodeScanCount(); }
 
 }  // extern "C"

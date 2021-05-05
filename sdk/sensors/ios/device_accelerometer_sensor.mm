@@ -37,7 +37,7 @@ DeviceAccelerometerSensor::DeviceAccelerometerSensor() : sensor_info_(new Sensor
 
 DeviceAccelerometerSensor::~DeviceAccelerometerSensor() {}
 
-void DeviceAccelerometerSensor::PollForSensorData(int timeout_ms,
+void DeviceAccelerometerSensor::PollForSensorData(int /*timeout_ms*/,
                                                   std::vector<AccelerometerData>* results) const {
   results->clear();
   @autoreleasepool {

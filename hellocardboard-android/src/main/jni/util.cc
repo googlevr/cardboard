@@ -205,7 +205,7 @@ bool LoadObjFile(AAssetManager* mgr, const std::string& file_name,
 
       bool is_normal_available = false;
       bool is_uv_available = false;
-      for (int i = 0; i < per_vertex_info_list.size(); ++i) {
+      for (size_t i = 0; i < per_vertex_info_list.size(); ++i) {
         char* per_vertex_info;
         int per_vertex_info_count = 0;
 
@@ -428,7 +428,7 @@ float AngleBetweenVectors(const std::array<float, 4>& vec1,
 
 static constexpr uint64_t kNanosInSeconds = 1000000000;
 
-long GetMonotonicTimeNano() {
+int64_t GetBootTimeNano() {
   struct timespec res;
   clock_gettime(CLOCK_BOOTTIME, &res);
   return (res.tv_sec * kNanosInSeconds) + res.tv_nsec;
@@ -484,12 +484,9 @@ GLuint LoadGLShader(GLenum type, const char* shader_source) {
   }
 }
 
-TexturedMesh::TexturedMesh()
-    : vertices_(), uv_(), indices_(), position_attrib_(0), uv_attrib_(0) {}
-
-bool TexturedMesh::Initialize(JNIEnv* env, AAssetManager* asset_mgr,
+bool TexturedMesh::Initialize(GLuint position_attrib, GLuint uv_attrib,
                               const std::string& obj_file_path,
-                              GLuint position_attrib, GLuint uv_attrib) {
+                              AAssetManager* asset_mgr) {
   position_attrib_ = position_attrib;
   uv_attrib_ = uv_attrib;
   // We don't use normals for anything so we discard them.
@@ -511,8 +508,6 @@ void TexturedMesh::Draw() const {
   glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_SHORT,
                  indices_.data());
 }
-
-Texture::Texture() : texture_id_(0) {}
 
 Texture::~Texture() {
   if (texture_id_ != 0) {

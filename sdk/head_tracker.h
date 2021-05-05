@@ -67,8 +67,6 @@ class HeadTracker {
   // polling for data.
   void UnregisterCallbacks();
 
-  Rotation GetDefaultOrientation() const;
-
   std::atomic<bool> is_tracking_;
   // Sensor Fusion object that stores the internal state of the filter.
   std::unique_ptr<SensorFusionEkf> sensor_fusion_;

@@ -18,9 +18,9 @@
 #include <array>
 #include <cmath>
 
-#include "unity/xr_unity_plugin/cardboard_xr_unity.h"
 #include "unity/xr_provider/load.h"
 #include "unity/xr_provider/math_tools.h"
+#include "unity/xr_unity_plugin/cardboard_xr_unity.h"
 #include "IUnityInterface.h"
 #include "IUnityXRInput.h"
 #include "IUnityXRTrace.h"
@@ -48,7 +48,8 @@ class CardboardInputProvider {
 
   /// Callback executed when a subsystem should initialize in preparation for
   /// becoming active.
-  UnitySubsystemErrorCode Initialize(UnitySubsystemHandle handle, void* data) {
+  UnitySubsystemErrorCode Initialize(UnitySubsystemHandle handle,
+                                     void* /*data*/) {
     CARDBOARD_INPUT_XR_TRACE_LOG(cardboard_input_provider_->GetTrace(),
                                  "Lifecycle initialized");
 

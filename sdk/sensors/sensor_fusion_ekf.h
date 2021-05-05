@@ -24,7 +24,7 @@
 #include "sensors/accelerometer_data.h"
 #include "sensors/gyroscope_bias_estimator.h"
 #include "sensors/gyroscope_data.h"
-#include "sensors/pose_state.h"
+#include "sensors/rotation_state.h"
 #include "util/matrix_3x3.h"
 #include "util/rotation.h"
 #include "util/vector.h"
@@ -33,8 +33,8 @@ namespace cardboard {
 
 // Sensor fusion class that implements an Extended Kalman Filter (EKF) to
 // estimate a 3D rotation from a gyroscope and an accelerometer.
-// This system only has one state, the pose. It does not estimate any velocity
-// or acceleration.
+// This system only has one state, the rotation. It does not estimate any
+// velocity or acceleration.
 //
 // To learn more about Kalman filtering one can read this article which is a
 // good introduction: https://en.wikipedia.org/wiki/Kalman_filter
@@ -48,43 +48,33 @@ class SensorFusionEkf {
   // accelerometer sample arrives.
   void Reset();
 
-  // Gets the PoseState representing the latest pose and  derivatives at a
-  // particular timestamp as estimated by SensorFusion.
-  PoseState GetLatestPoseState() const;
+  // Gets the RotationState representing the latest rotation and angular
+  // velocity at a particular timestamp as estimated by SensorFusion.
+  RotationState GetLatestRotationState() const;
 
-  // Processes one gyroscope sample event. This updates the pose of the system
-  // and the prediction model. The gyroscope data is assumed to be in axis angle
-  // form. Angle = ||v|| and Axis = v / ||v||, with v = [v_x, v_y, v_z]^T.
+  // Gets a predicted rotation for a given time in the future (e.g. rendering
+  // time) based on a linear prediction model (this EKF implementation). It uses
+  // the system current rotation state (position, velocity, etc.) from the past
+  // to extrapolate a position in the future.
+  //
+  // @param requested_timestamp time at which you want the rotation.
+  // @return A Rotation from Start to Sensor Space.
+  Rotation PredictRotation(int64_t requested_timestamp) const;
+
+  // Processes one gyroscope sample event. This updates the rotation of the
+  // system and the prediction model. The gyroscope data is assumed to be in
+  // axis angle form. Angle = ||v|| and Axis = v / ||v||, with
+  // v = [v_x, v_y, v_z]^T.
   //
   // @param sample gyroscope sample data.
   void ProcessGyroscopeSample(const GyroscopeData& sample);
 
-  // Processes one accelerometer sample event. This updates the pose of the
+  // Processes one accelerometer sample event. This updates the rotation of the
   // system. If the Accelerometer norm changes too much between sample it is not
   // trusted as much.
   //
   // @param sample accelerometer sample data.
   void ProcessAccelerometerSample(const AccelerometerData& sample);
-
-  // Enables or disables the drift correction by estimating the gyroscope bias.
-  //
-  // @param enable Enable drift correction.
-  void SetBiasEstimationEnabled(bool enable);
-
-  // Returns a boolean that indicates if bias estimation is enabled or disabled.
-  //
-  // @return true if bias estimation is enabled, false otherwise.
-  bool IsBiasEstimationEnabled() const;
-
-  // Returns the current gyroscope bias estimate from GyroscopeBiasEstimator.
-  Vector3 GetGyroscopeBias() const {
-    std::unique_lock<std::mutex> lock(mutex_);
-    return {gyroscope_bias_estimate_[0], gyroscope_bias_estimate_[1],
-            gyroscope_bias_estimate_[2]};
-  }
-
-  // Returns true after receiving the first accelerometer measurement.
-  bool IsFullyInitialized() const { return is_aligned_with_gravity_; }
 
  private:
   // Estimates the average timestep between gyroscope event.
@@ -94,10 +84,10 @@ class SensorFusionEkf {
   // space of the quadric.
   void UpdateStateCovariance(const Matrix3x3& motion_update);
 
-  // Computes the innovation vector of the Kalman based on the input pose.
+  // Computes the innovation vector of the Kalman based on the input rotation.
   // It uses the latest measurement vector (i.e. accelerometer data), which must
   // be set prior to calling this function.
-  Vector3 ComputeInnovation(const Rotation& pose);
+  Vector3 ComputeInnovation(const Rotation& rotation_in);
 
   // This computes the measurement_jacobian_ via numerical differentiation based
   // on the current value of sensor_from_start_rotation_.
@@ -116,7 +106,7 @@ class SensorFusionEkf {
 
   // Current transformation from Sensor Space to Start Space.
   // x_sensor = sensor_from_start_rotation_ * x_start;
-  PoseState current_state_;
+  RotationState current_state_;
 
   // Filtering of the gyroscope timestep started?
   bool is_timestep_filter_initialized_;
@@ -171,9 +161,6 @@ class SensorFusionEkf {
   std::atomic<bool> execute_reset_with_next_accelerometer_sample_;
 
   mutable std::mutex mutex_;
-
-  // Flag indicating if bias estimation is enabled (enabled by default).
-  std::atomic<bool> bias_estimation_enabled_;
 
   // Bias estimator and static device detector.
   GyroscopeBiasEstimator gyroscope_bias_estimator_;

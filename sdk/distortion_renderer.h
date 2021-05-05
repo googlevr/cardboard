@@ -30,7 +30,7 @@ class DistortionRenderer {
   virtual ~DistortionRenderer() = default;
   virtual void SetMesh(const CardboardMesh* mesh, CardboardEye eye) = 0;
   virtual void RenderEyeToDisplay(
-      int target_display, int x, int y, int width, int height,
+      uint64_t target, int x, int y, int width, int height,
       const CardboardEyeTextureDescription* left_eye,
       const CardboardEyeTextureDescription* right_eye) const = 0;
 };

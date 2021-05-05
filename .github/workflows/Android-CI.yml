@@ -1,0 +1,19 @@
+name: PullRequest
+
+on: [pull_request]
+
+jobs:
+  buildTest:
+    name: Build SDK and HelloCardboard for Android
+    runs-on: macos-10.15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.2
+        with:
+          fetch-depth: 0
+      - name: Build sdk
+        run: ./gradlew :sdk:assemble
+      - name: Build HelloCardboard
+        run: ./gradlew :hellocardboard-android:assembleDebug
+      - name: Code checks
+        run: ./gradlew check

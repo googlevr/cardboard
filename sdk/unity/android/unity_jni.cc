@@ -24,7 +24,7 @@ JavaVM* vm_ = nullptr;
 
 extern "C" {
 
-JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
   vm_ = vm;
   return JNI_VERSION_1_6;
 }

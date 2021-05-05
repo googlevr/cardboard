@@ -23,25 +23,13 @@
 #include <atomic>
 #include <cstring>
 #include <memory>
-#include <mutex>
+#include <mutex>  // NOLINT(build/c++11)
 #include <vector>
 
-#ifdef __ANDROID__
-#include <GLES2/gl2.h>
-#endif
-#ifdef __APPLE__
-#include <OpenGLES/ES2/gl.h>
-#endif
-#ifdef __ANDROID__
-#include <GLES3/gl3.h>
-#endif
-#ifdef __APPLE__
-#include <OpenGLES/ES3/gl.h>
-#endif
 #include "include/cardboard.h"
 
 // The following block makes log macros available for Android and iOS.
-#if __ANDROID__
+#if defined(__ANDROID__)
 #include <android/log.h>
 #define LOG_TAG "CardboardXRUnity"
 #define LOGW(fmt, ...)                                                       \
@@ -56,7 +44,7 @@
 #define LOGF(fmt, ...)                                                        \
   __android_log_print(ANDROID_LOG_FATAL, LOG_TAG, "[%s : %d] " fmt, __FILE__, \
                       __LINE__, ##__VA_ARGS__)
-#elif __APPLE__
+#elif defined(__APPLE__)
 #include <CoreFoundation/CFString.h>
 #include <CoreFoundation/CoreFoundation.h>
 extern "C" {
@@ -77,148 +65,6 @@ void NSLog(CFStringRef format, ...);
 #define LOGF(...)
 #endif
 
-// @def Forwards the call to CheckGlError().
-#define CHECKGLERROR(label) CheckGlError(__FILE__, __LINE__)
-
-namespace {
-/**
- * Checks for OpenGL errors, and crashes if one has occurred.  Note that this
- * can be an expensive call, so real applications should call this rarely.
- *
- * @param file File name
- * @param line Line number
- * @param label Error label
- */
-void CheckGlError(const char* file, int line) {
-  int gl_error = glGetError();
-  if (gl_error != GL_NO_ERROR) {
-    LOGF("[%s : %d] GL error: %d", file, line, gl_error);
-    // Crash immediately to make OpenGL errors obvious.
-    abort();
-  }
-}
-
-// TODO(b/155457703): De-dupe GL utility function here and in
-// distortion_renderer.cc
-GLuint LoadShader(GLenum shader_type, const char* source) {
-  GLuint shader = glCreateShader(shader_type);
-  glShaderSource(shader, 1, &source, nullptr);
-  glCompileShader(shader);
-  CHECKGLERROR("glCompileShader");
-  GLint result = GL_FALSE;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-  if (result == GL_FALSE) {
-    int log_length;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
-    if (log_length == 0) {
-      return 0;
-    }
-
-    std::vector<char> log_string(log_length);
-    glGetShaderInfoLog(shader, log_length, nullptr, log_string.data());
-    LOGE("Could not compile shader of type %d: %s", shader_type,
-         log_string.data());
-
-    shader = 0;
-  }
-
-  return shader;
-}
-
-// TODO(b/155457703): De-dupe GL utility function here and in
-// distortion_renderer.cc
-GLuint CreateProgram(const char* vertex, const char* fragment) {
-  GLuint vertex_shader = LoadShader(GL_VERTEX_SHADER, vertex);
-  if (vertex_shader == 0) {
-    return 0;
-  }
-
-  GLuint fragment_shader = LoadShader(GL_FRAGMENT_SHADER, fragment);
-  if (fragment_shader == 0) {
-    return 0;
-  }
-
-  GLuint program = glCreateProgram();
-
-  glAttachShader(program, vertex_shader);
-  glAttachShader(program, fragment_shader);
-  glLinkProgram(program);
-  CHECKGLERROR("glLinkProgram");
-
-  GLint result = GL_FALSE;
-  glGetProgramiv(program, GL_LINK_STATUS, &result);
-  if (result == GL_FALSE) {
-    int log_length;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
-    if (log_length == 0) {
-      return 0;
-    }
-
-    std::vector<char> log_string(log_length);
-    glGetShaderInfoLog(program, log_length, nullptr, log_string.data());
-    LOGE("Could not compile program: %s", log_string.data());
-
-    return 0;
-  }
-
-  glDetachShader(program, vertex_shader);
-  glDetachShader(program, fragment_shader);
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
-  CHECKGLERROR("GlCreateProgram");
-
-  return program;
-}
-
-/// @brief Vertex shader for RenderWidget when using OpenGL ES2.0.
-const char kWidgetVertexShaderOpenGlEs2[] =
-    R"glsl(
-  attribute vec2 a_Position;
-  attribute vec2 a_TexCoords;
-  varying vec2 v_TexCoords;
-  void main() {
-    gl_Position = vec4(a_Position, 0, 1);
-    v_TexCoords = a_TexCoords;
-  }
-  )glsl";
-
-/// @brief Fragment shader for RenderWidget when using OpenGL ES2.0.
-const char kWidgetFragmentShaderOpenGlEs2[] =
-    R"glsl(
-  precision mediump float;
-  uniform sampler2D u_Texture;
-  varying vec2 v_TexCoords;
-  void main() {
-    gl_FragColor = texture2D(u_Texture, v_TexCoords);
-  }
-  )glsl";
-
-/// @brief Vertex shader for RenderWidget when using OpenGL ES3.0.
-const char kWidgetVertexShaderOpenGlEs3[] =
-    R"glsl(#version 300 es
-  layout (location = 0) in vec2 a_Position;
-  layout (location = 1) in vec2 a_TexCoords;
-  out vec2 v_TexCoords;
-  void main() {
-    gl_Position = vec4(a_Position, 0, 1);
-    v_TexCoords = a_TexCoords;
-  }
-  )glsl";
-
-/// @brief Fragment shader for RenderWidget when using OpenGL ES3.0.
-const char kWidgetFragmentShaderOpenGlEs3[] =
-    R"glsl(#version 300 es
-  precision mediump float;
-  uniform sampler2D u_Texture;
-  in vec2 v_TexCoords;
-  out vec4 o_FragColor;
-  void main() {
-    o_FragColor = texture(u_Texture, v_TexCoords);
-  }
-  )glsl";
-
-}  // namespace
-
 // TODO(b/151087873) Convert into single line namespace declaration.
 namespace cardboard {
 namespace unity {
@@ -227,13 +73,32 @@ namespace unity {
 //        SDK C-API.
 class CardboardApi::CardboardApiImpl {
  public:
-  // @brief Default contructor. See attributes for default initialization.
-  CardboardApiImpl() = default;
+  // @brief CardboardApiImpl constructor.
+  // @details Initializes the renderer based on the `selected_graphics_api_`
+  // variable. The rest of the instance variables would use default
+  // initialization values.
+  CardboardApiImpl() {
+    switch (selected_graphics_api_) {
+      case CardboardGraphicsApi::kOpenGlEs2:
+        renderer_ = MakeOpenGlEs2Renderer();
+        break;
+      case CardboardGraphicsApi::kOpenGlEs3:
+        renderer_ = MakeOpenGlEs3Renderer();
+        break;
+#if defined(__APPLE__)
+      case CardboardGraphicsApi::kMetal:
+        renderer_ = MakeMetalRenderer(xr_interfaces_);
+        break;
+#endif
+      default:
+        LOGF("Unsupported API: %d", static_cast<int>(selected_graphics_api_));
+        break;
+    }
+  }
 
-  // @brief Destructor.
-  // @details Frees GL resources, HeadTracker module and Distortion Renderer
-  //          module.
-  ~CardboardApiImpl() { GlTeardown(); }
+  // @brief CardboardApiImpl destructor.
+  // @details Frees renderer resources.
+  ~CardboardApiImpl() { RenderingResourcesTeardown(); }
 
   void InitHeadTracker() {
     if (head_tracker_ == nullptr) {
@@ -270,10 +135,10 @@ class CardboardApi::CardboardApiImpl {
       orientation[3] = 1.0f;
       return;
     }
-    CardboardHeadTracker_getPose(head_tracker_.get(),
-                                 CardboardApiImpl::GetMonotonicTimeNano() +
-                                     kPredictionTimeWithoutVsyncNanos,
-                                 position, orientation);
+    CardboardHeadTracker_getPose(
+        head_tracker_.get(),
+        CardboardApiImpl::GetBootTimeNano() + kPredictionTimeWithoutVsyncNanos,
+        position, orientation);
   }
 
   static void ScanDeviceParams() {
@@ -301,22 +166,38 @@ class CardboardApi::CardboardApiImpl {
       // available.
       CardboardQrCode_getCardboardV1DeviceParams(&data, &size);
       lens_distortion = CardboardLensDistortion_create(
-          data, size, screen_params_.width, screen_params_.height);
+          data, size, screen_params_.viewport_width,
+          screen_params_.viewport_height);
     } else {
       lens_distortion = CardboardLensDistortion_create(
-          data, size, screen_params_.width, screen_params_.height);
+          data, size, screen_params_.viewport_width,
+          screen_params_.viewport_height);
       CardboardQrCode_destroy(data);
     }
     device_params_changed_ = false;
 
-    GlSetup();
+    RenderingResourcesSetup();
 
-    if (selected_graphics_api_ == kOpenGlEs2) {
-      distortion_renderer_.reset(CardboardOpenGlEs2DistortionRenderer_create());
-    } else {
-      // #gles3 - This call is only needed if OpenGL ES 3.0 support is desired.
-      // Remove the following line if OpenGL ES 3.0 is not needed.
-      distortion_renderer_.reset(CardboardOpenGlEs3DistortionRenderer_create());
+    switch (selected_graphics_api_) {
+      case CardboardGraphicsApi::kOpenGlEs2:
+        distortion_renderer_.reset(
+            CardboardOpenGlEs2DistortionRenderer_create());
+        break;
+      case CardboardGraphicsApi::kOpenGlEs3:
+        // #gles3 - This call is only needed if OpenGL ES 3.0 support is
+        // desired. Remove the following line if OpenGL ES 3.0 is not needed.
+        distortion_renderer_.reset(
+            CardboardOpenGlEs3DistortionRenderer_create());
+        break;
+#if defined(__APPLE__)
+      case CardboardGraphicsApi::kMetal:
+        distortion_renderer_.reset(
+            MakeCardboardMetalDistortionRenderer(xr_interfaces_));
+        break;
+#endif
+      default:
+        LOGF("Unsupported API: %d", static_cast<int>(selected_graphics_api_));
+        break;
     }
 
     CardboardLensDistortion_getDistortionMesh(
@@ -347,8 +228,6 @@ class CardboardApi::CardboardApiImpl {
                                            eye_data_[CardboardEye::kRight].fov);
 
     CardboardLensDistortion_destroy(lens_distortion);
-
-    CHECKGLERROR("UpdateDeviceParams");
   }
 
   void GetEyeMatrices(int eye, float* eye_from_head, float* fov) {
@@ -357,46 +236,53 @@ class CardboardApi::CardboardApiImpl {
     std::memcpy(fov, eye_data_[eye].fov, sizeof(float) * 4);
   }
 
-  void RenderEyesToDisplay(int gl_framebuffer_id) {
-    CardboardDistortionRenderer_renderEyeToDisplay(
-        distortion_renderer_.get(), gl_framebuffer_id, screen_params_.x,
-        screen_params_.y, screen_params_.width, screen_params_.height,
-        &eye_data_[CardboardEye::kLeft].texture,
-        &eye_data_[CardboardEye::kRight].texture);
+  void RenderEyesToDisplay() {
+    const Renderer::ScreenParams screen_params{
+        screen_params_.width,          screen_params_.height,
+        screen_params_.viewport_x,     screen_params_.viewport_y,
+        screen_params_.viewport_width, screen_params_.viewport_height};
+    renderer_->RenderEyesToDisplay(distortion_renderer_.get(), screen_params,
+                                   &eye_data_[CardboardEye::kLeft].texture,
+                                   &eye_data_[CardboardEye::kRight].texture);
   }
 
   void RenderWidgets() {
     std::lock_guard<std::mutex> l(widget_mutex_);
-    for (WidgetParams widget_param : widget_params_) {
-      RenderWidget(widget_param);
-    }
+    Renderer::ScreenParams screen_params{
+        screen_params_.width,          screen_params_.height,
+        screen_params_.viewport_x,     screen_params_.viewport_y,
+        screen_params_.viewport_width, screen_params_.viewport_height};
+    renderer_->RenderWidgets(screen_params, widget_params_);
   }
 
-  int GetLeftTextureId() {
-    return gl_render_textures_[CardboardEye::kLeft].color_texture;
+  uint64_t GetLeftTextureColorBufferId() {
+    return render_textures_[CardboardEye::kLeft].color_buffer;
   }
 
-  int GetRightTextureId() {
-    return gl_render_textures_[CardboardEye::kRight].color_texture;
+  uint64_t GetRightTextureColorBufferId() {
+    return render_textures_[CardboardEye::kRight].color_buffer;
   }
 
-  int GetLeftDepthBufferId() {
-    return gl_render_textures_[CardboardEye::kLeft].depth_render_buffer;
+  uint64_t GetLeftTextureDepthBufferId() {
+    return render_textures_[CardboardEye::kLeft].depth_buffer;
   }
 
-  int GetRightDepthBufferId() {
-    return gl_render_textures_[CardboardEye::kRight].depth_render_buffer;
+  uint64_t GetRightTextureDepthBufferId() {
+    return render_textures_[CardboardEye::kRight].depth_buffer;
   }
 
-  static void SetUnityScreenParams(int x, int y, int width, int height) {
-    unity_screen_params_ = ScreenParams{x, y, width, height};
+  static void SetUnityScreenParams(int width, int height, int viewport_x,
+                                   int viewport_y, int viewport_width,
+                                   int viewport_height) {
+    unity_screen_params_ = ScreenParams{
+        width, height, viewport_x, viewport_y, viewport_width, viewport_height};
     SetDeviceParametersChanged();
   }
 
   static void GetUnityScreenParams(int* width, int* height) {
     const ScreenParams screen_params = unity_screen_params_;
-    *width = screen_params.width;
-    *height = screen_params.height;
+    *width = screen_params.viewport_width;
+    *height = screen_params.viewport_height;
   }
 
   static void SetWidgetCount(int count) {
@@ -404,9 +290,9 @@ class CardboardApi::CardboardApiImpl {
     widget_params_.resize(count);
   }
 
-  static void SetWidgetParams(int i, const WidgetParams& params) {
+  static void SetWidgetParams(int i, const Renderer::WidgetParams& params) {
     std::lock_guard<std::mutex> l(widget_mutex_);
-    if (i < 0 || i >= widget_params_.size()) {
+    if (i < 0 || i >= static_cast<int>(widget_params_.size())) {
       LOGE("SetWidgetParams parameter i=%d, out of bounds (size=%d)", i,
            static_cast<int>(widget_params_.size()));
       return;
@@ -423,20 +309,31 @@ class CardboardApi::CardboardApiImpl {
     selected_graphics_api_ = graphics_api;
   }
 
+  static CardboardGraphicsApi GetGraphicsApi() {
+    return selected_graphics_api_;
+  }
+
+  static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces) {
+    xr_interfaces_ = xr_interfaces;
+  }
+
  private:
-  // @brief Holds the rectangle information to draw into the screen.
+  // @brief Holds the screen and rendering area details.
   struct ScreenParams {
-    // @brief x coordinate in pixels of the lower left corner of the rectangle.
-    int x;
-
-    // @brief y coordinate in pixels of the lower left corner of the rectangle.
-    int y;
-
-    // @brief The width of the rectangle in pixels.
+    // @brief The width of the screen in pixels.
     int width;
-
-    // @brief The height of the rectangle in pixels.
+    // @brief The height of the screen in pixels.
     int height;
+    // @brief x coordinate in pixels of the lower left corner of the rendering
+    // area rectangle.
+    int viewport_x;
+    // @brief y coordinate in pixels of the lower left corner of the rendering
+    // area rectangle.
+    int viewport_y;
+    // @brief The width of the rendering area rectangle in pixels.
+    int viewport_width;
+    // @brief The height of the rendering area rectangle in pixels.
+    int viewport_height;
   };
 
   // @brief Holds eye information.
@@ -456,13 +353,6 @@ class CardboardApi::CardboardApiImpl {
     CardboardEyeTextureDescription texture;
   };
 
-  // @brief Holds the OpenGl texture and depth buffers for each eye.
-  struct GlRenderTexture {
-    unsigned int color_texture = 0;
-
-    unsigned int depth_render_buffer = 0;
-  };
-
   // @brief Custom deleter for HeadTracker.
   struct CardboardHeadTrackerDeleter {
     void operator()(CardboardHeadTracker* head_tracker) {
@@ -477,46 +367,21 @@ class CardboardApi::CardboardApiImpl {
     }
   };
 
-  // @brief Computes the monotonic time in nano seconds.
-  // @return The monotonic time count in nano seconds.
-  static int64_t GetMonotonicTimeNano() {
+  // @brief Computes the system boot time in nanoseconds.
+  // @return The system boot time count in nanoseconds.
+  static int64_t GetBootTimeNano() {
     struct timespec res;
-  // Sensor timestamps are recorded as the time since boot
-#ifdef __APPLE__
-      clock_gettime(CLOCK_UPTIME_RAW, &res);
-#else
-      clock_gettime(CLOCK_BOOTTIME, &res);
+#if defined(__ANDROID__)
+    clock_gettime(CLOCK_BOOTTIME, &res);
+#elif defined(__APPLE__)
+    clock_gettime(CLOCK_UPTIME_RAW, &res);
 #endif
     return (res.tv_sec * CardboardApi::CardboardApiImpl::kNanosInSeconds) +
            res.tv_nsec;
   }
 
-  // @brief Creates and configures a texture and depth buffer for an eye.
-  //
-  // @details Loads a color texture and then a depth buffer for an eye.
-  // @param gl_render_texture A GlRenderTexture to load its resources.
-  void CreateGlRenderTexture(GlRenderTexture* gl_render_texture) {
-    // Create color texture.
-    glGenTextures(1, &gl_render_texture->color_texture);
-    glBindTexture(GL_TEXTURE_2D, gl_render_texture->color_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screen_params_.width / 2,
-                 screen_params_.height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-    CHECKGLERROR("Create a color texture.");
-
-    // Create depth buffer.
-    glGenRenderbuffers(1, &gl_render_texture->depth_render_buffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, gl_render_texture->depth_render_buffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
-                          screen_params_.width / 2, screen_params_.height);
-    CHECKGLERROR("Create depth render buffer.");
-  }
-
-  // @brief Configures GL resources.
-  void GlSetup() {
+  // @brief Configures rendering resources.
+  void RenderingResourcesSetup() {
     if (selected_graphics_api_ == kNone) {
       LOGE(
           "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
@@ -524,110 +389,43 @@ class CardboardApi::CardboardApiImpl {
       return;
     }
 
-    if (gl_render_textures_[0].color_texture != 0) {
-      GlTeardown();
+    if (render_textures_[0].color_buffer != 0) {
+      RenderingResourcesTeardown();
     }
 
-    // Create render texture and depth buffer for both eyes.
-    CreateGlRenderTexture(&gl_render_textures_[CardboardEye::kLeft]);
-    CreateGlRenderTexture(&gl_render_textures_[CardboardEye::kRight]);
+    // Create render texture, depth buffer for both eyes and setup widgets.
+    renderer_->CreateRenderTexture(&render_textures_[CardboardEye::kLeft],
+                                   screen_params_.viewport_width,
+                                   screen_params_.viewport_height);
+    renderer_->CreateRenderTexture(&render_textures_[CardboardEye::kRight],
+                                   screen_params_.viewport_width,
+                                   screen_params_.viewport_height);
+    renderer_->SetupWidgets();
 
+    // Set texture description structures.
     eye_data_[CardboardEye::kLeft].texture.texture =
-        gl_render_textures_[CardboardEye::kLeft].color_texture;
+        render_textures_[CardboardEye::kLeft].color_buffer;
     eye_data_[CardboardEye::kLeft].texture.left_u = 0;
     eye_data_[CardboardEye::kLeft].texture.right_u = 1;
     eye_data_[CardboardEye::kLeft].texture.top_v = 1;
     eye_data_[CardboardEye::kLeft].texture.bottom_v = 0;
 
     eye_data_[CardboardEye::kRight].texture.texture =
-        gl_render_textures_[CardboardEye::kRight].color_texture;
+        render_textures_[CardboardEye::kRight].color_buffer;
     eye_data_[CardboardEye::kRight].texture.left_u = 0;
     eye_data_[CardboardEye::kRight].texture.right_u = 1;
     eye_data_[CardboardEye::kRight].texture.top_v = 1;
     eye_data_[CardboardEye::kRight].texture.bottom_v = 0;
-
-    // Load widget state
-    if (selected_graphics_api_ == kOpenGlEs2) {
-      widget_program_ = CreateProgram(kWidgetVertexShaderOpenGlEs2,
-                                      kWidgetFragmentShaderOpenGlEs2);
-    } else {
-      // #gles3 - This call is only needed if OpenGL ES 3.0 support is desired.
-      // Remove the following line if OpenGL ES 3.0 is not needed.
-      widget_program_ = CreateProgram(kWidgetVertexShaderOpenGlEs3,
-                                      kWidgetFragmentShaderOpenGlEs3);
-    }
-    widget_attrib_position_ =
-        glGetAttribLocation(widget_program_, "a_Position");
-    widget_attrib_tex_coords_ =
-        glGetAttribLocation(widget_program_, "a_TexCoords");
-    widget_uniform_texture_ =
-        glGetUniformLocation(widget_program_, "u_Texture");
   }
 
-  // @brief Releases Gl resources in a GlRenderTexture.
-  //
-  // @param gl_render_texture A GlRenderTexture to release its resources.
-  void DestroyGlRenderTexture(GlRenderTexture* gl_render_texture) {
-    glDeleteRenderbuffers(1, &gl_render_texture->depth_render_buffer);
-    gl_render_texture->depth_render_buffer = 0;
-
-    glDeleteTextures(1, &gl_render_texture->color_texture);
-    gl_render_texture->color_texture = 0;
-  }
-
-  // @brief Frees GL resources.
-  void GlTeardown() {
-    if (gl_render_textures_[0].color_texture == 0) {
+  // @brief Frees rendering resources.
+  void RenderingResourcesTeardown() {
+    if (render_textures_[0].color_buffer == 0) {
       return;
     }
-    DestroyGlRenderTexture(&gl_render_textures_[CardboardEye::kLeft]);
-    DestroyGlRenderTexture(&gl_render_textures_[CardboardEye::kRight]);
-    CHECKGLERROR("GlTeardown");
-  }
-
-  static constexpr float Lerp(float start, float end, float val) {
-    return start + (end - start) * val;
-  }
-
-  void RenderWidget(WidgetParams params) {
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBlendEquation(GL_FUNC_ADD);
-
-    // Convert coordinates to normalized space (-1,-1 - +1,+1)
-    float x = Lerp(-1, +1, static_cast<float>(params.x) / screen_params_.width);
-    float y =
-        Lerp(-1, +1, static_cast<float>(params.y) / screen_params_.height);
-    float width = params.width * 2.0f / screen_params_.width;
-    float height = params.height * 2.0f / screen_params_.height;
-    const float position[] = {x, y,          x + width, y,
-                              x, y + height, x + width, y + height};
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glEnableVertexAttribArray(widget_attrib_position_);
-    glVertexAttribPointer(
-        widget_attrib_position_, /*size=*/2, /*type=*/GL_FLOAT,
-        /*normalized=*/GL_FALSE, /*stride=*/0, /*pointer=*/position);
-    CHECKGLERROR("RenderWidget-7");
-
-    const float uv[] = {0, 0, 1, 0, 0, 1, 1, 1};
-    glEnableVertexAttribArray(widget_attrib_tex_coords_);
-    glVertexAttribPointer(
-        widget_attrib_tex_coords_, /*size=*/2, /*type=*/GL_FLOAT,
-        /*normalized=*/GL_FALSE, /*stride=*/0, /*pointer=*/uv);
-
-    glUseProgram(widget_program_);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, params.texture);
-    glUniform1i(widget_uniform_texture_, 0);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    CHECKGLERROR("RenderWidget");
+    renderer_->DestroyRenderTexture(&render_textures_[CardboardEye::kLeft]);
+    renderer_->DestroyRenderTexture(&render_textures_[CardboardEye::kRight]);
+    renderer_->TeardownWidgets();
   }
 
   // @brief Default prediction excess time in nano seconds.
@@ -652,6 +450,7 @@ class CardboardApi::CardboardApiImpl {
       distortion_renderer_;
 
   // @brief Screen parameters.
+  // @details Must be used by rendering calls (or those to set up the pipeline).
   ScreenParams screen_params_;
 
   // @brief Eye data information.
@@ -659,41 +458,35 @@ class CardboardApi::CardboardApiImpl {
   //          `CardboardEye::kRight` holds the right eye data.
   std::array<EyeData, 2> eye_data_;
 
-  // @brief Holds the OpenGL render texture information for each eye.
-  std::array<GlRenderTexture, 2> gl_render_textures_;
+  // @brief Holds the render texture information for each eye.
+  std::array<Renderer::RenderTexture, 2> render_textures_;
+
+  // @brief Manages the rendering elements lifecycle.
+  std::unique_ptr<Renderer> renderer_;
 
   // @brief Store Unity reported screen params.
   static std::atomic<ScreenParams> unity_screen_params_;
 
   // @brief Unity-loaded widgets
-  static std::vector<WidgetParams> widget_params_;
+  static std::vector<Renderer::WidgetParams> widget_params_;
 
   // @brief Mutex for widget_params_ access.
   static std::mutex widget_mutex_;
-
-  // @brief RenderWidget GL program.
-  GLuint widget_program_;
-
-  // @brief RenderWidget "a_Position" attrib location.
-  GLint widget_attrib_position_;
-
-  // @brief RenderWidget "a_TexCoords" attrib location.
-  GLint widget_attrib_tex_coords_;
-
-  // @brief RenderWidget "u_Texture" uniform location.
-  GLint widget_uniform_texture_;
 
   // @brief Track changes to device parameters.
   static std::atomic<bool> device_params_changed_;
 
   // @brief Holds the selected graphics API.
   static std::atomic<CardboardGraphicsApi> selected_graphics_api_;
+
+  // @brief Holds the Unity XR interfaces.
+  static IUnityInterfaces* xr_interfaces_;
 };
 
 std::atomic<CardboardApi::CardboardApiImpl::ScreenParams>
-    CardboardApi::CardboardApiImpl::unity_screen_params_({0, 0});
+    CardboardApi::CardboardApiImpl::unity_screen_params_({0, 0, 0, 0, 0, 0});
 
-std::vector<CardboardApi::WidgetParams>
+std::vector<Renderer::WidgetParams>
     CardboardApi::CardboardApiImpl::widget_params_;
 
 std::mutex CardboardApi::CardboardApiImpl::widget_mutex_;
@@ -702,6 +495,8 @@ std::atomic<bool> CardboardApi::CardboardApiImpl::device_params_changed_(true);
 
 std::atomic<CardboardGraphicsApi>
     CardboardApi::CardboardApiImpl::selected_graphics_api_(kNone);
+
+IUnityInterfaces* CardboardApi::CardboardApiImpl::xr_interfaces_{nullptr};
 
 CardboardApi::CardboardApi() { p_impl_.reset(new CardboardApiImpl()); }
 
@@ -725,36 +520,37 @@ void CardboardApi::GetEyeMatrices(int eye, float* eye_from_head, float* fov) {
   return p_impl_->GetEyeMatrices(eye, eye_from_head, fov);
 }
 
-void CardboardApi::RenderEyesToDisplay(int gl_framebuffer_id) {
-  p_impl_->RenderEyesToDisplay(gl_framebuffer_id);
-}
+void CardboardApi::RenderEyesToDisplay() { p_impl_->RenderEyesToDisplay(); }
 
 void CardboardApi::RenderWidgets() { p_impl_->RenderWidgets(); }
 
-int CardboardApi::GetLeftTextureId() { return p_impl_->GetLeftTextureId(); }
-
-int CardboardApi::GetRightTextureId() { return p_impl_->GetRightTextureId(); }
-
-int CardboardApi::GetLeftDepthBufferId() {
-  return p_impl_->GetLeftDepthBufferId();
+uint64_t CardboardApi::GetLeftTextureColorBufferId() {
+  return p_impl_->GetLeftTextureColorBufferId();
 }
 
-int CardboardApi::GetRightDepthBufferId() {
-  return p_impl_->GetRightDepthBufferId();
+uint64_t CardboardApi::GetRightTextureColorBufferId() {
+  return p_impl_->GetRightTextureColorBufferId();
 }
 
-int CardboardApi::GetBoundFramebuffer() {
-  int bound_framebuffer = 0;
-  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &bound_framebuffer);
-  return bound_framebuffer;
+uint64_t CardboardApi::GetLeftTextureDepthBufferId() {
+  return p_impl_->GetLeftTextureDepthBufferId();
+}
+
+uint64_t CardboardApi::GetRightTextureDepthBufferId() {
+  return p_impl_->GetRightTextureDepthBufferId();
 }
 
 void CardboardApi::GetScreenParams(int* width, int* height) {
   CardboardApi::CardboardApiImpl::GetUnityScreenParams(width, height);
 }
 
-void CardboardApi::SetUnityScreenParams(int x, int y, int width, int height) {
-  CardboardApi::CardboardApiImpl::SetUnityScreenParams(x, y, width, height);
+void CardboardApi::SetUnityScreenParams(int screen_width, int screen_height,
+                                        int viewport_x, int viewport_y,
+                                        int viewport_width,
+                                        int viewport_height) {
+  CardboardApi::CardboardApiImpl::SetUnityScreenParams(
+      screen_width, screen_height, viewport_x, viewport_y, viewport_width,
+      viewport_height);
 }
 
 void CardboardApi::SetDeviceParametersChanged() {
@@ -769,12 +565,21 @@ void CardboardApi::SetWidgetCount(int count) {
   CardboardApi::CardboardApiImpl::SetWidgetCount(count);
 }
 
-void CardboardApi::SetWidgetParams(int i, const WidgetParams& params) {
+void CardboardApi::SetWidgetParams(int i,
+                                   const Renderer::WidgetParams& params) {
   CardboardApi::CardboardApiImpl::SetWidgetParams(i, params);
 }
 
 void CardboardApi::SetGraphicsApi(CardboardGraphicsApi graphics_api) {
   CardboardApi::CardboardApiImpl::SetGraphicsApi(graphics_api);
+}
+
+CardboardGraphicsApi CardboardApi::GetGraphicsApi() {
+  return CardboardApi::CardboardApiImpl::GetGraphicsApi();
+}
+
+void CardboardApi::SetUnityInterfaces(IUnityInterfaces* xr_interfaces) {
+  CardboardApi::CardboardApiImpl::SetUnityInterfaces(xr_interfaces);
 }
 
 }  // namespace unity
@@ -784,8 +589,12 @@ void CardboardApi::SetGraphicsApi(CardboardGraphicsApi graphics_api) {
 extern "C" {
 #endif
 
-void CardboardUnity_setScreenParams(int x, int y, int width, int height) {
-  cardboard::unity::CardboardApi::SetUnityScreenParams(x, y, width, height);
+void CardboardUnity_setScreenParams(int screen_width, int screen_height,
+                                    int viewport_x, int viewport_y,
+                                    int viewport_width, int viewport_height) {
+  cardboard::unity::CardboardApi::SetUnityScreenParams(
+      screen_width, screen_height, viewport_x, viewport_y, viewport_width,
+      viewport_height);
 }
 
 void CardboardUnity_setDeviceParametersChanged() {
@@ -798,9 +607,9 @@ void CardboardUnity_setWidgetCount(int count) {
 
 void CardboardUnity_setWidgetParams(int i, void* texture, int x, int y,
                                     int width, int height) {
-  cardboard::unity::CardboardApi::WidgetParams params;
+  cardboard::unity::Renderer::WidgetParams params;
 
-  params.texture = static_cast<int>(reinterpret_cast<intptr_t>(texture));
+  params.texture = reinterpret_cast<intptr_t>(texture);
   params.x = x;
   params.y = y;
   params.width = width;
@@ -818,10 +627,16 @@ void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api) {
       LOGD("Configured OpenGL ES3.0 as Graphics API.");
       cardboard::unity::CardboardApi::SetGraphicsApi(graphics_api);
       break;
+#if defined(__APPLE__)
+    case CardboardGraphicsApi::kMetal:
+      LOGD("Configured Metal as Graphics API.");
+      cardboard::unity::CardboardApi::SetGraphicsApi(graphics_api);
+      break;
+#endif
     default:
       LOGE(
           "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
-          "was selected.");
+          "nor Metal was selected.");
   }
 }
 
