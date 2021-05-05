@@ -44,12 +44,12 @@ void LoadJNIResources(JNIEnv* env) {
   screen_pixel_density_class_ = reinterpret_cast<jclass>(env->NewGlobalRef(
       cardboard::jni::LoadJClass(env,
                                  "com/google/cardboard/sdk/screenparams/"
-                                 "ScreenParamsUtils$ScreenPixelDensity");
+                                 "ScreenParamsUtils$ScreenPixelDensity")));
     
-  screen_orientation_class_ =
+  screen_orientation_class_ = reinterpret_cast<jclass>(env->NewGlobalRef(
       cardboard::jni::LoadJClass(env,
                                  "com/google/cardboard/sdk/screenparams/"
-                                 "ScreenParamsUtils$ScreenOrientation");
+                                 "ScreenParamsUtils$ScreenOrientation")));
 
 }
 
