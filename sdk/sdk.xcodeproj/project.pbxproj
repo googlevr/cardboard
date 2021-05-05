@@ -10,7 +10,11 @@
 		0F2363882492E2080009924A /* cardboard_xr_unity.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0FF99B2524587233001FF78F /* cardboard_xr_unity.h */; };
 		0F29AA5F255AC37F00154BD0 /* opengl_es3_distortion_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0F29AA5E255AC37F00154BD0 /* opengl_es3_distortion_renderer.cc */; };
 		0F29AA62255AC3A200154BD0 /* is_initialized.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0F29AA61255AC3A200154BD0 /* is_initialized.cc */; };
+		0F6BA71F25CC53E100C1B015 /* opengl_es2_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0F6BA71D25CC53E100C1B015 /* opengl_es2_renderer.cc */; };
+		0F6BA72025CC53E100C1B015 /* opengl_es3_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0F6BA71E25CC53E100C1B015 /* opengl_es3_renderer.cc */; };
+		0F6BA72425CC5B7D00C1B015 /* metal_renderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0F6BA72325CC5B7D00C1B015 /* metal_renderer.mm */; };
 		0F8D4FDF2361F86A00E7C48D /* libprotobuf-lite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */; };
+		0F984F7A25C047860033D5C6 /* metal_distortion_renderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0F984F7925C047860033D5C6 /* metal_distortion_renderer.mm */; };
 		0FD2023E23575F3B00B3C342 /* screen_params.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FA23575F3A00B3C342 /* screen_params.mm */; };
 		0FD2023F23575F3B00B3C342 /* rotation.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FD23575F3A00B3C342 /* rotation.cc */; };
 		0FD2024023575F3B00B3C342 /* vectorutils.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD201FE23575F3A00B3C342 /* vectorutils.cc */; };
@@ -22,7 +26,6 @@
 		0FD2024623575F3B00B3C342 /* lowpass_filter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020E23575F3B00B3C342 /* lowpass_filter.cc */; };
 		0FD2024723575F3B00B3C342 /* median_filter.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2020F23575F3B00B3C342 /* median_filter.cc */; };
 		0FD2024823575F3B00B3C342 /* neck_model.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021023575F3B00B3C342 /* neck_model.cc */; };
-		0FD2024923575F3B00B3C342 /* pose_prediction.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021123575F3B00B3C342 /* pose_prediction.cc */; };
 		0FD2024A23575F3B00B3C342 /* sensor_fusion_ekf.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021323575F3B00B3C342 /* sensor_fusion_ekf.cc */; };
 		0FD2024B23575F3B00B3C342 /* device_gyroscope_sensor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021723575F3B00B3C342 /* device_gyroscope_sensor.mm */; };
 		0FD2024C23575F3B00B3C342 /* device_accelerometer_sensor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2021923575F3B00B3C342 /* device_accelerometer_sensor.mm */; };
@@ -40,6 +43,8 @@
 		0FD2025923575F3B00B3C342 /* distortion_mesh.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023D23575F3B00B3C342 /* distortion_mesh.cc */; };
 		0FD2025F2357613600B3C342 /* cardboard_device.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2025E2357613600B3C342 /* cardboard_device.pb.cc */; };
 		0FD2027C235766E800B3C342 /* cardboard.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0FD2022B23575F3B00B3C342 /* cardboard.h */; };
+		0FECE29825BB2760009C662C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FECE29725BB2760009C662C /* Metal.framework */; };
+		0FECE29A25BB276D009C662C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FECE29925BB276D009C662C /* MetalKit.framework */; };
 		0FF99B2724587233001FF78F /* cardboard_xr_unity.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */; };
 		65D9D58F25DA7DED00A3F5E2 /* rotation_data.cc in Sources */ = {isa = PBXBuildFile; fileRef = 65D9D58B25DA7DEC00A3F5E2 /* rotation_data.cc */; };
 		65D9D59025DA7DED00A3F5E2 /* position_data.cc in Sources */ = {isa = PBXBuildFile; fileRef = 65D9D58C25DA7DEC00A3F5E2 /* position_data.cc */; };
@@ -69,7 +74,12 @@
 		0F29AA60255AC3A200154BD0 /* is_initialized.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = is_initialized.h; sourceTree = "<group>"; };
 		0F29AA61255AC3A200154BD0 /* is_initialized.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = is_initialized.cc; sourceTree = "<group>"; };
 		0F2D9A572523781600BB8866 /* is_arg_null.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = is_arg_null.h; sourceTree = "<group>"; };
+		0F6BA71C25CC53E100C1B015 /* renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderer.h; sourceTree = "<group>"; };
+		0F6BA71D25CC53E100C1B015 /* opengl_es2_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_es2_renderer.cc; sourceTree = "<group>"; };
+		0F6BA71E25CC53E100C1B015 /* opengl_es3_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_es3_renderer.cc; sourceTree = "<group>"; };
+		0F6BA72325CC5B7D00C1B015 /* metal_renderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = metal_renderer.mm; sourceTree = "<group>"; };
 		0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../third_party/libprotobuf/ios/lib/libprotobuf-lite.a"; sourceTree = "<group>"; };
+		0F984F7925C047860033D5C6 /* metal_distortion_renderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = metal_distortion_renderer.mm; sourceTree = "<group>"; };
 		0FD200852357511E00B3C342 /* cardboard_api.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = cardboard_api.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FD201FA23575F3A00B3C342 /* screen_params.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = screen_params.mm; sourceTree = "<group>"; };
 		0FD201FB23575F3A00B3C342 /* lens_distortion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lens_distortion.h; sourceTree = "<group>"; };
@@ -92,8 +102,6 @@
 		0FD2020E23575F3B00B3C342 /* lowpass_filter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lowpass_filter.cc; sourceTree = "<group>"; };
 		0FD2020F23575F3B00B3C342 /* median_filter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = median_filter.cc; sourceTree = "<group>"; };
 		0FD2021023575F3B00B3C342 /* neck_model.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = neck_model.cc; sourceTree = "<group>"; };
-		0FD2021123575F3B00B3C342 /* pose_prediction.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pose_prediction.cc; sourceTree = "<group>"; };
-		0FD2021223575F3B00B3C342 /* pose_prediction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pose_prediction.h; sourceTree = "<group>"; };
 		0FD2021323575F3B00B3C342 /* sensor_fusion_ekf.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sensor_fusion_ekf.cc; sourceTree = "<group>"; };
 		0FD2021423575F3B00B3C342 /* lowpass_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lowpass_filter.h; sourceTree = "<group>"; };
 		0FD2021523575F3B00B3C342 /* sensor_fusion_ekf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sensor_fusion_ekf.h; sourceTree = "<group>"; };
@@ -109,7 +117,7 @@
 		0FD2022023575F3B00B3C342 /* mean_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mean_filter.h; sourceTree = "<group>"; };
 		0FD2022123575F3B00B3C342 /* gyroscope_bias_estimator.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gyroscope_bias_estimator.cc; sourceTree = "<group>"; };
 		0FD2022223575F3B00B3C342 /* gyroscope_bias_estimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gyroscope_bias_estimator.h; sourceTree = "<group>"; };
-		0FD2022323575F3B00B3C342 /* pose_state.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pose_state.h; sourceTree = "<group>"; };
+		0FD2022323575F3B00B3C342 /* rotation_state.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rotation_state.h; sourceTree = "<group>"; };
 		0FD2022423575F3B00B3C342 /* sensor_event_producer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sensor_event_producer.h; sourceTree = "<group>"; };
 		0FD2022523575F3B00B3C342 /* median_filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = median_filter.h; sourceTree = "<group>"; };
 		0FD2022623575F3B00B3C342 /* mean_filter.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mean_filter.cc; sourceTree = "<group>"; };
@@ -134,6 +142,8 @@
 		0FD2025E2357613600B3C342 /* cardboard_device.pb.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = cardboard_device.pb.cc; path = ../proto/cardboard_device.pb.cc; sourceTree = "<group>"; };
 		0FD20260235761ED00B3C342 /* libprotobuf-lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libprotobuf-lite.a"; path = "../third_party/libprotobuf/universal/libprotobuf-lite.a"; sourceTree = "<group>"; };
 		0FD202B92357C0F200B3C342 /* sdk.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = sdk.bundle; path = qrcode/ios/sdk.bundle; sourceTree = "<group>"; };
+		0FECE29725BB2760009C662C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
+		0FECE29925BB276D009C662C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk/System/iOSSupport/System/Library/Frameworks/MetalKit.framework; sourceTree = DEVELOPER_DIR; };
 		0FF99B2524587233001FF78F /* cardboard_xr_unity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard_xr_unity.h; sourceTree = "<group>"; };
 		0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cardboard_xr_unity.cc; sourceTree = "<group>"; };
 		65D9D58B25DA7DEC00A3F5E2 /* rotation_data.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rotation_data.cc; sourceTree = "<group>"; };
@@ -178,12 +188,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F8D4FDF2361F86A00E7C48D /* libprotobuf-lite.a in Frameworks */,
+				0FECE29825BB2760009C662C /* Metal.framework in Frameworks */,
+				0FECE29A25BB276D009C662C /* MetalKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0F984F7825C047860033D5C6 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				0F984F7925C047860033D5C6 /* metal_distortion_renderer.mm */,
+			);
+			path = ios;
+			sourceTree = "<group>";
+		};
 		0FD2007C2357511D00B3C342 = {
 			isa = PBXGroup;
 			children = (
@@ -225,6 +245,8 @@
 		0FD201F223575B8000B3C342 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0FECE29925BB276D009C662C /* MetalKit.framework */,
+				0FECE29725BB2760009C662C /* Metal.framework */,
 				0F8D4FDE2361F86A00E7C48D /* libprotobuf-lite.a */,
 				0FD20260235761ED00B3C342 /* libprotobuf-lite.a */,
 			);
@@ -276,8 +298,6 @@
 				0FD2020E23575F3B00B3C342 /* lowpass_filter.cc */,
 				0FD2020F23575F3B00B3C342 /* median_filter.cc */,
 				0FD2021023575F3B00B3C342 /* neck_model.cc */,
-				0FD2021123575F3B00B3C342 /* pose_prediction.cc */,
-				0FD2021223575F3B00B3C342 /* pose_prediction.h */,
 				0FD2021323575F3B00B3C342 /* sensor_fusion_ekf.cc */,
 				0FD2021423575F3B00B3C342 /* lowpass_filter.h */,
 				0FD2021523575F3B00B3C342 /* sensor_fusion_ekf.h */,
@@ -289,7 +309,7 @@
 				0FD2022023575F3B00B3C342 /* mean_filter.h */,
 				0FD2022123575F3B00B3C342 /* gyroscope_bias_estimator.cc */,
 				0FD2022223575F3B00B3C342 /* gyroscope_bias_estimator.h */,
-				0FD2022323575F3B00B3C342 /* pose_state.h */,
+				0FD2022323575F3B00B3C342 /* rotation_state.h */,
 				0FD2022423575F3B00B3C342 /* sensor_event_producer.h */,
 				0FD2022523575F3B00B3C342 /* median_filter.h */,
 				0FD2022623575F3B00B3C342 /* mean_filter.cc */,
@@ -361,8 +381,12 @@
 		0FF99B2424587233001FF78F /* xr_unity_plugin */ = {
 			isa = PBXGroup;
 			children = (
+				0F6BA71D25CC53E100C1B015 /* opengl_es2_renderer.cc */,
+				0F6BA71E25CC53E100C1B015 /* opengl_es3_renderer.cc */,
+				0F6BA71C25CC53E100C1B015 /* renderer.h */,
 				0FF99B2524587233001FF78F /* cardboard_xr_unity.h */,
 				0FF99B2624587233001FF78F /* cardboard_xr_unity.cc */,
+				0F6BA72325CC5B7D00C1B015 /* metal_renderer.mm */,
 			);
 			path = xr_unity_plugin;
 			sourceTree = "<group>";
@@ -381,6 +405,7 @@
 		7B2ADAC824E4779500FEBAA8 /* rendering */ = {
 			isa = PBXGroup;
 			children = (
+				0F984F7825C047860033D5C6 /* ios */,
 				0F29AA5E255AC37F00154BD0 /* opengl_es3_distortion_renderer.cc */,
 				7B2ADAC924E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc */,
 			);
@@ -457,7 +482,7 @@
 		0FD2007D2357511D00B3C342 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1220;
 				TargetAttributes = {
 					0FD200842357511E00B3C342 = {
 						CreatedOnToolsVersion = 10.1;
@@ -470,6 +495,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 0FD2007C2357511D00B3C342;
 			productRefGroup = 0FD200862357511E00B3C342 /* Products */;
@@ -508,17 +534,20 @@
 				0FD2024C23575F3B00B3C342 /* device_accelerometer_sensor.mm in Sources */,
 				0FD2025423575F3B00B3C342 /* qr_scan_view_controller.mm in Sources */,
 				0FD2025123575F3B00B3C342 /* cardboard.cc in Sources */,
+				0F6BA72425CC5B7D00C1B015 /* metal_renderer.mm in Sources */,
 				0FF99B2724587233001FF78F /* cardboard_xr_unity.cc in Sources */,
 				7B76813A24A3FA6B00E92050 /* input.cc in Sources */,
 				7B76813B24A3FA6B00E92050 /* display.cc in Sources */,
+				0F984F7A25C047860033D5C6 /* metal_distortion_renderer.mm in Sources */,
 				7B76813D24A3FA6B00E92050 /* math_tools.cc in Sources */,
 				0FD2025723575F3B00B3C342 /* device_params_helper.mm in Sources */,
 				7B2ADACB24E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc in Sources */,
 				0FD2024023575F3B00B3C342 /* vectorutils.cc in Sources */,
 				0FD2025823575F3B00B3C342 /* cardboard_v1.cc in Sources */,
 				7B76813C24A3FA6B00E92050 /* main.cc in Sources */,
-				0FD2024923575F3B00B3C342 /* pose_prediction.cc in Sources */,
+				0F6BA72025CC53E100C1B015 /* opengl_es3_renderer.cc in Sources */,
 				0FD2024E23575F3B00B3C342 /* sensor_helper.mm in Sources */,
+				0F6BA71F25CC53E100C1B015 /* opengl_es2_renderer.cc in Sources */,
 				0FD2024A23575F3B00B3C342 /* sensor_fusion_ekf.cc in Sources */,
 				0FD2024323575F3B00B3C342 /* matrix_3x3.cc in Sources */,
 				0FD2024423575F3B00B3C342 /* lens_distortion.cc in Sources */,
@@ -556,6 +585,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -585,6 +615,10 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+				);
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -615,6 +649,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -637,6 +672,10 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_CFLAGS = (
+					"-Wall",
+					"-Wextra",
+				);
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -650,6 +689,11 @@
 				DEVELOPMENT_TEAM = C5M9TX4B3U;
 				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = NO;
 				EXECUTABLE_PREFIX = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					GLES_SILENCE_DEPRECATION,
+				);
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)/../proto",
@@ -672,10 +716,12 @@
 				DEVELOPMENT_TEAM = C5M9TX4B3U;
 				EMBED_ASSET_PACKS_IN_PRODUCT_BUNDLE = NO;
 				EXECUTABLE_PREFIX = "";
+				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)/../proto",
 					"$(PROJECT_DIR)/../third_party/libprotobuf/ios/include",
+					"$(PROJECT_DIR)/../third_party/unity_plugin_api",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../third_party/libprotobuf/ios/lib";
 				OTHER_LDFLAGS = "-ObjC";

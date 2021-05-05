@@ -80,8 +80,6 @@ class HeadTracker {
   // polling for data.
   void UnregisterCallbacks();
 
-  Rotation GetDefaultOrientation() const;
-
   std::atomic<bool> is_tracking_;
   // Sensor Fusion object that stores the internal state of the filter.
   std::unique_ptr<SensorFusionEkf> sensor_fusion_;
@@ -101,10 +99,9 @@ class HeadTracker {
   RotationData *rotation_data_;
   PositionData *position_data_;
   Rotation difference_to_6DoF_;
-    
-  // Aryzon multiple orientations
-  Rotation ekf_to_head_tracker;
-  const screen_params::ScreenOrientation start_orientation_;
+
+  Rotation ekf_to_head_tracker_;
+
 };
 
 }  // namespace cardboard

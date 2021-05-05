@@ -3,7 +3,7 @@ apply plugin: 'com.google.protobuf'
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.0"
+    buildToolsVersion "30.0.2"
     lintOptions {
         abortOnError false
     }
@@ -14,16 +14,13 @@ android {
         minSdkVersion 18
         targetSdkVersion 30
         versionCode 1
-        versionName "1.4.1"
+        versionName "1.5.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
-        externalNativeBuild {
-            cmake {
-                cppFlags.add("-std=c++17")
-                arguments "-DANDROID_STL=c++_static"
-            }
+        externalNativeBuild.cmake {
+            arguments "-DANDROID_STL=c++_static"
         }
         defaultConfig {
             consumerProguardFiles 'proguard-rules.pro'
@@ -35,10 +32,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
+    externalNativeBuild.cmake {
+        path "CMakeLists.txt"
     }
     sourceSets {
         // Sets path to java, jni, resources files and manifest location as it is not the default one.
@@ -57,20 +52,14 @@ android {
 
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.0.0'
-    }
-    plugins {
-        javalite {
-            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
-        }
+        artifact = 'com.google.protobuf:protoc:3.8.0'
     }
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                remove java
-            }
-            task.plugins {
-                javalite {}
+                java {
+                    option "lite"
+                }
             }
         }
     }
@@ -83,5 +72,5 @@ dependencies {
     // Android Mobile Vision
     implementation 'com.google.android.gms:play-services-vision:15.0.2'
     implementation 'com.android.support:design:28.0.0'
-    implementation 'com.google.protobuf:protobuf-lite:3.0.0'
+    implementation 'com.google.protobuf:protobuf-javalite:3.8.0'
 }

@@ -15,7 +15,9 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 # C++ flags.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+add_compile_options(-Wall -Wextra)
 
 # Standard Android dependencies
 find_library(android-lib android)
@@ -47,7 +49,7 @@ file(GLOB screen_params_srcs "screen_params/android/*.cc")
 # Device Params Sources
 file(GLOB device_params_srcs "device_params/android/*.cc")
 # Rendering Sources
-file(GLOB rendering_srcs "rendering/*.cc")
+file(GLOB rendering_srcs "rendering/opengl_*.cc")
 # 6DoF sources
 file(GLOB sixdof_srcs "sixdof/*.cc")
 
@@ -82,8 +84,9 @@ add_library(cardboard_api SHARED
     ${cardboard_xr_provider_srcs})
 
 # Includes
-target_include_directories(cardboard_api
-    PRIVATE ../third_party/unity_plugin_api)
+target_include_directories(cardboard_api PRIVATE
+    ../third_party/unity_plugin_api
+    include)
 
 # Build
 target_link_libraries(cardboard_api

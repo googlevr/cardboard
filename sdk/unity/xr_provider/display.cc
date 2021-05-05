@@ -18,9 +18,10 @@
 #include <map>
 #include <memory>
 
-#include "unity/xr_unity_plugin/cardboard_xr_unity.h"
+#include "util/is_arg_null.h"
 #include "unity/xr_provider/load.h"
 #include "unity/xr_provider/math_tools.h"
+#include "unity/xr_unity_plugin/cardboard_xr_unity.h"
 #include "IUnityInterface.h"
 #include "IUnityXRDisplay.h"
 #include "IUnityXRTrace.h"
@@ -36,19 +37,35 @@ namespace {
 //        UnityXRDisplayGraphicsThreadProvider
 class CardboardDisplayProvider {
  public:
-  CardboardDisplayProvider(IUnityXRTrace* trace,
-                           IUnityXRDisplayInterface* display)
-      : trace_(trace), display_(display) {}
+  CardboardDisplayProvider() {
+    if (CARDBOARD_IS_ARG_NULL(xr_interfaces_)) {
+      return;
+    }
+    display_ = xr_interfaces_->Get<IUnityXRDisplayInterface>();
+    trace_ = xr_interfaces_->Get<IUnityXRTrace>();
+  }
 
   IUnityXRDisplayInterface* GetDisplay() { return display_; }
 
   IUnityXRTrace* GetTrace() { return trace_; }
+
+  /// @return false When one of the provided IUnityInterface pointers is
+  /// nullptr, otherwise true.
+  bool IsValid() const {
+    return !CARDBOARD_IS_ARG_NULL(xr_interfaces_) &&
+           !CARDBOARD_IS_ARG_NULL(display_) && !CARDBOARD_IS_ARG_NULL(trace_);
+  }
 
   void SetHandle(UnitySubsystemHandle handle) { handle_ = handle; }
 
   /// @return A reference to the static instance of this class, which is thought
   ///         to be the only one.
   static std::unique_ptr<CardboardDisplayProvider>& GetInstance();
+
+  /// @brief Keeps a copy of @p xr_interfaces and sets it to
+  ///        cardboard::unity::CardboardApi.
+  /// @param xr_interfaces A pointer to obtain Unity XR interfaces.
+  static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces);
 
   /// @brief Initializes the display subsystem.
   ///
@@ -119,7 +136,7 @@ class CardboardDisplayProvider {
           trace_, "Skip the rendering because Cardboard SDK is uninitialized.");
       return kUnitySubsystemErrorCodeFailure;
     }
-    cardboard_api_->RenderEyesToDisplay(cardboard_api_->GetBoundFramebuffer());
+    cardboard_api_->RenderEyesToDisplay();
     cardboard_api_->RenderWidgets();
     return kUnitySubsystemErrorCodeSuccess;
   }
@@ -149,33 +166,43 @@ class CardboardDisplayProvider {
       is_initialized_ = true;
 
       // Initialize texture descriptors.
-      for (int i = 0; i < texture_descriptors_.size(); ++i) {
+      for (size_t i = 0; i < texture_descriptors_.size(); ++i) {
         texture_descriptors_[i] = {};
         texture_descriptors_[i].width = width_ / 2;
         texture_descriptors_[i].height = height_;
-        texture_descriptors_[i].depthFormat = kUnityXRDepthTextureFormatNone;
         texture_descriptors_[i].flags = 0;
-        texture_descriptors_[i].depthFormat = kUnityXRDepthTextureFormat16bit;
+
+        const CardboardGraphicsApi graphics_api =
+            cardboard_api_->GetGraphicsApi();
+        if (graphics_api == kOpenGlEs2 || graphics_api == kOpenGlEs3) {
+          texture_descriptors_[i].depthFormat = kUnityXRDepthTextureFormat16bit;
+        } else {
+          texture_descriptors_[i].depthFormat = kUnityXRDepthTextureFormatNone;
+        }
       }
     }
 
     // Setup render passes + texture ids for eye textures and layers.
-    for (int i = 0; i < texture_descriptors_.size(); ++i) {
+    for (size_t i = 0; i < texture_descriptors_.size(); ++i) {
       // Sets the color texture ID to Unity texture descriptors.
-      const int gl_colorname = i == 0 ? cardboard_api_->GetLeftTextureId()
-                                      : cardboard_api_->GetRightTextureId();
-      const int gl_depthname = i == 0 ? cardboard_api_->GetLeftDepthBufferId()
-                                      : cardboard_api_->GetRightDepthBufferId();
+      const uint64_t texture_color_buffer_id =
+          i == 0 ? cardboard_api_->GetLeftTextureColorBufferId()
+                 : cardboard_api_->GetRightTextureColorBufferId();
+      const uint64_t texture_depth_buffer_id =
+          i == 0 ? cardboard_api_->GetLeftTextureDepthBufferId()
+                 : cardboard_api_->GetRightTextureDepthBufferId();
 
       UnityXRRenderTextureId unity_texture_id = 0;
-      auto found = tex_map_.find(gl_colorname);
+      const auto found = tex_map_.find(texture_color_buffer_id);
       if (found == tex_map_.end()) {
         UnityXRRenderTextureDesc texture_descriptor = texture_descriptors_[i];
-        texture_descriptor.color.nativePtr = ConvertInt(gl_colorname);
-        texture_descriptor.depth.nativePtr = ConvertInt(gl_depthname);
+        texture_descriptor.color.nativePtr =
+            ToVoidPointer(texture_color_buffer_id);
+        texture_descriptor.depth.nativePtr =
+            ToVoidPointer(texture_depth_buffer_id);
         display_->CreateTexture(handle_, &texture_descriptor,
                                 &unity_texture_id);
-        tex_map_[gl_colorname] = unity_texture_id;
+        tex_map_[texture_color_buffer_id] = unity_texture_id;
       } else {
         unity_texture_id = found->second;
       }
@@ -227,10 +254,10 @@ class CardboardDisplayProvider {
 
  private:
   /// @brief Converts @p i to a void*
-  /// @param i An integer to convert to void*.
-  /// @return A void* whose value is @p i.
-  static void* ConvertInt(int i) {
-    return reinterpret_cast<void*>(static_cast<intptr_t>(i));
+  /// @param i A uint64_t integer to convert to void*.
+  /// @return A void* whose value is @p i.
+  static void* ToVoidPointer(uint64_t i) {
+    return reinterpret_cast<void*>(i);
   }
 
   /// @brief Loads Unity @p projection eye params from Cardboard field of view.
@@ -238,7 +265,7 @@ class CardboardDisplayProvider {
   ///          field of view angles.
   /// @param[in] cardboard_fov A float vector containing
   ///            [left, right, bottom, top] angles in radians.
-  /// @param[out] project A Unity projection structure pointer to load.
+  /// @param[out] projection A Unity projection structure pointer to load.
   static void ConfigureFieldOfView(const std::array<float, 4>& cardboard_fov,
                                    UnityXRProjection* projection) {
     projection->type = kUnityXRProjectionTypeHalfAngles;
@@ -274,32 +301,42 @@ class CardboardDisplayProvider {
   std::array<UnityXRRenderTextureDesc, 2> texture_descriptors_{};
 
   /// @brief Map to link Cardboard API and Unity XR texture IDs.
-  std::map<int, UnityXRRenderTextureId> tex_map_{};
+  std::map<uint64_t, UnityXRRenderTextureId> tex_map_{};
 
+  /// @brief Holds the unique instance of this class. It is accessible via
+  ///        GetInstance().
   static std::unique_ptr<CardboardDisplayProvider> display_provider_;
+
+  /// @brief Unity XR interface provider to get the display and trace
+  /// interfaces. When using Metal rendering API, its context will be
+  /// retrieved as well.
+  static IUnityInterfaces* xr_interfaces_;
 };
 
 std::unique_ptr<CardboardDisplayProvider>
     CardboardDisplayProvider::display_provider_;
+
+IUnityInterfaces* CardboardDisplayProvider::xr_interfaces_ = nullptr;
 
 std::unique_ptr<CardboardDisplayProvider>&
 CardboardDisplayProvider::GetInstance() {
   return display_provider_;
 }
 
+void CardboardDisplayProvider::SetUnityInterfaces(
+    IUnityInterfaces* xr_interfaces) {
+  xr_interfaces_ = xr_interfaces;
+  cardboard::unity::CardboardApi::SetUnityInterfaces(xr_interfaces_);
+}
+
 }  // namespace
 
 UnitySubsystemErrorCode LoadDisplay(IUnityInterfaces* xr_interfaces) {
-  auto* display = xr_interfaces->Get<IUnityXRDisplayInterface>();
-  if (display == NULL) {
+  CardboardDisplayProvider::SetUnityInterfaces(xr_interfaces);
+  CardboardDisplayProvider::GetInstance().reset(new CardboardDisplayProvider());
+  if (!CardboardDisplayProvider::GetInstance()->IsValid()) {
     return kUnitySubsystemErrorCodeFailure;
   }
-  auto* trace = xr_interfaces->Get<IUnityXRTrace>();
-  if (trace == NULL) {
-    return kUnitySubsystemErrorCodeFailure;
-  }
-  CardboardDisplayProvider::GetInstance().reset(
-      new CardboardDisplayProvider(trace, display));
 
   UnityLifecycleProvider display_lifecycle_handler;
   display_lifecycle_handler.userData = NULL;

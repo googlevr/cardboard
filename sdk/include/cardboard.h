@@ -42,6 +42,20 @@ typedef enum CardboardEye {
   kRight = 1,
 } CardboardEye;
 
+/// Enum to distinguish device screen orientations
+typedef enum CardboardScreenOrientation {
+  /// Landscape Left orientation.
+  kLandscapeLeft = 0,
+  /// Portrait orientation.
+  kPortrait = 1,
+  /// Landscape Right orientation.
+  kLandscapeRight = 2,
+  /// Portrait Upside Down orientation.
+  kPortraitUpsideDown = 3,
+  /// Orientation unknown
+  kUnknown = -1,
+} CardboardScreenOrientation;
+
 /// Struct representing a 3D mesh with 3D vertices and corresponding UV
 /// coordinates.
 typedef struct CardboardMesh {
@@ -60,7 +74,24 @@ typedef struct CardboardMesh {
 /// Struct to hold information about an eye texture.
 typedef struct CardboardEyeTextureDescription {
   /// The texture with eye pixels.
-  uint32_t texture;
+  ///
+  /// When using OpenGL ES 2.x and OpenGL ES 3.x, this field corresponds to a
+  /// GLuint variable.
+  ///
+  /// When using Metal, this field corresponds to a CFTypeRef
+  /// variable pointing to an id<MTLTexture> object. The SDK client is expected
+  /// to manage the object ownership and to guarantee the pointer validity
+  /// during the CardboardDistortionRenderer_renderEyeToDisplay function
+  /// execution to ensure it is properly retained. Usage example:
+  ///
+  /// @code{.m}
+  /// CardboardEyeTextureDescription leftEye;
+  /// leftEye.texture = CFBridgingRetain(_texture);
+  /// // Fill remaining fields in leftEye...
+  /// CardboardDistortionRenderer_renderEyeToDisplay(..., &leftEye, ...);
+  /// CFBridgingRelease(leftEye.texture);
+  /// @endcode
+  uint64_t texture;
   /// u coordinate of the left side of the eye.
   float left_u;
   /// u coordinate of the right side of the eye.
@@ -70,6 +101,59 @@ typedef struct CardboardEyeTextureDescription {
   /// v coordinate of the bottom side of the eye.
   float bottom_v;
 } CardboardEyeTextureDescription;
+
+/// Struct to set Metal distortion renderer configuration.
+typedef struct CardboardMetalDistortionRendererConfig {
+  /// MTLDevice id.
+  /// This field holds a CFTypeRef variable pointing to an id<MTLDevice> object.
+  /// The SDK client is expected to manage the object ownership and to guarantee
+  /// the pointer validity during the CardboardMetalDistortionRenderer_create
+  /// function execution to ensure it is properly retained. Usage example:
+  ///
+  /// @code{.m}
+  /// CardboardMetalDistortionRendererConfig config;
+  /// config.mtl_device = CFBridgingRetain(mtlDevice);
+  /// CardboardDistortionRenderer *distortionRenderer =
+  ///     CardboardMetalDistortionRenderer_create(&config);
+  /// CFBridgingRelease(config.mtl_device);
+  /// @endcode
+  uint64_t mtl_device;
+  /// Color attachment pixel format.
+  /// This field holds a MTLPixelFormat enum value (see
+  /// https://developer.apple.com/documentation/metalkit/mtkview/1535940-colorpixelformat?language=objc).
+  uint64_t color_attachment_pixel_format;
+  /// Depth attachment pixel format.
+  /// This field holds a MTLPixelFormat enum value (see
+  /// https://developer.apple.com/documentation/metalkit/mtkview/1535940-colorpixelformat?language=objc).
+  uint64_t depth_attachment_pixel_format;
+  /// Stencil attachment pixel format.
+  /// This field holds a MTLPixelFormat enum value (see
+  /// https://developer.apple.com/documentation/metalkit/mtkview/1535940-colorpixelformat?language=objc).
+  uint64_t stencil_attachment_pixel_format;
+} CardboardMetalDistortionRendererConfig;
+
+/// Struct to set Metal distortion renderer target configuration.
+typedef struct CardboardDistortionRendererTargetConfig {
+  /// MTLRenderCommandEncoder id.
+  /// This field holds a CFTypeRef variable pointing to an
+  /// id<MTLRenderCommandEncoder> object. The SDK client is expected to manage
+  /// the object ownership and to guarantee the pointer validity during the
+  /// CardboardDistortionRenderer_renderEyeToDisplay function execution to
+  /// ensure it is properly retained. Usage example:
+  ///
+  /// @code{.m}
+  /// CardboardDistortionRendererTargetConfig target_config;
+  /// target_config.render_command_encoder =
+  ///     CFBridgingRetain(renderCommandEncoder);
+  /// CardboardDistortionRenderer_renderEyeToDisplay(..., &target_config, ...);
+  /// CFBridgingRelease(target_config.render_command_encoder);
+  /// @endcode
+  uint64_t render_command_encoder;
+  /// Full width of the screen in pixels.
+  int screen_width;
+  /// Full height of the screen in pixels.
+  int screen_height;
+} CardboardDistortionRendererTargetConfig;
 
 /// An opaque Lens Distortion object.
 typedef struct CardboardLensDistortion CardboardLensDistortion;
@@ -124,6 +208,20 @@ extern "C" {
 void Cardboard_initializeAndroid(JavaVM* vm, jobject context);
 #endif
 
+/// @}
+
+/////////////////////////////////////////////////////////////////////////////
+// Screen Parameters
+/////////////////////////////////////////////////////////////////////////////
+/// @defgroup screen-parameters Screen Parameters
+/// @brief This module calculates the screen size and current screen orientation
+/// @{
+/// Returns the current device screen orientation
+///
+/// @pre If the SDK is not initialized, this function will always return kUnknown
+///
+/// @return         CardboardScreenOrientation enum
+CardboardScreenOrientation CardboardScreenParameters_getScreenOrientation();
 /// @}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -282,8 +380,10 @@ CardboardDistortionRenderer* CardboardOpenGlEs3DistortionRenderer_create();
 /// Creates a new distortion renderer object. It uses Metal as the rendering
 /// API. Must be called from the render thread.
 ///
+/// @param[in]      config                  Distortion renderer configuration.
 /// @return         Distortion renderer object pointer
-CardboardDistortionRenderer* CardboardMetalDistortionRenderer_create();
+CardboardDistortionRenderer* CardboardMetalDistortionRenderer_create(
+    const CardboardMetalDistortionRendererConfig* config);
 
 /// Creates a new distortion renderer object. It uses Vulkan as the rendering
 /// API. Must be called from the render thread.
@@ -323,7 +423,10 @@ void CardboardDistortionRenderer_setMesh(CardboardDistortionRenderer* renderer,
 /// When it is unmet, a call to this function results in a no-op.
 ///
 /// @param[in]      renderer                Distortion renderer object pointer.
-/// @param[in]      target_display          Target display.
+/// @param[in]      target                  Target configuration.
+///     When using OpenGL ES 2.x and OpenGL ES 3.x, this field corresponds to a
+///     GLuint variable. When using Metal, this field corresponds to a variable
+///     pointing to an CardboardDistortionRendererTargetConfig structure.
 /// @param[in]      x                       x coordinate of the rectangle's
 ///                                         lower left corner in pixels.
 /// @param[in]      y                       y coordinate of the rectangle's
@@ -335,7 +438,7 @@ void CardboardDistortionRenderer_setMesh(CardboardDistortionRenderer* renderer,
 /// @param[in]      left_eye                Left eye texture description.
 /// @param[in]      right_eye               Right eye texture description.
 void CardboardDistortionRenderer_renderEyeToDisplay(
-    CardboardDistortionRenderer* renderer, int target_display, int x, int y,
+    CardboardDistortionRenderer* renderer, uint64_t target, int x, int y,
     int width, int height, const CardboardEyeTextureDescription* left_eye,
     const CardboardEyeTextureDescription* right_eye);
 
@@ -350,6 +453,29 @@ void CardboardDistortionRenderer_renderEyeToDisplay(
 ///     uses a Kalman filter to generate the output value. The head's pose is
 ///     returned as a quaternion. To have control of the usage of the sensors,
 ///     this module also includes pause and resume functions.
+///
+/// @details Let the World frame be an arbitrary 3D Cartesian right handed frame
+///          whose basis is defined by a triplet of unit vectors
+///          @f$(\hat{x}, \hat{y} and \hat{z})@f$ which point in the same
+///          direction as OpenGL. That is: @f$\hat{x}@f$ points to the right,
+///          @f$\hat{y}@f$ points up and @f$\hat{z}@f$ points backwards.
+///
+///          The head pose is always returned in the World frame. It is the
+///          average of the left and right eye position. By default, the head
+///          pose is near the origin, looking roughly forwards (down the
+///          @f$-\hat{z}@f$ axis).
+///
+///          Implementation and application code could refer to another three
+///          poses:
+///          - Raw sensor pose: no position, only orientation of device, derived
+///            directly from sensors.
+///          - Recentered sensor pose: like "Raw sensor pose", but with
+///            recentering applied.
+///          - Head pose: Recentered sensor pose, with neck model applied. The
+///            neck model only adjusts position, it does not adjust orientation.
+///            This is usually used directly as the camera pose, though it may
+///            be further adjusted via a scene graph. This is the only pose
+///            exposed through the API.
 /// @{
 
 /// Creates a new head tracker object.
@@ -383,6 +509,13 @@ void CardboardHeadTracker_resume(CardboardHeadTracker* head_tracker);
 
 /// Gets the predicted head pose for a given timestamp.
 ///
+/// @details On Android devices, @p timestamp_ns must be in system boot time
+///          (see CLOCK_BOOTTIME in https://linux.die.net/man/2/clock_gettime)
+///          clock (see https://developer.android.com/reference/android/hardware/SensorEvent#timestamp).
+///          On iOS devices, @p timestamp_ns must be in system uptime raw
+///          (see CLOCK_UPTIME_RAW in http://www.manpagez.com/man/3/clock_gettime/)
+///          clock (see https://developer.apple.com/documentation/coremotion/cmlogitem/1615939-timestamp?language=objc).
+///
 /// @pre @p head_tracker Must not be null.
 /// @pre @p position Must not be null.
 /// @pre @p orientation Must not be null.
@@ -391,7 +524,7 @@ void CardboardHeadTracker_resume(CardboardHeadTracker* head_tracker);
 ///
 /// @param[in]      head_tracker            Head tracker object pointer.
 /// @param[in]      timestamp_ns            The timestamp for the pose in
-///     nanoseconds in system monotonic clock.
+///                                         nanoseconds.
 /// @param[out]     position                3 floats for (x, y, z).
 /// @param[out]     orientation             4 floats for quaternion
 void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
@@ -471,6 +604,8 @@ int CardboardQrCode_getQrCodeScanCount();
 /// @pre @p size Must not be null.
 /// When it is unmet, a call to this function results in a no-op and default
 /// values are returned (empty values).
+/// @note Does not require a prior call to Cardboard_initializeAndroid() in
+///       Android devices.
 ///
 /// @param[out]     encoded_device_params   Reference to the device parameters.
 /// @param[out]     size                    Size in bytes of

@@ -13,44 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef CARDBOARD_SDK_SENSORS_POSE_STATE_H_
-#define CARDBOARD_SDK_SENSORS_POSE_STATE_H_
+#ifndef CARDBOARD_SDK_SENSORS_ROTATION_STATE_H_
+#define CARDBOARD_SDK_SENSORS_ROTATION_STATE_H_
 
 #include "util/rotation.h"
 #include "util/vector.h"
 
 namespace cardboard {
 
-enum {
-  kPoseStateFlagInvalid = 1U << 0,
-  kPoseStateFlagInitializing = 1U << 1,
-  kPoseStateFlagHas6DoF = 1U << 2,
-};
-
-// Stores a head pose pose plus derivatives. This can be used for prediction.
-struct PoseState {
-  // System wall time.
+// Stores a rotation and the angular velocity measured in the sensor space.
+// It can be used for prediction.
+struct RotationState {
+  // System wall time. It is measured in nanoseconds.
   int64_t timestamp;
 
-  // Rotation from Sensor Space to Start Space.
+  // Rotation from Sensor Space to Start Space. It is measured in radians (rad).
   Rotation sensor_from_start_rotation;
 
-  // First derivative of the rotation.
+  // First derivative of the rotation. It is measured in radians per second
+  // (rad/s).
   Vector3 sensor_from_start_rotation_velocity;
-
-  // Current gyroscope bias in rad/s.
-  Vector3 bias;
-
-  // The position of the headset.
-  Vector3 position = Vector3(0, 0, 0);
-
-  // In the same coordinate frame as the position.
-  Vector3 velocity = Vector3(0, 0, 0);
-
-  // Flags indicating the status of the pose.
-  uint64_t flags = 0U;
 };
 
 }  // namespace cardboard
 
-#endif  // CARDBOARD_SDK_SENSORS_POSE_STATE_H_
+#endif  // CARDBOARD_SDK_SENSORS_ROTATION_STATE_H_

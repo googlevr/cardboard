@@ -18,11 +18,15 @@
 
 #include <memory>
 
+#include "unity/xr_unity_plugin/renderer.h"
+#include "IUnityInterface.h"
+
 /// @brief Determines the supported graphics APIs.
 typedef enum CardboardGraphicsApi {
-    kOpenGlEs2 = 1,         ///< Uses OpenGL ES2.0
-    kOpenGlEs3 = 2,        ///< Uses OpenGL ES3.0
-    kNone = -1,             ///< No graphic API is selected.
+  kOpenGlEs2 = 1,  ///< Uses OpenGL ES2.0
+  kOpenGlEs3 = 2,  ///< Uses OpenGL ES3.0
+  kMetal = 3,      ///< Uses Metal
+  kNone = -1,      ///< No graphic API is selected.
 } CardboardGraphicsApi;
 
 // TODO(b/151087873) Convert into single line namespace declaration.
@@ -32,32 +36,8 @@ namespace unity {
 /// Minimalistic wrapper of Cardboard SDK with native and standard types which
 /// hides Cardboard types and exposes enough functionality to be consumed by a
 /// XR Unity plugin.
-///
-/// Cardboard SDK interface has C-structs and native types but its use requires
-/// OpenGL calls. Unity XR display provider has a custom build system with
-/// limitations to link against OpenGL ES 2/3 for both Android and iOS. This
-/// wrapper enables the provider configuration rely on this class for OpenGL
-/// specific calls and Cardboard SDK configurations reducing them to a minimum.
 class CardboardApi {
  public:
-  // @brief Data about drawing a custom widget.
-  struct WidgetParams {
-    // @brief GL texture ID.
-    uint32_t texture;
-
-    // @brief x Widget X coordinate in pixels.
-    int x;
-
-    // @brief y Widget Y coordinate in pixels.
-    int y;
-
-    // @brief width Widget width in pixels.
-    int width;
-
-    // @brief height Widget height in pixels.
-    int height;
-  };
-
   /// @brief Constructs a CardboardApi.
   CardboardApi();
 
@@ -115,37 +95,43 @@ class CardboardApi {
 
   /// @brief Renders both distortion meshes to the screen.
   /// @pre It must be called from the rendering thread.
-  ///
-  /// @param gl_framebuffer_id The GL framebuffer ID to render the eyes to.
-  void RenderEyesToDisplay(int gl_framebuffer_id);
+  void RenderEyesToDisplay();
 
   /// @brief Render the Cardboard widgets (X, Gear, divider line) to the screen.
   /// @pre It must be called from the rendering thread.
   void RenderWidgets();
 
-  /// @brief Gets the left eye color texture.
+  /// @brief Gets the left eye texture color buffer ID.
   /// @pre UpdateDeviceParams() must have been successfully called.
-  /// @return The left eye color texture.
-  int GetLeftTextureId();
+  ///
+  /// @return The left eye texture color buffer ID. When using OpenGL ES 2.x and
+  ///     OpenGL ES 3.x, the returned value holds a GLuint variable. When using
+  ///     Metal, the returned value holds an IOSurfaceRef variable.
+  uint64_t GetLeftTextureColorBufferId();
 
-  /// @brief Gets the right eye color texture.
+  /// @brief Gets the right eye texture color buffer ID.
   /// @pre UpdateDeviceParams() must have been successfully called.
-  /// @return The right eye color texture.
-  int GetRightTextureId();
+  ///
+  /// @return The right eye texture color buffer ID. When using OpenGL ES 2.x
+  ///     and OpenGL ES 3.x, the returned value holds a GLuint variable. When
+  ///     using Metal, the returned value holds an IOSurfaceRef variable.
+  uint64_t GetRightTextureColorBufferId();
 
-  /// @brief Gets the left depth buffer ID.
+  /// @brief Gets the left eye texture depth buffer ID.
   /// @pre UpdateDeviceParams() must have been successfully called.
-  /// @return The left depth buffer ID.
-  int GetLeftDepthBufferId();
+  ///
+  /// @return The left eye texture depth buffer ID. When using OpenGL ES 2.x and
+  ///     OpenGL ES 3.x, the returned value holds a GLuint variable. When using
+  ///     Metal, the returned value is zero.
+  uint64_t GetLeftTextureDepthBufferId();
 
-  /// @brief Gets the right depth buffer ID.
+  /// @brief Gets the right eye texture depth buffer ID.
   /// @pre UpdateDeviceParams() must have been successfully called.
-  /// @return The right depth buffer ID.
-  int GetRightDepthBufferId();
-
-  /// @brief Gets the OpenGL bound framebuffer.
-  /// @return The bound framebuffer.
-  static int GetBoundFramebuffer();
+  ///
+  /// @return The right eye texture depth buffer ID. When using OpenGL ES 2.x
+  ///     and OpenGL ES 3.x, the returned value holds a GLuint variable. When
+  ///     using Metal, the returned value is zero.
+  uint64_t GetRightTextureDepthBufferId();
 
   /// @brief Gets the rectangle size in pixels to draw into.
   ///
@@ -155,16 +141,21 @@ class CardboardApi {
   ///             rectangle to draw into.
   static void GetScreenParams(int* width, int* height);
 
-  /// @brief Sets Unity reported rectangle lower left corner and size in pixels
-  ///        to draw into.
+  /// @brief Sets screen dimensions and rendering area rectangle in pixels.
   ///
-  /// @param[in] x x coordinate in pixels of the lower left corner of the
-  ///            rectangle.
-  /// @param[in] y y coordinate in pixels of the lower left corner of the
-  ///            rectangle.
-  /// @param[in] width The width in pixels of the rectangle.
-  /// @param[in] height The height in pixels of the rectangle.
-  static void SetUnityScreenParams(int x, int y, int width, int height);
+  /// @param[in] screen_width The width of the screen in pixels.
+  /// @param[in] screen_height The height of the screen in pixels.
+  /// @param[in] viewport_x x coordinate in pixels of the lower left corner of
+  ///            the rendering area rectangle.
+  /// @param[in] viewport_y y coordinate in pixels of the lower left corner of
+  ///            the rendering area rectangle.
+  /// @param[in] viewport_width The width of the rendering area rectangle in
+  ///            pixels.
+  /// @param[in] viewport_height The height of the rendering area rectangle in
+  ///            pixels.
+  static void SetUnityScreenParams(int screen_width, int screen_height,
+                                   int viewport_x, int viewport_y,
+                                   int viewport_width, int viewport_height);
 
   /// @brief Sets the total number of widgets to draw.
   ///
@@ -175,7 +166,7 @@ class CardboardApi {
   ///
   /// @param[in] i The widget index to set.
   /// @param[in] params The parameters to set.
-  static void SetWidgetParams(int i, const WidgetParams& params);
+  static void SetWidgetParams(int i, const Renderer::WidgetParams& params);
 
   /// @brief Flags a change in device parameters configuration.
   static void SetDeviceParametersChanged();
@@ -192,6 +183,14 @@ class CardboardApi {
   ///        implementations.
   static void SetGraphicsApi(CardboardGraphicsApi graphics_api);
 
+  /// @brief Gets the graphics API being used.
+  /// @return Graphics API being used.
+  static CardboardGraphicsApi GetGraphicsApi();
+
+  /// @brief Sets Unity XR interface provider.
+  /// @param xr_interfaces Pointer to Unity XR interface provider.
+  static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces);
+
  private:
   // Forward declaration of the api implementation.
   class CardboardApiImpl;
@@ -204,19 +203,24 @@ class CardboardApi {
 extern "C" {
 #endif
 
-/// @brief Hook to set the screen parameters: lower left corner coordinate and
-///        size in pixels of the rectangle to draw into by Unity.
+/// @brief Sets screen dimensions and rendering area rectangle in pixels.
 /// @details It is expected to be called at
 ///          CardboardXRLoader::Initialize() from C# code when loading the
 ///          provider. Provided parameters will be returned by
 ///          CardboardApi::GetScreenParams().
-/// @param[in] x x coordinate in pixels of the lower left corner of the
-///            rectangle.
-/// @param[in] y y coordinate in pixels of the lower left corner of the
-///            rectangle.
-/// @param[in] width The width in pixels of the rectangle.
-/// @param[in] height The height in pixels of the rectangle.
-void CardboardUnity_setScreenParams(int x, int y, int width, int height);
+/// @param[in] screen_width The width of the screen in pixels.
+/// @param[in] screen_height The height of the screen in pixels.
+/// @param[in] viewport_x x coordinate in pixels of the lower left corner of the
+///            rendering area rectangle.
+/// @param[in] viewport_y y coordinate in pixels of the lower left corner of the
+///            rendering area rectangle.
+/// @param[in] viewport_width The width of the rendering area rectangle in
+///            pixels.
+/// @param[in] viewport_height The height of the rendering area rectangle in
+///            pixels.
+void CardboardUnity_setScreenParams(int screen_width, int screen_height,
+                                    int viewport_x, int viewport_y,
+                                    int viewport_width, int viewport_height);
 
 /// @brief Sets the total number of widgets to draw.
 ///
@@ -226,7 +230,14 @@ void CardboardUnity_setWidgetCount(int count);
 /// @brief Sets the the parameters of how to draw a specific widget.
 ///
 /// @param[in] i The widget index to set.
-/// @param[in] params The parameters to set.
+/// @param[in] texture The widget texture as a Texture.GetNativeTexturePtr, @see
+///            https://docs.unity3d.com/ScriptReference/Texture.GetNativeTexturePtr.html.
+/// @param[in] x x coordinate in pixels of the lower left corner of the
+///            rectangle.
+/// @param[in] y y coordinate in pixels of the lower left corner of the
+///            rectangle.
+/// @param[in] width The width in pixels of the rectangle.
+/// @param[in] height The height in pixels of the rectangle.
 void CardboardUnity_setWidgetParams(int i, void* texture, int x, int y,
                                     int width, int height);
 

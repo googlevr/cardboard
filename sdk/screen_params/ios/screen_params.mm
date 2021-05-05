@@ -18,15 +18,14 @@
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>
 
-// Aryzon multiple orientations
-@interface OrientationHelper : NSObject {
+@interface ScreenOrientationHelper : NSObject {
     
 }
-@property cardboard::screen_params::ScreenOrientation orientation;
+@property CardboardScreenOrientation orientation;
 -(void) orientationChanged:(NSNotification *)note;
 @end
 
-@implementation OrientationHelper {
+@implementation ScreenOrientationHelper {
     
 }
 @synthesize orientation;
@@ -73,15 +72,16 @@
         }
     }
     
-    if (orientation == UIDeviceOrientationPortrait && (supportedInterfaces & UIInterfaceOrientationMaskPortrait) != 0) {
-        NSLog(@"Setting portrait");
-        self.orientation = cardboard::screen_params::Portrait;
-    } else if (orientation == UIDeviceOrientationLandscapeLeft && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeRight) != 0) {
-        NSLog(@"Setting landscapeleft");
-        self.orientation = cardboard::screen_params::LandscapeLeft;
+    if (orientation == UIDeviceOrientationLandscapeLeft && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeRight) != 0) {
+        self.orientation = kLandscapeLeft;
     } else if (orientation == UIDeviceOrientationLandscapeRight && (supportedInterfaces & UIInterfaceOrientationMaskLandscapeLeft) != 0) {
-        NSLog(@"Setting landscaperight");
-        self.orientation = cardboard::screen_params::LandscapeRight;
+        self.orientation = kLandscapeRight;
+    } else if (orientation == UIDeviceOrientationPortrait && (supportedInterfaces & UIInterfaceOrientationMaskPortrait) != 0) {
+        self.orientation = kPortrait;
+    } else if (orientation == UIDeviceOrientationPortraitUpsideDown && (supportedInterfaces & UIInterfaceOrientationMaskPortraitUpsideDown) != 0) {
+        self.orientation = kPortraitUpsideDown;
+    } else {
+        self.orientation = kUnknown;
     }
 }
 @end
@@ -132,9 +132,9 @@ static CGFloat const kIPhoneXsMaxDpi = 456.0f;
 static CGFloat const kIPhone12MiniDpi = 476.0f;
 static CGFloat const kIPhone12Dpi = 460.0f;
 
-static OrientationHelper *helper = [[OrientationHelper alloc] init];
+static ScreenOrientationHelper *helper = [[ScreenOrientationHelper alloc] init];
 
-ScreenOrientation getScreenOrientation() {
+CardboardScreenOrientation getScreenOrientation() {
     return [helper orientation];
 }
 

@@ -63,6 +63,13 @@ class HelloCardboardRenderer {
   int CreateTexture(int width, int height, int textureFormat, int textureType);
 
   /**
+   * Gets head's pose as a 4x4 matrix.
+   *
+   * @return matrix containing head's pose.
+   */
+  GLKMatrix4 GetPose();
+
+  /**
    * Draws all world-space objects for an eye.
    *
    * @param viewMatrix View matrix for an eye.

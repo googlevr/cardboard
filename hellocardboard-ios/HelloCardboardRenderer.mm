@@ -190,17 +190,8 @@ void HelloCardboardRenderer::InitializeGl() {
 }
 
 void HelloCardboardRenderer::DrawFrame() {
-  // A client app does its rendering here.
-  double targetTime = CACurrentMediaTime() * 1e9;
-  targetTime += kPredictionTimeWithoutVsyncNanos;
-
-  // Head tracker cardboard.
-  float position[3];
-  float orientation[4];
-  CardboardHeadTracker_getPose(_headTracker, targetTime, position, orientation);
-  _headView =
-      GLKMatrix4Multiply(GLKMatrix4MakeTranslation(position[0], position[1], position[2]),
-                         GLKMatrix4MakeWithQuaternion(GLKQuaternionMakeWithArray(orientation)));
+  // Update Head Pose.
+  _headView = GetPose();
 
   // Incorporate the floor height into the head_view
   _headView =
@@ -243,6 +234,17 @@ void HelloCardboardRenderer::OnTriggerEvent() {
   if (IsPointingAtTarget()) {
     HideTarget();
   }
+}
+
+GLKMatrix4 HelloCardboardRenderer::GetPose() {
+  float outPosition[3];
+  float outOrientation[4];
+  CardboardHeadTracker_getPose(
+      _headTracker, clock_gettime_nsec_np(CLOCK_UPTIME_RAW) + kPredictionTimeWithoutVsyncNanos,
+      outPosition, outOrientation);
+  return GLKMatrix4Multiply(
+      GLKMatrix4MakeTranslation(outPosition[0], outPosition[1], outPosition[2]),
+      GLKMatrix4MakeWithQuaternion(GLKQuaternionMakeWithArray(outOrientation)));
 }
 
 /**

@@ -46,6 +46,8 @@ import javax.microedition.khronos.opengles.GL10;
  * <p>This is the main Activity for the sample application. It initializes a GLSurfaceView to allow
  * rendering.
  */
+// TODO(b/184737638): Remove decorator once the AndroidX migration is completed.
+@SuppressWarnings("deprecation")
 public class VrActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
   static {
     System.loadLibrary("cardboard_jni");
