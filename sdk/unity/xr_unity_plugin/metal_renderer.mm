@@ -182,51 +182,39 @@ class MetalRenderer : public Renderer {
                            int screen_height) override {
     id<MTLDevice> mtl_device = metal_interface_->MetalDevice();
 
-    // Create texture color buffer.
+      // Create texture color buffer.
     NSDictionary* color_surface_attribs = @{
-      (NSString*)kIOSurfaceIsGlobal : @YES,
+      // (NSString*)kIOSurfaceIsGlobal : @YES, // Seems to not be necessary and less safe, maybe doesn't work with earlier versions of Unity?
       (NSString*)kIOSurfaceWidth : @(screen_width / 2),
       (NSString*)kIOSurfaceHeight : @(screen_height),
       (NSString*)kIOSurfaceBytesPerElement : @4u
     };
-    color_surface_ = IOSurfaceCreate((CFDictionaryRef)color_surface_attribs);
-    MTLTextureDescriptor* texture_color_buffer_descriptor = [MTLTextureDescriptorClass new];
-    texture_color_buffer_descriptor.textureType = MTLTextureType2D;
-    texture_color_buffer_descriptor.width = screen_width / 2;
-    texture_color_buffer_descriptor.height = screen_height;
-    texture_color_buffer_descriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;
-    texture_color_buffer_descriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
-    color_texture_ = [mtl_device newTextureWithDescriptor:texture_color_buffer_descriptor
-                                                iosurface:color_surface_
-                                                    plane:0];
-    render_texture->color_buffer = reinterpret_cast<uint64_t>(color_surface_);
+        
+      MTLTextureDescriptor* texture_color_buffer_descriptor = [MTLTextureDescriptorClass new];
+      texture_color_buffer_descriptor.textureType = MTLTextureType2D;
+      texture_color_buffer_descriptor.width = screen_width / 2;
+      texture_color_buffer_descriptor.height = screen_height;
+      texture_color_buffer_descriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;
+      texture_color_buffer_descriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderWrite; // MTLTextureUsageShaderRead is less optimized.
+        
+      IOSurfaceRef color_surface = IOSurfaceCreate((CFDictionaryRef)color_surface_attribs);
+        
+      render_texture->color_buffer = reinterpret_cast<uint64_t>(color_surface);
+        
+      if (eyeIndex == 0) {
+        color_texture_left_ = [mtl_device newTextureWithDescriptor:texture_color_buffer_descriptor
+                                                    iosurface:color_surface
+                                                        plane:0];
+        eyeIndex = 1;
+      } else {
+        color_texture_right_ = [mtl_device newTextureWithDescriptor:texture_color_buffer_descriptor
+                                                    iosurface:color_surface
+                                                        plane:0];
+        eyeIndex = 0;
+      }
 
-    // When using Metal, texture depth buffer is unused.
-    render_texture->depth_buffer = 0;
-
-    // Create a black texture. It is used to hide a rendering previously performed by Unity.
-    // TODO(b/185478026): Prevent Unity from drawing a monocular scene when using Metal.
-    MTLTextureDescriptor* black_texture_descriptor = [MTLTextureDescriptorClass new];
-    black_texture_descriptor.textureType = MTLTextureType2D;
-    black_texture_descriptor.width = screen_width;
-    black_texture_descriptor.height = screen_height;
-    black_texture_descriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;
-    black_texture_descriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
-    black_texture_ = [mtl_device newTextureWithDescriptor:black_texture_descriptor];
-
-    std::vector<uint32_t> black_texture_data(screen_width * screen_height, 0xFF000000);
-    MTLRegion region = MTLRegionMake2D(0, 0, screen_width, screen_height);
-    [black_texture_ replaceRegion:region
-                      mipmapLevel:0
-                        withBytes:reinterpret_cast<uint8_t*>(black_texture_data.data())
-                      bytesPerRow:4 * screen_width];
-
-    black_texture_vertices_buffer_ = [mtl_device newBufferWithBytes:vertices
-                                                             length:sizeof(vertices)
-                                                            options:MTLResourceStorageModeShared];
-    black_texture_uvs_buffer_ = [mtl_device newBufferWithBytes:uvs
-                                                        length:sizeof(uvs)
-                                                       options:MTLResourceStorageModeShared];
+      // When using Metal, texture depth buffer is unused.
+      render_texture->depth_buffer = 0;
   }
 
   void DestroyRenderTexture(RenderTexture* render_texture) override {
@@ -237,30 +225,24 @@ class MetalRenderer : public Renderer {
   void RenderEyesToDisplay(CardboardDistortionRenderer* renderer, const ScreenParams& screen_params,
                            const CardboardEyeTextureDescription* left_eye,
                            const CardboardEyeTextureDescription* right_eye) override {
-    // Render black texture. It is used to hide a rendering previously performed by Unity.
-    // TODO(b/185478026): Prevent Unity from drawing a monocular scene when using Metal.
-    RenderBlackTexture(screen_params.width, screen_params.height);
 
     const CardboardDistortionRendererTargetConfig target_config{
-        reinterpret_cast<uint64_t>(CFBridgingRetain(metal_interface_->CurrentCommandEncoder())),
-        screen_params.width, screen_params.height};
+      reinterpret_cast<uint64_t>(CFBridgingRetain(metal_interface_->CurrentCommandEncoder())),
+      screen_params.width, screen_params.height};
 
-    // An IOSurfaceRef was passed to Unity for drawing, but a reference to an id<MTLTexture> using
-    // it must be passed to the SDK.
-    CFTypeRef color_texture = CFBridgingRetain(color_texture_);
     CardboardEyeTextureDescription left_eye_description = *left_eye;
-    left_eye_description.texture = reinterpret_cast<uint64_t>(color_texture);
     CardboardEyeTextureDescription right_eye_description = *right_eye;
-    right_eye_description.texture = reinterpret_cast<uint64_t>(color_texture);
 
+    left_eye_description.texture = reinterpret_cast<uint64_t>(color_texture_left_);
+    right_eye_description.texture = reinterpret_cast<uint64_t>(color_texture_right_);
+    
     CardboardDistortionRenderer_renderEyeToDisplay(
-        renderer, reinterpret_cast<uint64_t>(&target_config), screen_params.viewport_x,
-        screen_params.viewport_y, screen_params.viewport_width, screen_params.viewport_height,
-        &left_eye_description, &right_eye_description);
+      renderer, reinterpret_cast<uint64_t>(&target_config), screen_params.viewport_x,
+      screen_params.viewport_y, screen_params.viewport_width, screen_params.viewport_height,
+      &left_eye_description, &right_eye_description);
 
-    CFBridgingRelease(color_texture);
     CFBridgingRelease(reinterpret_cast<CFTypeRef>(target_config.render_command_encoder));
-  }
+}
 
  private:
   static constexpr float Lerp(float start, float end, float val) {
@@ -326,14 +308,16 @@ class MetalRenderer : public Renderer {
   IUnityGraphicsMetalV1* metal_interface_{nullptr};
   id<MTLRenderPipelineState> mtl_render_pipeline_state_;
 
-  IOSurfaceRef color_surface_;
-  id<MTLTexture> color_texture_;
+  id<MTLTexture> color_texture_left_;
+  id<MTLTexture> color_texture_right_;
 
   id<MTLTexture> black_texture_;
   id<MTLBuffer> black_texture_vertices_buffer_;
   id<MTLBuffer> black_texture_uvs_buffer_;
 
   bool are_widgets_setup_{false};
+    
+  int eyeIndex = 0;
 };
 
 }  // namespace
