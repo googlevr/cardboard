@@ -101,7 +101,7 @@ class HeadTracker {
   Rotation difference_to_6DoF_;
 
   Rotation ekf_to_head_tracker_;
-
+  double y_bias_;
 };
 
 }  // namespace cardboard

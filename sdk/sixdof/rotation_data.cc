@@ -43,6 +43,14 @@ Vector4 RotationData::GetLatestData() const {
     return {0.0,0.0,0.0,1.0};
 }
 
+int64_t RotationData::GetLatestTimeStamp() const {
+    if (timestamp_buffer_.size() > 0) {
+        return timestamp_buffer_[timestamp_buffer_.size() -1];
+    }
+    return 0;
+}
+
+
 Vector4 RotationData::GetInterpolatedForTimeStamp(const int64_t timestamp_ns) const {
   
     if (!IsValid()) {
@@ -54,7 +62,7 @@ Vector4 RotationData::GetInterpolatedForTimeStamp(const int64_t timestamp_ns) co
     bool did_pass_larger = false;
     int i=0;
     
-    while (!did_pass_larger && i < buffer_size_) {
+    while (!did_pass_larger && (const size_t)i < buffer_size_) {
         int64_t current_ts = timestamp_buffer_[i];
         if (current_ts <= timestamp_ns) {
             smaller = current_ts;

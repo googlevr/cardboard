@@ -275,33 +275,6 @@ class MetalRenderer : public Renderer {
                                    vertexCount:4];
   }
 
-  void RenderBlackTexture(int screen_width, int screen_height) {
-    // Get Metal current render command encoder.
-    id<MTLRenderCommandEncoder> mtl_render_command_encoder_ =
-        static_cast<id<MTLRenderCommandEncoder>>(metal_interface_->CurrentCommandEncoder());
-
-    [mtl_render_command_encoder_ setRenderPipelineState:mtl_render_pipeline_state_];
-
-    [mtl_render_command_encoder_
-        setViewport:(MTLViewport){0.0, 0.0, static_cast<double>(screen_width),
-                                  static_cast<double>(screen_height), 0.0, 1.0}];
-
-    [mtl_render_command_encoder_ setVertexBuffer:black_texture_vertices_buffer_
-                                          offset:0
-                                         atIndex:VertexInputIndexPosition];
-
-    [mtl_render_command_encoder_ setVertexBuffer:black_texture_uvs_buffer_
-                                          offset:0
-                                         atIndex:VertexInputIndexTexCoords];
-
-    [mtl_render_command_encoder_ setFragmentTexture:black_texture_
-                                            atIndex:FragmentInputIndexTexture];
-
-    [mtl_render_command_encoder_ drawPrimitives:MTLPrimitiveTypeTriangleStrip
-                                    vertexStart:0
-                                    vertexCount:4];
-  }
-
   constexpr static float vertices[] = {-1, -1, 1, -1, -1, 1, 1, 1};
   constexpr static float uvs[] = {0, 0, 1, 0, 0, 1, 1, 1};
 

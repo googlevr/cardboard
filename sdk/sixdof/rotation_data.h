@@ -38,6 +38,9 @@ class RotationData {
 
   // Returns the latest value stored in the internal buffer.
   Vector4 GetLatestData() const;
+    
+  // Returns the latest value stored in the internal timestamp buffer.
+  int64_t GetLatestTimeStamp() const;
 
   // Returns a rotation linearly interpolated from the data stored in the internal buffer.
   // It returns an identity rotation when not fully initialised.

@@ -24,7 +24,9 @@ namespace cardboard {
 PositionData::PositionData(size_t buffer_size) : buffer_size_(buffer_size) {}
 
 void PositionData::AddSample(const Vector3& sample, const int64_t timestamp_ns) {
+    
     buffer_.push_back(sample);
+    
     if (buffer_.size() > buffer_size_) {
         buffer_.pop_front();
     }
@@ -59,10 +61,17 @@ Vector3 PositionData::GetExtrapolatedForTimeStamp(const int64_t timestamp_ns) {
     }
     
     if (timestamp_ns > timestamp_buffer_[buffer_size_-1]) {
-        const Vector3 v = (buffer_[buffer_size_-1] - buffer_[buffer_size_-2]) / (timestamp_buffer_[buffer_size_-1] - timestamp_buffer_[buffer_size_-2]);
+        const Vector3 v0 = (buffer_[buffer_size_-1] - buffer_[buffer_size_-2]) / (timestamp_buffer_[buffer_size_-1] - timestamp_buffer_[buffer_size_-2]);
+        const Vector3 v1 = (buffer_[buffer_size_-2] - buffer_[buffer_size_-3]) / (timestamp_buffer_[buffer_size_-2] - timestamp_buffer_[buffer_size_-3]);
+        const Vector3 v2 = (buffer_[buffer_size_-3] - buffer_[buffer_size_-4]) / (timestamp_buffer_[buffer_size_-3] - timestamp_buffer_[buffer_size_-4]);
+        const Vector3 v3 = (buffer_[buffer_size_-4] - buffer_[buffer_size_-5]) / (timestamp_buffer_[buffer_size_-4] - timestamp_buffer_[buffer_size_-5]);
+        const Vector3 v4 = (buffer_[buffer_size_-5] - buffer_[buffer_size_-6]) / (timestamp_buffer_[buffer_size_-5] - timestamp_buffer_[buffer_size_-6]);
+        
+        const Vector3 v = (v0 + v1 + v2 + v3 + v4) / 5;
+        
+        //printf("v\t%f\t%llu\t%llu\t%llu\t%f\t%f\t%f\n", v[0] * 1000000,timestamp_buffer_[buffer_size_ - 1],timestamp_buffer_[buffer_size_ - 2],timestamp_ns, newPoss[0], newPoss[1], newPoss[2]);
         return buffer_[buffer_size_-1] + v * (timestamp_ns - timestamp_buffer_[buffer_size_ - 1]);
     }
-    
     return buffer_[buffer_size_-1];
 }
 
