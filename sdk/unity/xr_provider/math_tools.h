@@ -30,6 +30,13 @@ namespace unity {
 /// @returns A UnityXRPose from Cardboard @p rotation.
 UnityXRPose CardboardRotationToUnityPose(const std::array<float, 4>& rotation);
 
+/// Aryzon 6DoF
+/// @brief Creates a UnityXRPose from a Cardboard rotation.
+/// @param rotation A Cardboard rotation quaternion expressed as [x, y, z, w].
+/// @param position A Cardboard position vector expressed as [x, y, z].
+/// @returns A UnityXRPose from Cardboard @p rotation.
+UnityXRPose CardboardPoseToUnityPose(const std::array<float, 4>& rotation, const std::array<float, 3>& position);
+
 /// @brief Creates a UnityXRPose from a Cardboard transformation matrix.
 /// @param transform A 4x4 float transformation matrix.
 /// @returns A UnityXRPose from Cardboard @p transform.

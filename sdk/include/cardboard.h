@@ -42,6 +42,20 @@ typedef enum CardboardEye {
   kRight = 1,
 } CardboardEye;
 
+/// Enum to distinguish device screen orientations
+typedef enum CardboardScreenOrientation {
+  /// Landscape Left orientation.
+  kLandscapeLeft = 0,
+  /// Portrait orientation.
+  kPortrait = 1,
+  /// Landscape Right orientation.
+  kLandscapeRight = 2,
+  /// Portrait Upside Down orientation.
+  kPortraitUpsideDown = 3,
+  /// Orientation unknown
+  kUnknown = -1,
+} CardboardScreenOrientation;
+
 /// Struct representing a 3D mesh with 3D vertices and corresponding UV
 /// coordinates.
 typedef struct CardboardMesh {
@@ -194,6 +208,20 @@ extern "C" {
 void Cardboard_initializeAndroid(JavaVM* vm, jobject context);
 #endif
 
+/// @}
+
+/////////////////////////////////////////////////////////////////////////////
+// Screen Parameters
+/////////////////////////////////////////////////////////////////////////////
+/// @defgroup screen-parameters Screen Parameters
+/// @brief This module calculates the screen size and current screen orientation
+/// @{
+/// Returns the current device screen orientation
+///
+/// @pre If the SDK is not initialized, this function will always return kUnknown
+///
+/// @return         CardboardScreenOrientation enum
+CardboardScreenOrientation CardboardScreenParameters_getScreenOrientation();
 /// @}
 
 /////////////////////////////////////////////////////////////////////////////
@@ -502,6 +530,22 @@ void CardboardHeadTracker_resume(CardboardHeadTracker* head_tracker);
 void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
                                   int64_t timestamp_ns, float* position,
                                   float* orientation);
+
+/// Aryzon 6DoF
+/// Sends through the event with pose and timestamp data from 6DoF tracker
+///
+/// @pre @p head_tracker Must not be null.
+/// When it is unmet, a call to this function results in a no-op.
+///
+/// @param[in]      head_tracker            Head tracker object pointer.
+/// @param[in]      timestamp_ns            The timestamp for the data in
+///     nanoseconds in system monotonic clock.
+/// @param[out]     position                3 floats for (x, y, z).
+/// @param[out]     orientation             4 floats for quaternion
+void CardboardHeadTracker_addSixDoFData(CardboardHeadTracker* head_tracker,
+                                        int64_t timestamp_ns,
+                                        float* position,
+                                        float* orientation);
 
 /// @}
 

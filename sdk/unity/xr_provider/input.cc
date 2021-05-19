@@ -57,8 +57,8 @@ class CardboardInputProvider {
     UnityXRInputProvider input_provider;
     input_provider.userData = nullptr;
     input_provider.Tick = [](UnitySubsystemHandle, void*,
-                             UnityXRInputUpdateType) {
-      return GetInstance()->Tick();
+                             UnityXRInputUpdateType updateType) {
+      return GetInstance()->Tick(updateType);
     };
     input_provider.FillDeviceDefinition =
         [](UnitySubsystemHandle, void*, UnityXRInternalInputDeviceId device_id,
@@ -126,16 +126,27 @@ class CardboardInputProvider {
     cardboard_api_->PauseHeadTracker();
   }
 
-  UnitySubsystemErrorCode Tick() {
-    std::array<float, 4> out_orientation;
-    std::array<float, 3> out_position;
-    cardboard_api_->GetHeadTrackerPose(out_position.data(),
-                                       out_orientation.data());
-    // TODO(b/151817737): Compute pose position within SDK with custom rotation.
-    head_pose_ = cardboard::unity::CardboardRotationToUnityPose(out_orientation);
+    // Aryzon 6DoF changed to include updateType and only update onBeforeRender to save computation power
+  UnitySubsystemErrorCode Tick(UnityXRInputUpdateType updateType) {
+      if (updateType == kUnityXRInputUpdateTypeBeforeRender) {
+        std::array<float, 4> out_orientation;
+        std::array<float, 3> out_position;
+        cardboard_api_->GetHeadTrackerPose(out_position.data(),
+                                           out_orientation.data());
+        // TODO(b/151817737): Compute pose position within SDK with custom rotation.
+        //head_pose_ = cardboard::unity::CardboardRotationToUnityPose(out_orientation);
+          
+        // Aryzon 6DoF changed to include position
+        head_pose_ = cardboard::unity::CardboardPoseToUnityPose(out_orientation, out_position);
+      }
     return kUnitySubsystemErrorCodeSuccess;
   }
 
+  // Aryzon 6DoF
+  void Add6DoF(int64_t timestamp_ns, float* position, float* orientation) {
+      cardboard_api_->AddSixDoFData(timestamp_ns, position, orientation);
+  }
+    
   UnitySubsystemErrorCode FillDeviceDefinition(
       UnityXRInternalInputDeviceId device_id,
       UnityXRInputDeviceDefinition* definition) {
@@ -253,3 +264,10 @@ UnitySubsystemErrorCode LoadInput(IUnityInterfaces* xr_interfaces) {
 }
 
 void UnloadInput() { CardboardInputProvider::GetInstance().reset(); }
+
+// Aryzon 6DoF
+extern "C" {
+    void CardboardUnity_AddSixDoFData(CardboardInputProvider* ptr, int64_t timestamp_ns, float* position, float* orientation) {
+        ptr->GetInstance()->Add6DoF(timestamp_ns, position, orientation);
+    }
+}

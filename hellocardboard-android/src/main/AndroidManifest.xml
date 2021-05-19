@@ -18,10 +18,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:configChanges="orientation"
             android:name="com.google.cardboard.VrActivity"
             android:label="@string/title_activity_vr"
             android:theme="@style/Theme.AppCompat.NoActionBar"
-            android:screenOrientation="landscape"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

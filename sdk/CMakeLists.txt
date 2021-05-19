@@ -50,6 +50,8 @@ file(GLOB screen_params_srcs "screen_params/android/*.cc")
 file(GLOB device_params_srcs "device_params/android/*.cc")
 # Rendering Sources
 file(GLOB rendering_srcs "rendering/opengl_*.cc")
+# 6DoF sources
+file(GLOB sixdof_srcs "sixdof/*.cc")
 
 # === Cardboard Unity JNI ===
 file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")
@@ -73,6 +75,7 @@ add_library(cardboard_api SHARED
     ${screen_params_srcs}
     ${device_params_srcs}
     ${rendering_srcs}
+    ${sixdof_srcs}
     # Cardboard Unity JNI sources
     ${cardboard_unity_jni_srcs}
     # Cardboard Unity Wrapper sources
@@ -81,8 +84,9 @@ add_library(cardboard_api SHARED
     ${cardboard_xr_provider_srcs})
 
 # Includes
-target_include_directories(cardboard_api
-    PRIVATE ../third_party/unity_plugin_api)
+target_include_directories(cardboard_api PRIVATE
+    ../third_party/unity_plugin_api
+    include)
 
 # Build
 target_link_libraries(cardboard_api

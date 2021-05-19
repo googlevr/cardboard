@@ -29,6 +29,8 @@ jobject context_;
 jclass screen_pixel_density_class_;
 jclass screen_params_utils_class_;
 
+jclass screen_orientation_class_;
+
 struct DisplayMetrics {
   float xdpi;
   float ydpi;
@@ -43,6 +45,12 @@ void LoadJNIResources(JNIEnv* env) {
       cardboard::jni::LoadJClass(env,
                                  "com/google/cardboard/sdk/screenparams/"
                                  "ScreenParamsUtils$ScreenPixelDensity")));
+    
+  screen_orientation_class_ = reinterpret_cast<jclass>(env->NewGlobalRef(
+      cardboard::jni::LoadJClass(env,
+                                 "com/google/cardboard/sdk/screenparams/"
+                                 "ScreenParamsUtils$ScreenOrientation")));
+
 }
 
 DisplayMetrics getDisplayMetrics() {
@@ -82,6 +90,21 @@ void getScreenSizeInMeters(int width_pixels, int height_pixels,
 
   *out_width_meters = (width_pixels / display_metrics.xdpi) * kMetersPerInch;
   *out_height_meters = (height_pixels / display_metrics.ydpi) * kMetersPerInch;
+}
+
+CardboardScreenOrientation getScreenOrientation() {
+
+  JNIEnv* env;
+  cardboard::jni::LoadJNIEnv(vm_, &env);
+
+  jmethodID get_screen_orientation_method = env->GetStaticMethodID(screen_params_utils_class_,
+                                            "getScreenOrientation",
+                                            "(Landroid/content/Context;)I");
+    
+  const int screen_orientation = env->CallStaticIntMethod(
+          screen_params_utils_class_, get_screen_orientation_method, context_);
+
+  return static_cast<CardboardScreenOrientation>(screen_orientation);
 }
 
 }  // namespace screen_params
