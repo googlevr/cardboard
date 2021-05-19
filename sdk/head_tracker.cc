@@ -24,10 +24,10 @@
 namespace cardboard {
 
 // Aryzon 6DoF
-const int rotation_samples = 10;
-const int position_samples = 6;
-const int64_t max6DoFTimeDifference = 200000000; // Maximum time difference between last pose state timestamp and last 6DoF timestamp, if it takes longer than this the last known location of sixdof will be used
-const float reduceBiasRate = 0.05;
+constexpr int kRotationSamples = 10;
+constexpr int kPositionSamples = 6;
+constexpr int64_t kMaxSixDoFTimeDifference = 200000000; // Maximum time difference between last pose state timestamp and last 6DoF timestamp, if it takes longer than this the last known location of sixdof will be used
+constexpr float kReduceBiasRate = 0.05;
 
 HeadTracker::HeadTracker()
     : is_tracking_(false),
@@ -36,8 +36,8 @@ HeadTracker::HeadTracker()
       accel_sensor_(new SensorEventProducer<AccelerometerData>()),
       gyro_sensor_(new SensorEventProducer<GyroscopeData>()),
       // Aryzon 6DoF
-      rotation_data_(new RotationData(rotation_samples)),
-      position_data_(new PositionData(position_samples)) {
+      rotation_data_(new RotationData(kRotationSamples)),
+      position_data_(new PositionData(kPositionSamples)) {
 
   on_accel_callback_ = [&](const AccelerometerData& event) {
     OnAccelerometerData(event);
@@ -57,8 +57,10 @@ HeadTracker::HeadTracker()
         ekf_to_head_tracker_ = Rotation::FromYawPitchRoll(M_PI / 2.0, M_PI / 2.0, M_PI / 2.0);
       break;
   }
-  difference_to_6DoF_ = Rotation::Identity();
-  y_bias_ = 0;
+  ekf_to_sixDoF_ = Rotation::Identity();
+  smooth_ekf_to_sixDoF_ = Rotation::Identity();
+  steady_start_ = Rotation::Identity();
+  steady_frames_ = -1;
 }
 
 HeadTracker::~HeadTracker() { UnregisterCallbacks(); }
@@ -68,7 +70,7 @@ void HeadTracker::Pause() {
     return;
   }
 
-  /*UnregisterCallbacks();
+  UnregisterCallbacks();
 
   // Create a gyro event with zero velocity. This effectively stops the
   // prediction.
@@ -76,16 +78,15 @@ void HeadTracker::Pause() {
   event.data = Vector3::Zero();
 
   OnGyroscopeData(event);
-
   is_tracking_ = false;
-  y_bias_ = 0;
-  initialised_6dof_ = false;*/
 }
 
 void HeadTracker::Resume() {
   if (!is_tracking_) {
     RegisterCallbacks();
   }
+  steady_frames_ = -1;
+  steady_start_ = Rotation::Identity();
   is_tracking_ = true;
 }
 
@@ -106,36 +107,35 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
         sensor_to_display = Rotation::FromAxisAndAngle(Vector3(0, 0, 1), 0.);
         break;
     }
-    
-  Rotation predicted_rotation = sensor_fusion_->PredictRotation(timestamp_ns);
-
+  
   const RotationState rotation_state = sensor_fusion_->GetLatestRotationState();
-    // Save rotation sample with timestamp to be used in AddSixDoFData()
-    rotation_data_->AddSample((sensor_to_display * predicted_rotation *
-                              ekf_to_head_tracker_).GetQuaternion(), timestamp_ns);
+  const Rotation unpredicted_rotation = rotation_state.sensor_from_start_rotation;
+  const Rotation predicted_rotation = sensor_fusion_->PredictRotation(timestamp_ns);
     
-  if (position_data_->IsValid() && rotation_state.timestamp - position_data_->GetLatestTimestamp() < max6DoFTimeDifference) {
+  const Rotation adjusted_unpredicted_rotation = (sensor_to_display * unpredicted_rotation *
+                                                  ekf_to_head_tracker_);
+    
+  const Rotation adjusted_rotation = (sensor_to_display * predicted_rotation *
+                                      ekf_to_head_tracker_);
+    
+  // Save rotation sample with timestamp to be used in AddSixDoFData()
+  rotation_data_->AddSample(adjusted_unpredicted_rotation.GetQuaternion(), rotation_state.timestamp);
+    
+  if (position_data_->IsValid() && rotation_state.timestamp - position_data_->GetLatestTimestamp() < kMaxSixDoFTimeDifference) {
       
     // 6DoF is recently updated
-    Vector3 p = position_data_->GetExtrapolatedForTimeStamp(timestamp_ns);
-      //printf("GetPose\t%llu\t%f\t%f\t%f\n",timestamp_ns, p[0], p[1], p[2]);
-    std::array<float, 3> predicted_position_ = {(float)p[0], (float)p[1], (float)p[2]};
-    const Rotation orientationRotation = (sensor_to_display * predicted_rotation *
-                                            ekf_to_head_tracker_);
-       
-    const Vector4 orientation = (orientationRotation * -difference_to_6DoF_).GetQuaternion();
+    const Vector4 orientation = (adjusted_rotation * smooth_ekf_to_sixDoF_).GetQuaternion();
       
     out_orientation[0] = static_cast<float>(orientation[0]);
     out_orientation[1] = static_cast<float>(orientation[1]);
     out_orientation[2] = static_cast<float>(orientation[2]);
     out_orientation[3] = static_cast<float>(orientation[3]);
-        
-    out_position = predicted_position_;
+      
+    Vector3 p = position_data_->GetExtrapolatedForTimeStamp(timestamp_ns);
+    out_position = {(float)p[0], (float)p[1], (float)p[2]};
   } else {
     // 6DoF is not recently updated
-    const Vector4 orientation = (sensor_to_display * predicted_rotation *
-                                 ekf_to_head_tracker_)
-                                    .GetQuaternion();
+    const Vector4 orientation = adjusted_rotation.GetQuaternion();
       
     out_orientation[0] = static_cast<float>(orientation[0]);
     out_orientation[1] = static_cast<float>(orientation[1]);
@@ -145,7 +145,6 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
     out_position = ApplyNeckModel(out_orientation, 1.0);
     if (position_data_->IsValid()) {
         // Apply last known 6DoF position if 6DoF data was previously added, while still applying neckmodel.
-          
         Vector3 last_known_position_ = position_data_->GetLatestData();
         out_position[0] += (float)last_known_position_[0];
         out_position[1] += (float)last_known_position_[1];
@@ -179,6 +178,18 @@ void HeadTracker::OnGyroscopeData(const GyroscopeData& event) {
   sensor_fusion_->ProcessGyroscopeSample(event);
 }
 
+Rotation ShortestRotation(Rotation a, Rotation b) {
+    
+    Vector4 aQ = a.GetQuaternion();
+    Vector4 bQ = b.GetQuaternion();
+    
+    if (Dot(aQ, bQ) < 0) {
+        return -a * Rotation::FromQuaternion(-bQ);
+    } else {
+        return -a * b;
+    }
+}
+
 // Aryzon 6DoF
 void HeadTracker::AddSixDoFData(int64_t timestamp_ns, float* pos, float* orientation) {
   if (!is_tracking_) {
@@ -188,31 +199,42 @@ void HeadTracker::AddSixDoFData(int64_t timestamp_ns, float* pos, float* orienta
         position_data_->AddSample(Vector3(pos[0], pos[1], pos[2]), timestamp_ns);
     }
     
-    // Do not add data if no new data is available!
+    // There will be a difference in rotation between ekf and sixDoF.
+    // SixDoF sensor is the 'truth' but is slower then ekf
+    // When the device is steady the difference between rotatations is saved
+    // smooth_ekf_to_sixDoF is slowly adjusted to smoothly close the gap
+    // between ekf and sixDoF. This value is used in GetPose().
+    
     if (position_data_->IsValid() && rotation_data_->IsValid()) {
-        // 6DoF timestamp should be before the latest rotation_data timestamp
-        const Rotation gyroAtTimeOfSixDoF = Rotation::FromQuaternion(rotation_data_->GetInterpolatedForTimeStamp(timestamp_ns));
-        const Rotation sixDoFRotation = Rotation::FromQuaternion(Vector4(orientation[0], orientation[1], orientation[2], orientation[3]));
+        if ((steady_frames_ == 30 || steady_frames_ < 0) && rotation_data_->GetLatestTimeStamp() > timestamp_ns) {
+            // Match rotation timestamps of ekf to sixDoF by interpolating the saved ekf rotations
+            // 6DoF timestamp should be before the latest rotation_data timestamp otherwise extrapolation
+            // needs to happen which will be less accurate.
+            const Rotation ekf_at_time_of_sixDoF = Rotation::FromQuaternion(rotation_data_->GetInterpolatedForTimeStamp(timestamp_ns));
+            const Rotation six_DoF_rotation = Rotation::FromQuaternion(Vector4(orientation[0], orientation[1], orientation[2], orientation[3]));
+            
+            ekf_to_sixDoF_ = ShortestRotation(ekf_at_time_of_sixDoF, six_DoF_rotation);
+
+        } else if (steady_frames_ == 0) {
+            steady_start_ = Rotation::FromQuaternion(rotation_data_->GetLatestData());
+        }
         
-        Vector4 difference = (gyroAtTimeOfSixDoF * -sixDoFRotation).GetQuaternion();
-        double yDifference = 0;
+        const Rotation steady_difference = steady_start_ * -Rotation::FromQuaternion(rotation_data_->GetLatestData());
         
-        // Extract y euler angle from quaternion
-        const double sinp = 2 * (difference[3] * difference[1] - difference[2] * difference[0]);
-        if (std::abs(sinp) >= 1) {
-            yDifference = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+        if (steady_difference.GetQuaternion()[3] > 0.9995) {
+            steady_frames_ += 1;
         } else {
-            yDifference = std::asin(sinp);
+            steady_frames_ = 0;
         }
         
-        if (yDifference > M_PI_2) {
-            yDifference -= M_PI;
-        } else if (yDifference < -M_PI_2) {
-            yDifference += M_PI;
-        }
+        const Rotation bias_to_fill =  ShortestRotation(smooth_ekf_to_sixDoF_, ekf_to_sixDoF_);
+        Vector3 axis;
+        double angle;
+        bias_to_fill.GetAxisAndAngle(&axis, &angle);
         
-        y_bias_ += (yDifference - y_bias_) * reduceBiasRate;
-        difference_to_6DoF_ = Rotation::FromRollPitchYaw(0, 0, y_bias_);
+        const Rotation add_to_bias = Rotation::FromAxisAndAngle(axis, angle * kReduceBiasRate);
+        
+        smooth_ekf_to_sixDoF_ *= add_to_bias;
     }
 }
 }  // namespace cardboard

@@ -98,10 +98,13 @@ class HeadTracker {
   // Aryzon 6DoF
   RotationData *rotation_data_;
   PositionData *position_data_;
-  Rotation difference_to_6DoF_;
-
+    
+  Rotation ekf_to_sixDoF_;
+  Rotation smooth_ekf_to_sixDoF_;
   Rotation ekf_to_head_tracker_;
-  double y_bias_;
+  
+  float steady_frames_;
+  Rotation steady_start_;
 };
 
 }  // namespace cardboard
