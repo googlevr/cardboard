@@ -80,11 +80,12 @@ static NSString *const kCardboardDeviceParamsAndTimeKey =
             [self readFromUrl:secureUrl withCompletion:completion];
             return;
           } else {
-            NSLog(@"failed to result the url = %@", url);
+              NSLog(@"failed to result the url = %@", url);
           }
         }
         completion([CardboardDeviceParamsHelper parseURL:targetUrl], error);
       }];
+    
   NSURLConnection *connection = [NSURLConnection connectionWithRequest:request
                                                               delegate:dataHandler];
   [connection start];

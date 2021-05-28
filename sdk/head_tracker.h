@@ -102,7 +102,7 @@ class HeadTracker {
   Rotation ekf_to_sixDoF_;
   Rotation smooth_ekf_to_sixDoF_;
   Rotation ekf_to_head_tracker_;
-  
+    
   float steady_frames_;
   Rotation steady_start_;
 };

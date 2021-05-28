@@ -223,4 +223,22 @@ float DeviceParams::left_eye_field_of_view_angles(int index) const {
   return left_eye_field_of_view_angle;
 }
 
+    const char* DeviceParams::model() const {
+      JNIEnv* env;
+      jni::LoadJNIEnv(vm_, &env);
+
+      jclass cls = env->GetObjectClass(java_device_params_);
+      jni::CheckExceptionInJava(env);
+      jmethodID mid = env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
+      jni::CheckExceptionInJava(env);
+      jstring s = (jstring)
+              env->CallObjectMethod(java_device_params_, mid);
+      if (jni::CheckExceptionInJava(env)) {
+        CARDBOARD_LOGE(
+                "Cannot retrieve Model from device parameters.");
+        return std::nullptr_t();
+      }
+      return env->GetStringUTFChars(s, 0);;
+    }
+
 }  // namespace cardboard

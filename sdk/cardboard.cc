@@ -126,16 +126,28 @@ CardboardScreenOrientation CardboardScreenParameters_getScreenOrientation() {
   return cardboard::screen_params::getScreenOrientation();
 }
 
+//CardboardLensDistortion* CardboardLensDistortion_create(
+//    const uint8_t* encoded_device_params, int size, int display_width,
+//    int display_height) {
+//  if (CARDBOARD_IS_NOT_INITIALIZED() ||
+//      CARDBOARD_IS_ARG_NULL(encoded_device_params)) {
+//    return nullptr;
+//  }
+//  return reinterpret_cast<CardboardLensDistortion*>(
+//      new cardboard::LensDistortion(encoded_device_params, size, display_width,
+//                                    display_height));
+//}
+
 CardboardLensDistortion* CardboardLensDistortion_create(
     const uint8_t* encoded_device_params, int size, int display_width,
-    int display_height) {
+    int display_height, float inter_lens_distance, float interpupillary_distance) {
   if (CARDBOARD_IS_NOT_INITIALIZED() ||
       CARDBOARD_IS_ARG_NULL(encoded_device_params)) {
     return nullptr;
   }
   return reinterpret_cast<CardboardLensDistortion*>(
       new cardboard::LensDistortion(encoded_device_params, size, display_width,
-                                    display_height));
+                                    display_height, inter_lens_distance, interpupillary_distance));
 }
 
 void CardboardLensDistortion_destroy(CardboardLensDistortion* lens_distortion) {

@@ -249,7 +249,7 @@ CardboardScreenOrientation CardboardScreenParameters_getScreenOrientation();
 /// @return         Lens distortion object pointer.
 CardboardLensDistortion* CardboardLensDistortion_create(
     const uint8_t* encoded_device_params, int size, int display_width,
-    int display_height);
+    int display_height, float inter_lens_distance = -1, float interpupillary_distance = -1);
 
 /// Destroys and releases memory used by the provided lens distortion object.
 ///

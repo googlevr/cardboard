@@ -32,15 +32,23 @@ struct LensDistortion::ViewportParams {
   float x_eye_offset;
   float y_eye_offset;
 };
-
+static float inter_lens_distance_ = -1;
 LensDistortion::LensDistortion(const uint8_t* encoded_device_params, int size,
-                               int display_width, int display_height) {
+                               int display_width, int display_height, float inter_lens_distance, float interpupillary_distance) {
   device_params_.ParseFromArray(encoded_device_params, size);
+    
+  if (inter_lens_distance >= 0) {
+    inter_lens_distance_ = inter_lens_distance;
+  } else {
+    inter_lens_distance_ = device_params_.inter_lens_distance();
+  }
+  float IPD = inter_lens_distance_;
+  if (interpupillary_distance >= 0) {
+    IPD = interpupillary_distance;
+  }
 
-  eye_from_head_matrix_[kLeft] = cardboard::Matrix4x4::Translation(
-      device_params_.inter_lens_distance() * 0.5f, 0.f, 0.f);
-  eye_from_head_matrix_[kRight] = cardboard::Matrix4x4::Translation(
-      -device_params_.inter_lens_distance() * 0.5f, 0.f, 0.f);
+  eye_from_head_matrix_[kLeft] = cardboard::Matrix4x4::Translation(IPD * 0.5f, 0.f, 0.f);
+  eye_from_head_matrix_[kRight] = cardboard::Matrix4x4::Translation(-IPD * 0.5f, 0.f, 0.f);
 
   std::vector<float> distortion_coefficients(
       device_params_.distortion_coefficients_size(), 0.0f);
@@ -58,6 +66,11 @@ LensDistortion::LensDistortion(const uint8_t* encoded_device_params, int size,
 }
 
 LensDistortion::~LensDistortion() {}
+
+/*void LensDistortion::SetManualInterLensDistance(float inter_lens_distance) {
+    device_params_.set_inter_lens_distance(inter_lens_distance);
+    UpdateParams();
+}*/
 
 void LensDistortion::GetEyeFromHeadMatrix(
     CardboardEye eye, float* eye_from_head_matrix) const {
@@ -167,8 +180,8 @@ std::array<float, 4> LensDistortion::CalculateFov(
 
   const float eye_to_screen_distance = device_params.screen_to_lens_distance();
   const float outer_distance =
-      (screen_width_meters - device_params.inter_lens_distance()) / 2.0f;
-  const float inner_distance = device_params.inter_lens_distance() / 2.0f;
+      (screen_width_meters - inter_lens_distance_) / 2.0f;
+  const float inner_distance = inter_lens_distance_ / 2.0f;
   const float bottom_distance =
       GetYEyeOffsetMeters(device_params, screen_height_meters);
   const float top_distance = screen_height_meters - bottom_distance;
@@ -234,9 +247,9 @@ void LensDistortion::CalculateViewportParameters(
 
   screen_params->x_eye_offset =
       eye == kLeft
-          ? ((screen_width_meters - device_params.inter_lens_distance()) / 2) /
+          ? ((screen_width_meters - inter_lens_distance_) / 2) /
                 device_params.screen_to_lens_distance()
-          : ((screen_width_meters + device_params.inter_lens_distance()) / 2) /
+          : ((screen_width_meters + inter_lens_distance_) / 2) /
                 device_params.screen_to_lens_distance();
   screen_params->y_eye_offset =
       GetYEyeOffsetMeters(device_params, screen_height_meters) /

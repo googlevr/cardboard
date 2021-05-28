@@ -413,4 +413,11 @@ public abstract class CardboardParamsUtils {
       Log.e(TAG, "Could not write Cardboard parameters to storage.");
     }
   }
+
+  public static void updateViewerProfileFromURL(String url, Context context) {
+    Uri uri = Uri.parse(url);
+    Log.d(TAG, "Updating device parameters from url.");
+    byte[] deviceParams = readDeviceParamsFromUri(uri);
+    writeDeviceParams(deviceParams, context);
+  }
 }

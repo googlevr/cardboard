@@ -80,6 +80,19 @@ std::vector<uint8_t> getCurrentSavedDeviceParams() {
   return buffer;
 }
 
+void updateViewerProfileFromURL(const char* url) {
+  JNIEnv* env;
+  cardboard::jni::LoadJNIEnv(vm_, &env);
+
+  jstring urlString = env->NewStringUTF(url);
+
+  jmethodID updateViewerProfileMethod =
+          env->GetStaticMethodID(cardboard_params_utils_class_, "updateViewerProfileFromURL",
+                                 "(Ljava/lang/String;Landroid/content/Context;)V");
+  env->CallStaticVoidMethod(
+          cardboard_params_utils_class_, updateViewerProfileMethod, urlString, context_);
+}
+
 void scanQrCodeAndSaveDeviceParams() {
   // Get JNI environment pointer
   JNIEnv* env;

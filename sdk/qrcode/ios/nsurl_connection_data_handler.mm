@@ -40,6 +40,7 @@ static NSString *const kOriginalCardboardDeviceParamsUrl = @"http://g.co/cardboa
 - (NSURLRequest *)connection:(NSURLConnection *)connection
              willSendRequest:(NSURLRequest *)request
             redirectResponse:(NSURLResponse *)response {
+    
   if (request.URL) {
     if ([CardboardNSURLConnectionDataHandler isCardboardDeviceUrl:request.URL]) {
       _success = YES;

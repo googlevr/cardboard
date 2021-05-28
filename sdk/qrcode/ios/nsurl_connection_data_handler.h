@@ -18,11 +18,17 @@
 /** The completion will be called once the target url is fetched. */
 typedef void (^OnUrlCompletion)(NSURL* _Nullable targetUrl, NSError* _Nullable error);
 
+// IDEA
+// IDEA
+// IDEA
+// IDEA
+// IDEA Change this to NSURLSessionDelegate and NSURLSessionTaskDelegate. The latter is involved in redirects. Do something similar for Android if not already working.
+
 /**
  * Helper class that handles NSURL connection data.
  */
 @interface CardboardNSURLConnectionDataHandler
-    : NSObject <NSURLConnectionDataDelegate, NSURLConnectionDelegate>
+    : NSObject <NSURLConnectionDataDelegate, NSURLConnectionDelegate> //, NSURLSessionDelegate, NSURLSessionTaskDelegate
 
 /**
  * Inits handler with OnUrlCompletion callback.

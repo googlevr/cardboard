@@ -54,6 +54,7 @@ class DeviceParams {
   int distortion_coefficients_size() const;
   float left_eye_field_of_view_angles(int index) const;
 
+  const char * model() const;
  private:
   jobject java_device_params_;
 };

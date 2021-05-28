@@ -215,6 +215,30 @@ class MetalRenderer : public Renderer {
 
       // When using Metal, texture depth buffer is unused.
       render_texture->depth_buffer = 0;
+      
+      // Create a black texture. It is used to hide a rendering previously performed by Unity.
+      // TODO(b/185478026): Prevent Unity from drawing a monocular scene when using Metal.
+      MTLTextureDescriptor* black_texture_descriptor = [MTLTextureDescriptorClass new];
+      black_texture_descriptor.textureType = MTLTextureType2D;
+      black_texture_descriptor.width = screen_width;
+      black_texture_descriptor.height = screen_height;
+      black_texture_descriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;
+      black_texture_descriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+      black_texture_ = [mtl_device newTextureWithDescriptor:black_texture_descriptor];
+
+      std::vector<uint32_t> black_texture_data(screen_width * screen_height, 0xFF000000);
+      MTLRegion region = MTLRegionMake2D(0, 0, screen_width, screen_height);
+      [black_texture_ replaceRegion:region
+                        mipmapLevel:0
+                          withBytes:reinterpret_cast<uint8_t*>(black_texture_data.data())
+                        bytesPerRow:4 * screen_width];
+
+      black_texture_vertices_buffer_ = [mtl_device newBufferWithBytes:vertices
+                                                               length:sizeof(vertices)
+                                                              options:MTLResourceStorageModeShared];
+      black_texture_uvs_buffer_ = [mtl_device newBufferWithBytes:uvs
+                                                          length:sizeof(uvs)
+                                                         options:MTLResourceStorageModeShared];
   }
 
   void DestroyRenderTexture(RenderTexture* render_texture) override {
@@ -226,6 +250,10 @@ class MetalRenderer : public Renderer {
                            const CardboardEyeTextureDescription* left_eye,
                            const CardboardEyeTextureDescription* right_eye) override {
 
+      // Render black texture. It is used to hide a rendering previously performed by Unity.
+      // TODO(b/185478026): Prevent Unity from drawing a monocular scene when using Metal.
+      RenderBlackTexture(screen_params.width, screen_params.height);
+      
     const CardboardDistortionRendererTargetConfig target_config{
       reinterpret_cast<uint64_t>(CFBridgingRetain(metal_interface_->CurrentCommandEncoder())),
       screen_params.width, screen_params.height};
@@ -274,7 +302,32 @@ class MetalRenderer : public Renderer {
                                    vertexStart:0
                                    vertexCount:4];
   }
+    void RenderBlackTexture(int screen_width, int screen_height) {
+      // Get Metal current render command encoder.
+      id<MTLRenderCommandEncoder> mtl_render_command_encoder_ =
+          static_cast<id<MTLRenderCommandEncoder>>(metal_interface_->CurrentCommandEncoder());
 
+      [mtl_render_command_encoder_ setRenderPipelineState:mtl_render_pipeline_state_];
+
+      [mtl_render_command_encoder_
+          setViewport:(MTLViewport){0.0, 0.0, static_cast<double>(screen_width),
+                                    static_cast<double>(screen_height), 0.0, 1.0}];
+
+      [mtl_render_command_encoder_ setVertexBuffer:black_texture_vertices_buffer_
+                                            offset:0
+                                           atIndex:VertexInputIndexPosition];
+
+      [mtl_render_command_encoder_ setVertexBuffer:black_texture_uvs_buffer_
+                                            offset:0
+                                           atIndex:VertexInputIndexTexCoords];
+
+      [mtl_render_command_encoder_ setFragmentTexture:black_texture_
+                                              atIndex:FragmentInputIndexTexture];
+
+      [mtl_render_command_encoder_ drawPrimitives:MTLPrimitiveTypeTriangleStrip
+                                      vertexStart:0
+                                      vertexCount:4];
+    }
   constexpr static float vertices[] = {-1, -1, 1, -1, -1, 1, 1, 1};
   constexpr static float uvs[] = {0, 0, 1, 0, 0, 1, 1, 1};
 

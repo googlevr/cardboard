@@ -35,7 +35,7 @@ namespace cardboard {
 class LensDistortion {
  public:
   LensDistortion(const uint8_t* encoded_device_params, int size,
-                 int display_width, int display_height);
+                 int display_width, int display_height, float inter_lens_distance = -1, float interpupillary_distance = -1);
   virtual ~LensDistortion();
   // Tan angle units. "DistortedUvForUndistoredUv" goes through the forward
   // distort function. I.e. the lens. UndistortedUvForDistortedUv uses the
@@ -50,6 +50,8 @@ class LensDistortion {
                               float* projection_matrix) const;
   void GetEyeFieldOfView(CardboardEye eye, float* field_of_view) const;
   CardboardMesh GetDistortionMesh(CardboardEye eye) const;
+    
+  //void SetManualInterLensDistance(float inter_lens_distance);
  private:
   struct ViewportParams;
 

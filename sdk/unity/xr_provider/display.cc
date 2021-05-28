@@ -222,6 +222,13 @@ class CardboardDisplayProvider {
         // Update pose for rendering.
         eye_params->deviceAnchorToEyePose =
             cardboard::unity::CardboardTransformToUnityPose(eye_from_head);
+          
+          /*if (i == 0) {
+              eye_params->deviceAnchorToEyePose.position.x += 0.01f;
+          } else {
+              eye_params->deviceAnchorToEyePose.position.x -= 0.01f;
+          }*/
+          
         // Field of view and viewport.
         eye_params->viewportRect = frame_hints->appSetup.renderViewport;
         ConfigureFieldOfView(fov, &eye_params->projection);

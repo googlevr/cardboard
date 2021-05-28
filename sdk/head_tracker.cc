@@ -29,6 +29,9 @@ constexpr int kPositionSamples = 6;
 constexpr int64_t kMaxSixDoFTimeDifference = 200000000; // Maximum time difference between last pose state timestamp and last 6DoF timestamp, if it takes longer than this the last known location of sixdof will be used
 constexpr float kReduceBiasRate = 0.05;
 
+bool uses_last_known_positon_;
+Vector3 last_known_position_ = Vector3(0,0,0);
+
 HeadTracker::HeadTracker()
     : is_tracking_(false),
       sensor_fusion_(new SensorFusionEkf()),
@@ -61,6 +64,7 @@ HeadTracker::HeadTracker()
   smooth_ekf_to_sixDoF_ = Rotation::Identity();
   steady_start_ = Rotation::Identity();
   steady_frames_ = -1;
+  uses_last_known_positon_ = false;
 }
 
 HeadTracker::~HeadTracker() { UnregisterCallbacks(); }
@@ -120,21 +124,38 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
     
   // Save rotation sample with timestamp to be used in AddSixDoFData()
   rotation_data_->AddSample(adjusted_unpredicted_rotation.GetQuaternion(), rotation_state.timestamp);
-    
-  if (position_data_->IsValid() && rotation_state.timestamp - position_data_->GetLatestTimestamp() < kMaxSixDoFTimeDifference) {
-      
-    // 6DoF is recently updated
+  
+  if (position_data_->IsValid()) {
+    // 6DoF
     const Vector4 orientation = (adjusted_rotation * smooth_ekf_to_sixDoF_).GetQuaternion();
       
     out_orientation[0] = static_cast<float>(orientation[0]);
     out_orientation[1] = static_cast<float>(orientation[1]);
     out_orientation[2] = static_cast<float>(orientation[2]);
     out_orientation[3] = static_cast<float>(orientation[3]);
+    if (rotation_state.timestamp - position_data_->GetLatestTimestamp() < kMaxSixDoFTimeDifference) {
+      // 6DoF is recently updated
+      last_known_position_ = position_data_->GetExtrapolatedForTimeStamp(timestamp_ns);
+      out_position = {(float)last_known_position_[0],
+                      (float)last_known_position_[1],
+                      (float)last_known_position_[2]};
+      uses_last_known_positon_ = false;
+    } else {
+      // 6DoF is not recently updated
+      // Apply last known 6DoF position, while still applying neckmodel.
+      out_position = ApplyNeckModel(out_orientation, 1.0);
       
-    Vector3 p = position_data_->GetExtrapolatedForTimeStamp(timestamp_ns);
-    out_position = {(float)p[0], (float)p[1], (float)p[2]};
+      if (!uses_last_known_positon_) {
+        last_known_position_ -= Vector3(out_position[0], out_position[1], out_position[2]);
+        uses_last_known_positon_ = true;
+      }
+        
+      out_position[0] += (float)last_known_position_[0];
+      out_position[1] += (float)last_known_position_[1];
+      out_position[2] += (float)last_known_position_[2];
+    }
   } else {
-    // 6DoF is not recently updated
+    // 6DoF has never been set
     const Vector4 orientation = adjusted_rotation.GetQuaternion();
       
     out_orientation[0] = static_cast<float>(orientation[0]);
@@ -143,13 +164,6 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
     out_orientation[3] = static_cast<float>(orientation[3]);
         
     out_position = ApplyNeckModel(out_orientation, 1.0);
-    if (position_data_->IsValid()) {
-        // Apply last known 6DoF position if 6DoF data was previously added, while still applying neckmodel.
-        Vector3 last_known_position_ = position_data_->GetLatestData();
-        out_position[0] += (float)last_known_position_[0];
-        out_position[1] += (float)last_known_position_[1];
-        out_position[2] += (float)last_known_position_[2];
-    }
   }
 }
 

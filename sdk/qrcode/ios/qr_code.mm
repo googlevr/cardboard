@@ -100,5 +100,14 @@ void scanQrCodeAndSaveDeviceParams() {
 
 int getQrCodeScanCount() { return qrCodeScanCount; }
 
+void updateViewerProfileFromURL(const char* url) {
+    NSString *urlString = [NSString stringWithUTF8String:url];
+    [CardboardDeviceParamsHelper resolveAndUpdateViewerProfileFromURL:[NSURL URLWithString:urlString] withCompletion:^(BOOL success, NSError * _Nullable) {
+        if (!success) {
+            NSLog(@"Could not load device parameters from URL %@", urlString);
+        }
+    }];
+}
+
 }  // namespace qrcode
 }  // namespace cardboard

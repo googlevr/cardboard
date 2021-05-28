@@ -191,6 +191,9 @@ class CardboardApi {
   /// @param xr_interfaces Pointer to Unity XR interface provider.
   static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces);
 
+  static void SetInterLensDistance(float distance);
+  static void SetInterpupillaryDistance(float distance);
+    
  private:
   // Forward declaration of the api implementation.
   class CardboardApiImpl;
@@ -247,6 +250,13 @@ void CardboardUnity_setDeviceParametersChanged();
 /// @brief Sets the graphics API to use.
 /// @param graphics_api The graphics API to use.
 void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api);
+
+void CardboardUnity_setDeviceURL(const char* url);
+
+char* CardboardUnity_getDeviceModel();
+
+void CardboardUnity_setInterLensDistance(float distance);
+void CardboardUnity_setInterpupillaryDistance(float distance);
 
 #ifdef __cplusplus
 }
