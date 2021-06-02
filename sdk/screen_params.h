@@ -20,15 +20,13 @@
 #include <jni.h>
 #endif
 
-namespace cardboard {
-namespace screen_params {
+namespace cardboard::screen_params {
 static constexpr float kMetersPerInch = 0.0254f;
 #ifdef __ANDROID__
 void initializeAndroid(JavaVM* vm, jobject context);
 #endif
 void getScreenSizeInMeters(int width_pixels, int height_pixels,
                            float* out_width_meters, float* out_height_meters);
-}  // namespace screen_params
-}  // namespace cardboard
+}  // namespace cardboard::screen_params
 
 #endif  // CARDBOARD_SDK_SCREEN_PARAMS_H_

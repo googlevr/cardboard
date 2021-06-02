@@ -34,7 +34,8 @@ HeadTracker::HeadTracker()
       sensor_fusion_(new SensorFusionEkf()),
       latest_gyroscope_data_({0, 0, Vector3::Zero()}),
       accel_sensor_(new SensorEventProducer<AccelerometerData>()),
-      gyro_sensor_(new SensorEventProducer<GyroscopeData>()) {
+      gyro_sensor_(new SensorEventProducer<GyroscopeData>()),
+      recenter_rotation_() {
   on_accel_callback_ = [&](const AccelerometerData& event) {
     OnAccelerometerData(event);
   };
@@ -70,23 +71,19 @@ void HeadTracker::Resume() {
 void HeadTracker::GetPose(int64_t timestamp_ns,
                           std::array<float, 3>& out_position,
                           std::array<float, 4>& out_orientation) const {
-  const Rotation predicted_rotation =
-      sensor_fusion_->PredictRotation(timestamp_ns);
-
-  // In order to update our pose as the sensor changes, we begin with the
-  // inverse default orientation (the orientation returned by a reset sensor),
-  // apply the current sensor transformation, and then transform into display
-  // space.
-  const Vector4 orientation = (kSensorToDisplayRotation * predicted_rotation *
-                               kEkfToHeadTrackerRotation)
-                                  .GetQuaternion();
-
+  const Vector4 orientation = GetRotation(timestamp_ns).GetQuaternion();
   out_orientation[0] = static_cast<float>(orientation[0]);
   out_orientation[1] = static_cast<float>(orientation[1]);
   out_orientation[2] = static_cast<float>(orientation[2]);
   out_orientation[3] = static_cast<float>(orientation[3]);
 
   out_position = ApplyNeckModel(out_orientation, 1.0);
+}
+
+void HeadTracker::Recenter() {
+  const Rotation r = GetRotation(0 /* now */);
+  const double yaw_angle = r.GetYawAngle();
+  recenter_rotation_ *= Rotation::FromYawPitchRoll(-yaw_angle, 0., 0.);
 }
 
 void HeadTracker::RegisterCallbacks() {
@@ -112,6 +109,18 @@ void HeadTracker::OnGyroscopeData(const GyroscopeData& event) {
   }
   latest_gyroscope_data_ = event;
   sensor_fusion_->ProcessGyroscopeSample(event);
+}
+
+Rotation HeadTracker::GetRotation(int64_t timestamp_ns) const {
+  const Rotation predicted_rotation =
+      sensor_fusion_->PredictRotation(timestamp_ns);
+
+  // In order to update our pose as the sensor changes, we begin with the
+  // inverse default orientation (the orientation returned by a reset sensor),
+  // apply the current sensor transformation, then transform into display
+  // space, and lastly multiply by the recentering rotation.
+  return kSensorToDisplayRotation * predicted_rotation *
+         kEkfToHeadTrackerRotation * recenter_rotation_;
 }
 
 }  // namespace cardboard

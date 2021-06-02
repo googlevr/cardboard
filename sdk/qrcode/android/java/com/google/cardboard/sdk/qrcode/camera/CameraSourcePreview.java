@@ -23,7 +23,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
-import android.support.annotation.RequiresPermission;
+import androidx.annotation.RequiresPermission;
 import com.google.android.gms.common.images.Size;
 import java.io.IOException;
 

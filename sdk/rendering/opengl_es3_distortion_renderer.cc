@@ -136,8 +136,7 @@ GLuint CreateProgram(const char* vertex, const char* fragment) {
 
 }  // namespace
 
-namespace cardboard {
-namespace rendering {
+namespace cardboard::rendering {
 
 // @brief OpenGL ES 3.0 concrete implementation of DistortionRenderer.
 class OpenGlEs3DistortionRenderer : public DistortionRenderer {
@@ -302,8 +301,7 @@ class OpenGlEs3DistortionRenderer : public DistortionRenderer {
   GLuint uniform_end_;
 };
 
-}  // namespace rendering
-}  // namespace cardboard
+}  // namespace cardboard::rendering
 
 extern "C" {
 

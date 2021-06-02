@@ -29,9 +29,7 @@ typedef enum CardboardGraphicsApi {
   kNone = -1,      ///< No graphic API is selected.
 } CardboardGraphicsApi;
 
-// TODO(b/151087873) Convert into single line namespace declaration.
-namespace cardboard {
-namespace unity {
+namespace cardboard::unity {
 
 /// Minimalistic wrapper of Cardboard SDK with native and standard types which
 /// hides Cardboard types and exposes enough functionality to be consumed by a
@@ -184,6 +182,9 @@ class CardboardApi {
   /// @param xr_interfaces Pointer to Unity XR interface provider.
   static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces);
 
+  /// @brief Flags a head tracker recentering request.
+  static void SetHeadTrackerRecenterRequested();
+
  private:
   // Forward declaration of the api implementation.
   class CardboardApiImpl;
@@ -241,11 +242,13 @@ void CardboardUnity_setDeviceParametersChanged();
 /// @param graphics_api The graphics API to use.
 void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api);
 
+/// @brief Flags a head tracker recentering request.
+void CardboardUnity_recenterHeadTracker();
+
 #ifdef __cplusplus
 }
 #endif
 
-}  // namespace unity
-}  // namespace cardboard
+}  // namespace cardboard::unity
 
 #endif  // CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_XR_UNITY_H_

@@ -58,7 +58,9 @@ class SensorFusionEkf {
   // to extrapolate a position in the future.
   //
   // @param requested_timestamp time at which you want the rotation.
-  // @return A Rotation from Start to Sensor Space.
+  // @return If the requested timestamp is equal to zero, it returns the current
+  //         rotation. Otherwise, it returns the rotation from Start to Sensor
+  //         Space.
   Rotation PredictRotation(int64_t requested_timestamp) const;
 
   // Processes one gyroscope sample event. This updates the rotation of the

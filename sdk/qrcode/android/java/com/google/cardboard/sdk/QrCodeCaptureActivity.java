@@ -26,12 +26,12 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.MultiProcessor;
@@ -275,7 +275,7 @@ public class QrCodeCaptureActivity extends AppCompatActivity
     if (status) {
       Log.d(TAG, "Device parameters saved in external storage.");
       cameraSourcePreview.stop();
-      nativeIncrementQrCodeScanCount();
+      nativeIncrementDeviceParamsChangedCount();
       finish();
     } else {
       Log.e(TAG, "Device parameters not saved in external storage.");
@@ -283,5 +283,5 @@ public class QrCodeCaptureActivity extends AppCompatActivity
     qrCodeSaved = false;
   }
 
-  private native void nativeIncrementQrCodeScanCount();
+  private native void nativeIncrementDeviceParamsChangedCount();
 }

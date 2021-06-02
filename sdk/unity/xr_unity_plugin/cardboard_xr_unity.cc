@@ -65,9 +65,7 @@ void NSLog(CFStringRef format, ...);
 #define LOGF(...)
 #endif
 
-// TODO(b/151087873) Convert into single line namespace declaration.
-namespace cardboard {
-namespace unity {
+namespace cardboard::unity {
 
 // @brief It provides the implementation of the PImpl pattern for the Cardboard
 //        SDK C-API.
@@ -135,6 +133,13 @@ class CardboardApi::CardboardApiImpl {
       orientation[3] = 1.0f;
       return;
     }
+
+    // Checks whether a head tracker recentering has been requested.
+    if (head_tracker_recenter_requested_) {
+      CardboardHeadTracker_recenter(head_tracker_.get());
+      head_tracker_recenter_requested_ = false;
+    }
+
     CardboardHeadTracker_getPose(
         head_tracker_.get(),
         CardboardApiImpl::GetBootTimeNano() + kPredictionTimeWithoutVsyncNanos,
@@ -316,6 +321,10 @@ class CardboardApi::CardboardApiImpl {
     xr_interfaces_ = xr_interfaces;
   }
 
+  static void SetHeadTrackerRecenterRequested() {
+    head_tracker_recenter_requested_ = true;
+  }
+
  private:
   // @brief Holds the screen and rendering area details.
   struct ScreenParams {
@@ -480,6 +489,9 @@ class CardboardApi::CardboardApiImpl {
 
   // @brief Holds the Unity XR interfaces.
   static IUnityInterfaces* xr_interfaces_;
+
+  // @brief Tracks head tracker recentering requests.
+  static std::atomic<bool> head_tracker_recenter_requested_;
 };
 
 std::atomic<CardboardApi::CardboardApiImpl::ScreenParams>
@@ -496,6 +508,9 @@ std::atomic<CardboardGraphicsApi>
     CardboardApi::CardboardApiImpl::selected_graphics_api_(kNone);
 
 IUnityInterfaces* CardboardApi::CardboardApiImpl::xr_interfaces_{nullptr};
+
+std::atomic<bool>
+    CardboardApi::CardboardApiImpl::head_tracker_recenter_requested_(false);
 
 CardboardApi::CardboardApi() { p_impl_.reset(new CardboardApiImpl()); }
 
@@ -581,8 +596,11 @@ void CardboardApi::SetUnityInterfaces(IUnityInterfaces* xr_interfaces) {
   CardboardApi::CardboardApiImpl::SetUnityInterfaces(xr_interfaces);
 }
 
-}  // namespace unity
-}  // namespace cardboard
+void CardboardApi::SetHeadTrackerRecenterRequested() {
+  CardboardApi::CardboardApiImpl::SetHeadTrackerRecenterRequested();
+}
+
+}  // namespace cardboard::unity
 
 #ifdef __cplusplus
 extern "C" {
@@ -637,6 +655,10 @@ void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api) {
           "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
           "nor Metal was selected.");
   }
+}
+
+void CardboardUnity_recenterHeadTracker() {
+  cardboard::unity::CardboardApi::SetHeadTrackerRecenterRequested();
 }
 
 #ifdef __cplusplus

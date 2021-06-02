@@ -22,8 +22,7 @@
 
 #include "UnityXRTypes.h"
 
-namespace cardboard {
-namespace unity {
+namespace cardboard::unity {
 
 /// @brief Creates a UnityXRPose from a Cardboard rotation.
 /// @param rotation A Cardboard rotation quaternion expressed as [x, y, z, w].
@@ -36,7 +35,6 @@ UnityXRPose CardboardRotationToUnityPose(const std::array<float, 4>& rotation);
 UnityXRPose CardboardTransformToUnityPose(
     const std::array<float, 16>& transform);
 
-}  // namespace unity
-}  // namespace cardboard
+}  // namespace cardboard::unity
 
 #endif  // CARDBOARD_SDK_UNITY_XR_PROVIDER_MATH_TOOLS_H_

@@ -27,8 +27,7 @@ bool is_initialized = false;
 
 }  // namespace
 
-namespace cardboard {
-namespace util {
+namespace cardboard::util {
 
 #ifdef __ANDROID__
 
@@ -55,5 +54,4 @@ bool IsInitialized(const char* /*file_name*/, int /*line_number*/) {
 
 #endif
 
-}  // namespace util
-}  // namespace cardboard
+}  // namespace cardboard::util

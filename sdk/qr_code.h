@@ -23,15 +23,14 @@
 #include <stdint.h>
 #include <vector>
 
-namespace cardboard {
-namespace qrcode {
+namespace cardboard::qrcode {
 #ifdef __ANDROID__
 void initializeAndroid(JavaVM* vm, jobject context);
 #endif
 std::vector<uint8_t> getCurrentSavedDeviceParams();
 void scanQrCodeAndSaveDeviceParams();
-int getQrCodeScanCount();
-}  // namespace qrcode
-}  // namespace cardboard
+void saveDeviceParams(const uint8_t* uri, int size);
+int getDeviceParamsChangedCount();
+}  // namespace cardboard::qrcode
 
 #endif  // CARDBOARD_SDK_QR_CODE_H_

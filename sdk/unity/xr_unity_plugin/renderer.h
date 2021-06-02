@@ -25,9 +25,7 @@
 #include "include/cardboard.h"
 #include "IUnityInterface.h"
 
-// TODO(b/151087873) Convert into single line namespace declaration.
-namespace cardboard {
-namespace unity {
+namespace cardboard::unity {
 
 /// Manages the interaction of the Cardboard XR Plugin with different rendering
 /// APIs. The supported rendering APIs are expected to extend this class and
@@ -157,7 +155,6 @@ CardboardDistortionRenderer* MakeCardboardMetalDistortionRenderer(
     IUnityInterfaces* xr_interfaces);
 #endif
 
-}  // namespace unity
-}  // namespace cardboard
+}  // namespace cardboard::unity
 
 #endif  // CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_RENDERER_H_

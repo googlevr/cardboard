@@ -18,8 +18,7 @@
 
 #include <jni.h>
 
-namespace cardboard {
-namespace jni {
+namespace cardboard::jni {
 
 /// @brief Initializes Java class refences used by this module.
 /// @param vm The JavaVM pointer. It must not be nullptr.
@@ -52,7 +51,6 @@ jclass LoadJClass(JNIEnv* env, const char* class_name);
 /// @param msg Exception's message. It must not be nullptr.
 void ThrowJavaRuntimeException(JNIEnv* env, const char* msg);
 
-}  // namespace jni
-}  // namespace cardboard
+}  // namespace cardboard::jni
 
 #endif  // CARDBOARD_SDK_JNI_UTILS_JNI_UTILS_H_

@@ -20,8 +20,7 @@
 
 #include <vector>
 
-namespace cardboard {
-namespace qrcode {
+namespace cardboard::qrcode {
 
 /// Device params for Cardboard V1 released at Google I/O 2014.
 /// {@
@@ -37,7 +36,6 @@ constexpr char kCardboardV1Model[] = "Cardboard v1";
 /// @}
 
 std::vector<uint8_t> getCardboardV1DeviceParams();
-}  // namespace qrcode
-}  // namespace cardboard
+}  // namespace cardboard::qrcode
 
 #endif  // CARDBOARD_SDK_QRCODE_CARDBOARD_V1_CARDBOARD_V1_H_

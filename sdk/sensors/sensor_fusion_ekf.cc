@@ -155,6 +155,10 @@ RotationState SensorFusionEkf::GetLatestRotationState() const {
 
 Rotation SensorFusionEkf::PredictRotation(int64_t requested_timestamp) const {
   std::unique_lock<std::mutex> lock(mutex_);
+  // If the required timestamp is equal to zero, return the current pose.
+  if (requested_timestamp == 0) {
+    return current_state_.sensor_from_start_rotation;
+  }
 
   // Subtracting unsigned numbers is bad when the result is negative.
   const double timestep_s = ComputeTimeDifferenceInSeconds(

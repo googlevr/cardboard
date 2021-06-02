@@ -25,9 +25,7 @@
 // @def Forwards the call to CheckGlError().
 #define CHECKGLERROR(label) CheckGlError(__FILE__, __LINE__, label)
 
-// TODO(b/151087873) Convert into single line namespace declaration.
-namespace cardboard {
-namespace unity {
+namespace cardboard::unity {
 namespace {
 
 /**
@@ -299,5 +297,4 @@ std::unique_ptr<Renderer> MakeOpenGlEs2Renderer() {
   return std::make_unique<OpenGlEs2Renderer>();
 }
 
-}  // namespace unity
-}  // namespace cardboard
+}  // namespace cardboard::unity

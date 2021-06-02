@@ -22,8 +22,7 @@
 #define CARDBOARD_IS_NOT_INITIALIZED() \
   !cardboard::util::IsInitialized(__FILE__, __LINE__)
 
-namespace cardboard {
-namespace util {
+namespace cardboard::util {
 
 /// Sets the Cardboard SDK as initialized.
 void SetIsInitialized();
@@ -36,7 +35,6 @@ void SetIsInitialized();
 /// @return         true if the SDK has been initialized, false otherwise.
 bool IsInitialized(const char* file_name, int line_number);
 
-}  // namespace util
-}  // namespace cardboard
+}  // namespace cardboard::util
 
 #endif  // CARDBOARD_SDK_UTIL_IS_INITIALIZED_H_

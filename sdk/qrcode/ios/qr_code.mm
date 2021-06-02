@@ -22,14 +22,15 @@
 
 #import "qrcode/ios/device_params_helper.h"
 #import "qrcode/ios/qr_scan_view_controller.h"
+#import "util/logging.h"
 
 namespace cardboard {
 namespace qrcode {
 namespace {
 
-std::atomic<int32_t> qrCodeScanCount = {0};
+std::atomic<int32_t> deviceParamsChangedCount = {0};
 
-void incrementQrCodeScanCount() { std::atomic_fetch_add(&qrCodeScanCount, 1); }
+void incrementDeviceParamsChangedCount() { std::atomic_fetch_add(&deviceParamsChangedCount, 1); }
 
 void showQRScanViewController() {
   UIViewController *presentingViewController = nil;
@@ -43,7 +44,7 @@ void showQRScanViewController() {
 
   __block CardboardQRScanViewController *qrViewController =
       [[CardboardQRScanViewController alloc] initWithCompletion:^(BOOL /*succeeded*/) {
-        incrementQrCodeScanCount();
+        incrementDeviceParamsChangedCount();
         [qrViewController dismissViewControllerAnimated:YES completion:nil];
       }];
 
@@ -98,7 +99,44 @@ void scanQrCodeAndSaveDeviceParams() {
   }
 }
 
-int getQrCodeScanCount() { return qrCodeScanCount; }
+void saveDeviceParams(const uint8_t *uri, int /*size*/) {
+  NSString *uriAsString = [NSString stringWithUTF8String:reinterpret_cast<const char *>(uri)];
+
+  // Check whether the URI is valid.
+  // TODO(b/189762850): Change device_params_helper.mm to use HTTPS URIs.
+  if (![uriAsString hasPrefix:@"http://"]) {
+    if ([uriAsString hasPrefix:@"https://"]) {
+      uriAsString = [uriAsString stringByReplacingOccurrencesOfString:@"https://"
+                                                           withString:@"http://"];
+    } else {
+      uriAsString = [NSString stringWithFormat:@"%@%@", @"http://", uriAsString];
+    }
+  }
+  NSURL *url = [NSURL URLWithString:uriAsString];
+  if (!url) {
+    CARDBOARD_LOGE("Invalid URI: %@", uriAsString);
+    return;
+  }
+
+  // Get device params from URI and save to storage.
+  [CardboardDeviceParamsHelper
+      resolveAndUpdateViewerProfileFromURL:url
+                            withCompletion:^(BOOL success, NSError *error) {
+                              if (success) {
+                                CARDBOARD_LOGI("Successfully saved device parameters to storage");
+                              } else {
+                                if (error) {
+                                  CARDBOARD_LOGE(
+                                      "Error when trying to get the device params from the URI: %@",
+                                      error);
+                                } else {
+                                  CARDBOARD_LOGE("Error when saving device parameters to storage");
+                                }
+                              }
+                            }];
+}
+
+int getDeviceParamsChangedCount() { return deviceParamsChangedCount; }
 
 }  // namespace qrcode
 }  // namespace cardboard

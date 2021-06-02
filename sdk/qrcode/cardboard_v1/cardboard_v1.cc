@@ -15,8 +15,7 @@
  */
 #include "qrcode/cardboard_v1/cardboard_v1.h"
 
-namespace cardboard {
-namespace qrcode {
+namespace cardboard::qrcode {
 
 std::vector<uint8_t> getCardboardV1DeviceParams() {
   return {
@@ -30,5 +29,4 @@ std::vector<uint8_t> getCardboardV1DeviceParams() {
   };
 }
 
-}  // namespace qrcode
-}  // namespace cardboard
+}  // namespace cardboard::qrcode

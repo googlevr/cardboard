@@ -16,6 +16,7 @@
 #import <MetalKit/MetalKit.h>
 #import <simd/simd.h>
 
+#include <array>
 #include <memory>
 #include <vector>
 
@@ -25,9 +26,7 @@
 #include "unity/xr_unity_plugin/renderer.h"
 #include "IUnityGraphicsMetal.h"
 
-// TODO(b/151087873) Convert into single line namespace declaration.
-namespace cardboard {
-namespace unity {
+namespace cardboard::unity {
 namespace {
 
 /// @note This enum must be kept in sync with the shader counterpart.
@@ -184,25 +183,33 @@ class MetalRenderer : public Renderer {
 
     // Create texture color buffer.
     NSDictionary* color_surface_attribs = @{
-      (NSString*)kIOSurfaceIsGlobal : @YES,
       (NSString*)kIOSurfaceWidth : @(screen_width / 2),
       (NSString*)kIOSurfaceHeight : @(screen_height),
       (NSString*)kIOSurfaceBytesPerElement : @4u
     };
-    color_surface_ = IOSurfaceCreate((CFDictionaryRef)color_surface_attribs);
+    IOSurfaceRef color_surface = IOSurfaceCreate((CFDictionaryRef)color_surface_attribs);
+
     MTLTextureDescriptor* texture_color_buffer_descriptor = [MTLTextureDescriptorClass new];
     texture_color_buffer_descriptor.textureType = MTLTextureType2D;
     texture_color_buffer_descriptor.width = screen_width / 2;
     texture_color_buffer_descriptor.height = screen_height;
     texture_color_buffer_descriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;
     texture_color_buffer_descriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
-    color_texture_ = [mtl_device newTextureWithDescriptor:texture_color_buffer_descriptor
-                                                iosurface:color_surface_
-                                                    plane:0];
-    render_texture->color_buffer = reinterpret_cast<uint64_t>(color_surface_);
+    id<MTLTexture> color_texture =
+        [mtl_device newTextureWithDescriptor:texture_color_buffer_descriptor
+                                   iosurface:color_surface
+                                       plane:0];
 
+    // Unity requires an IOSurfaceRef in order to draw the scene.
+    render_texture->color_buffer = reinterpret_cast<uint64_t>(color_surface);
     // When using Metal, texture depth buffer is unused.
     render_texture->depth_buffer = 0;
+
+    // Store created buffer elements.
+    color_buffer_[eye_] = {color_surface, color_texture};
+
+    // Switch eye for the next CreateRenderTexture call.
+    eye_ = eye_ == kLeft ? kRight : kLeft;
 
     // Create a black texture. It is used to hide a rendering previously performed by Unity.
     // TODO(b/185478026): Prevent Unity from drawing a monocular scene when using Metal.
@@ -247,18 +254,20 @@ class MetalRenderer : public Renderer {
 
     // An IOSurfaceRef was passed to Unity for drawing, but a reference to an id<MTLTexture> using
     // it must be passed to the SDK.
-    CFTypeRef color_texture = CFBridgingRetain(color_texture_);
     CardboardEyeTextureDescription left_eye_description = *left_eye;
-    left_eye_description.texture = reinterpret_cast<uint64_t>(color_texture);
+    CFTypeRef left_color_texture = CFBridgingRetain(color_buffer_[kLeft].texture);
+    left_eye_description.texture = reinterpret_cast<uint64_t>(left_color_texture);
     CardboardEyeTextureDescription right_eye_description = *right_eye;
-    right_eye_description.texture = reinterpret_cast<uint64_t>(color_texture);
+    CFTypeRef right_color_texture = CFBridgingRetain(color_buffer_[kRight].texture);
+    right_eye_description.texture = reinterpret_cast<uint64_t>(right_color_texture);
 
     CardboardDistortionRenderer_renderEyeToDisplay(
         renderer, reinterpret_cast<uint64_t>(&target_config), screen_params.viewport_x,
         screen_params.viewport_y, screen_params.viewport_width, screen_params.viewport_height,
         &left_eye_description, &right_eye_description);
 
-    CFBridgingRelease(color_texture);
+    CFBridgingRelease(left_color_texture);
+    CFBridgingRelease(right_color_texture);
     CFBridgingRelease(reinterpret_cast<CFTypeRef>(target_config.render_command_encoder));
   }
 
@@ -326,8 +335,13 @@ class MetalRenderer : public Renderer {
   IUnityGraphicsMetalV1* metal_interface_{nullptr};
   id<MTLRenderPipelineState> mtl_render_pipeline_state_;
 
-  IOSurfaceRef color_surface_;
-  id<MTLTexture> color_texture_;
+  struct ColorBuffer {
+    IOSurfaceRef surface;
+    id<MTLTexture> texture;
+  };
+
+  std::array<ColorBuffer, 2> color_buffer_;
+  CardboardEye eye_{kLeft};
 
   id<MTLTexture> black_texture_;
   id<MTLBuffer> black_texture_vertices_buffer_;
@@ -356,5 +370,4 @@ CardboardDistortionRenderer* MakeCardboardMetalDistortionRenderer(IUnityInterfac
   return distortion_renderer;
 }
 
-}  // namespace unity
-}  // namespace cardboard
+}  // namespace cardboard::unity

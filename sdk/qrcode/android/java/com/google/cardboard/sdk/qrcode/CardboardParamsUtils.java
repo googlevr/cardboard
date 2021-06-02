@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Environment;
+import androidx.annotation.Nullable;
 import android.util.Base64;
 import android.util.Log;
 import com.google.cardboard.sdk.deviceparams.CardboardV1DeviceParams;
@@ -28,6 +29,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.nio.ByteBuffer;
 
 /** Utility methods for managing configuration parameters. */
@@ -64,6 +67,11 @@ public abstract class CardboardParamsUtils {
   /** Flags to encode and decode in Base64 device parameters in the Uri. */
   private static final int URI_CODING_PARAMS = Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING;
 
+  private static final int MAX_REDIRECTS = 5;
+  private static final String HTTP_SCHEME_PREFIX = "http://";
+  private static final String HTTPS_SCHEME_PREFIX = "https://";
+  private static final int HTTPS_TIMEOUT_MS = 5 * 1000;
+
   /** Enum to determine which storage source to use. */
   // TODO(b/167382867): Make it private and modify tests.
   private enum StorageSource {
@@ -71,14 +79,109 @@ public abstract class CardboardParamsUtils {
     EXTERNAL_STORAGE
   };
 
+  /** Holds status for conversion from a URI to Cardboard device params. */
+  public static class UriToParamsStatus {
+    public static final int STATUS_OK = 0;
+    public static final int STATUS_UNEXPECTED_FORMAT = 1;
+    public static final int STATUS_CONNECTION_ERROR = 2;
+
+    public final int statusCode;
+    /** Only not null when statusCode is STATUS_OK. */
+    @Nullable public final byte[] params;
+
+    public static UriToParamsStatus success(byte[] params) {
+      return new UriToParamsStatus(STATUS_OK, params);
+    }
+
+    public static UriToParamsStatus error(int statusCode) {
+      return new UriToParamsStatus(statusCode, null);
+    }
+
+    private UriToParamsStatus(int statusCode, @Nullable byte[] params) {
+      this.statusCode = statusCode;
+      this.params = params;
+    }
+  }
+
   /** URI of original cardboard QR code. */
-  // TODO(b/170471141): Wifi connection shouldn't be required for Cardboard Viewer v1.0.
   private static final Uri URI_ORIGINAL_CARDBOARD_QR_CODE =
       new Uri.Builder()
           .scheme(HTTPS_SCHEME)
           .authority(URI_HOST_GOOGLE_SHORT)
           .appendEncodedPath(URI_PATH_CARDBOARD_HOME)
           .build();
+
+  /**
+   * Writes the Cardboard device parameters from a Uri received as a byte array.
+   *
+   * <p>Obtains the physical parameters of a Cardboard headset from the Uri (as bytes) by calling
+   * {@code getParamsFromUriString}. Then writes the device parameters to a predefined storage
+   * location by calling {@code writeDeviceParams()}.
+   *
+   * @param uriAsBytes A bytes buffer with the URI to read the parameters from.
+   * @param context The current Context. It is generally an Activity instance or wraps one or an
+   *     Application. It is used to write to storage.
+   */
+  public static void saveParamsFromUri(byte[] uriAsBytes, Context context) {
+    String uriAsString = new String(uriAsBytes);
+    UriToParamsStatus uriToParamsStatus = getParamsFromUriString(uriAsString, new UrlFactory());
+    // If getParamsFromUri() does not return an OK status don't write the device params.
+    if (uriToParamsStatus.statusCode != UriToParamsStatus.STATUS_OK) {
+      Log.e(TAG, "Error when trying to get the Cardboard params from URI: " + uriAsString);
+      return;
+    }
+
+    boolean status = writeDeviceParams(uriToParamsStatus.params, context);
+    Log.d(TAG, "Could " + (!status ? "not " : "") + "write Cardboard parameters to storage.");
+  }
+
+  /**
+   * Attempts to convert an URI received as a string into device parameters.
+   *
+   * <p>Analyses the URI obtained from a string in order to get the device parameters. If the
+   * obtained string matches a Cardboard V1 string format, the parameters are taken directly from
+   * the code. If the obtained string matches a Cardboard V2 string format, the parameters are taken
+   * from the URI query string (up to 5 redirections supported). This function only supports HTTPS
+   * connections, so if an HTTP scheme is found, it is replaced by an HTTPS one.
+   *
+   * @param uriAsString String with the URI to read the parameters from.
+   * @param urlFactory Factory for creating URL instance for HTTPS connection.
+   * @return Cardboard device parameters, or null if there is an error.
+   */
+  public static UriToParamsStatus getParamsFromUriString(
+      String uriAsString, UrlFactory urlFactory) {
+    Uri uri = Uri.parse(uriAsString);
+    if (uri == null) {
+      Log.e(TAG, "Error when parsing URI: " + uri);
+      return UriToParamsStatus.error(UriToParamsStatus.STATUS_UNEXPECTED_FORMAT);
+    }
+
+    // If needed, prefix free text results with a https prefix.
+    if (uri.getScheme() == null) {
+      uri = Uri.parse(HTTPS_SCHEME_PREFIX + uri);
+    }
+
+    // Follow redirects to support URL shortening.
+    try {
+      Log.d(TAG, "Following redirects for original URI: " + uri);
+      uri = followCardboardParamRedirect(uri, MAX_REDIRECTS, urlFactory);
+    } catch (IOException e) {
+      Log.w(TAG, "Error while following URL redirect " + e);
+      return UriToParamsStatus.error(UriToParamsStatus.STATUS_CONNECTION_ERROR);
+    }
+
+    if (uri == null) {
+      Log.e(TAG, "Error when following URI redirects");
+      return UriToParamsStatus.error(UriToParamsStatus.STATUS_UNEXPECTED_FORMAT);
+    }
+
+    byte[] params = CardboardParamsUtils.createFromUri(uri);
+    if (params == null) {
+      Log.e(TAG, "Error when parsing device parameters from URI query string: " + uri);
+      return UriToParamsStatus.error(UriToParamsStatus.STATUS_UNEXPECTED_FORMAT);
+    }
+    return UriToParamsStatus.success(params);
+  }
 
   /**
    * Obtains the physical parameters of a Cardboard headset from a Uri (as bytes).
@@ -412,5 +515,88 @@ public abstract class CardboardParamsUtils {
     if (!writeDeviceParamsToStorage(deviceParams, storageSource, context)) {
       Log.e(TAG, "Could not write Cardboard parameters to storage.");
     }
+  }
+
+  /**
+   * Follow HTTPS redirect until we reach a valid Cardboard device URI.
+   *
+   * <p>Network access is only used if the given URI is not already a cardboard device. Only HTTPS
+   * headers are transmitted, and the final URI is not accessed.
+   *
+   * @param uri The initial URI.
+   * @param maxRedirects Maximum number of redirects to follow.
+   * @param urlFactory Factory for creating URL instance for HTTPS connection.
+   * @return Cardboard device URI, or null if there is an error.
+   */
+  @Nullable
+  @SuppressWarnings("nullness:assignment.type.incompatible")
+  private static Uri followCardboardParamRedirect(
+      Uri uri, int maxRedirects, final UrlFactory urlFactory) throws IOException {
+    int numRedirects = 0;
+    while (uri != null && !isCardboardUri(uri)) {
+      if (numRedirects >= maxRedirects) {
+        Log.d(TAG, "Exceeding the number of maximum redirects: " + maxRedirects);
+        return null;
+      }
+      uri = resolveHttpsRedirect(uri, urlFactory);
+      numRedirects++;
+    }
+    return uri;
+  }
+
+  /**
+   * Dereference an HTTPS redirect without reading resource body.
+   *
+   * @param uri The initial URI.
+   * @param urlFactory Factory for creating URL instance for HTTPS connection.
+   * @return Redirected URI, or null if there is no redirect or an error.
+   */
+  @Nullable
+  private static Uri resolveHttpsRedirect(Uri uri, UrlFactory urlFactory) throws IOException {
+    HttpURLConnection connection = urlFactory.openHttpsConnection(uri);
+    if (connection == null) {
+      return null;
+    }
+    // Rather than follow redirects internally, we follow one hop at the time.
+    // We don't want to issue even a HEAD request to the Cardboard URI.
+    connection.setInstanceFollowRedirects(false);
+    connection.setDoInput(false);
+    connection.setConnectTimeout(HTTPS_TIMEOUT_MS);
+    connection.setReadTimeout(HTTPS_TIMEOUT_MS);
+    // Workaround for Android bug with HEAD requests on KitKat devices.
+    // See: https://code.google.com/p/android/issues/detail?id=24672.
+    connection.setRequestProperty("Accept-Encoding", "");
+    try {
+      connection.setRequestMethod("HEAD");
+    } catch (ProtocolException e) {
+      Log.w(TAG, e.toString());
+      return null;
+    }
+    try {
+      connection.connect();
+      int responseCode = connection.getResponseCode();
+      Log.i(TAG, "Response code: " + responseCode);
+      if (responseCode != HttpURLConnection.HTTP_MOVED_PERM
+          && responseCode != HttpURLConnection.HTTP_MOVED_TEMP) {
+        return null;
+      }
+      String location = connection.getHeaderField("Location");
+      if (location == null) {
+        Log.d(TAG, "Returning null because of null location.");
+        return null;
+      }
+      Log.i(TAG, "Location: " + location);
+
+      Uri redirectUri = Uri.parse(location.replaceFirst(HTTP_SCHEME_PREFIX, HTTPS_SCHEME_PREFIX));
+      if (redirectUri == null || redirectUri.compareTo(uri) == 0) {
+        Log.d(TAG, "Returning null because of wrong redirect URI.");
+        return null;
+      }
+      Log.i(TAG, "Param URI redirect to " + redirectUri);
+      uri = redirectUri;
+    } finally {
+      connection.disconnect();
+    }
+    return uri;
   }
 }

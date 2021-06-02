@@ -18,8 +18,7 @@
 #include <cmath>
 #include <utility>
 
-namespace cardboard {
-namespace unity {
+namespace cardboard::unity {
 namespace {
 
 // TODO(b/151817737): Compute pose position within SDK with custom rotation.
@@ -155,5 +154,4 @@ UnityXRPose CardboardTransformToUnityPose(
   return ret;
 }
 
-}  // namespace unity
-}  // namespace cardboard
+}  // namespace cardboard::unity

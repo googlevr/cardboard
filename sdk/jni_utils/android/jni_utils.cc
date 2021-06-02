@@ -17,8 +17,7 @@
 
 #include "util/logging.h"
 
-namespace cardboard {
-namespace jni {
+namespace cardboard::jni {
 namespace {
 
 jclass runtime_excepton_class_;
@@ -71,5 +70,4 @@ void ThrowJavaRuntimeException(JNIEnv* env, const char* msg) {
   env->ThrowNew(runtime_excepton_class_, msg);
 }
 
-}  // namespace jni
-}  // namespace cardboard
+}  // namespace cardboard::jni

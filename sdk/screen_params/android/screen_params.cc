@@ -19,8 +19,7 @@
 
 #include "jni_utils/android/jni_utils.h"
 
-namespace cardboard {
-namespace screen_params {
+namespace cardboard::screen_params {
 
 namespace {
 JavaVM* vm_;
@@ -84,5 +83,4 @@ void getScreenSizeInMeters(int width_pixels, int height_pixels,
   *out_height_meters = (height_pixels / display_metrics.ydpi) * kMetersPerInch;
 }
 
-}  // namespace screen_params
-}  // namespace cardboard
+}  // namespace cardboard::screen_params
