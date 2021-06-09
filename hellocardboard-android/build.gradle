@@ -42,8 +42,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.0.0'
     // Android Mobile Vision
-    implementation 'com.google.android.gms:play-services-vision:15.0.2'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.gms:play-services-vision:20.1.3'
+    implementation 'com.google.android.material:material:1.4.0'
     implementation 'com.google.protobuf:protobuf-javalite:3.10.0'
     implementation project(":sdk")
 }
