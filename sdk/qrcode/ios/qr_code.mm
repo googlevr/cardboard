@@ -101,24 +101,18 @@ void scanQrCodeAndSaveDeviceParams() {
 
 void saveDeviceParams(const uint8_t *uri, int /*size*/) {
   NSString *uriAsString = [NSString stringWithUTF8String:reinterpret_cast<const char *>(uri)];
+  if (![uriAsString hasPrefix:@"http://"] && ![uriAsString hasPrefix:@"https://"]) {
+    uriAsString = [NSString stringWithFormat:@"%@%@", @"https://", uriAsString];
+  }
 
   // Check whether the URI is valid.
-  // TODO(b/189762850): Change device_params_helper.mm to use HTTPS URIs.
-  if (![uriAsString hasPrefix:@"http://"]) {
-    if ([uriAsString hasPrefix:@"https://"]) {
-      uriAsString = [uriAsString stringByReplacingOccurrencesOfString:@"https://"
-                                                           withString:@"http://"];
-    } else {
-      uriAsString = [NSString stringWithFormat:@"%@%@", @"http://", uriAsString];
-    }
-  }
   NSURL *url = [NSURL URLWithString:uriAsString];
   if (!url) {
     CARDBOARD_LOGE("Invalid URI: %@", uriAsString);
     return;
   }
 
-  // Get device params from URI and save to storage.
+  // Get the device params from the provided URL and save them to storage.
   [CardboardDeviceParamsHelper
       resolveAndUpdateViewerProfileFromURL:url
                             withCompletion:^(BOOL success, NSError *error) {

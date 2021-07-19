@@ -35,7 +35,7 @@ class CardboardInputProvider {
  public:
   CardboardInputProvider(IUnityXRTrace* trace, IUnityXRInputInterface* input)
       : trace_(trace), input_(input) {
-    cardboard_api_.reset(new cardboard::unity::CardboardApi());
+    cardboard_api_.reset(new cardboard::unity::CardboardApi(kClassName));
   }
 
   IUnityXRInputInterface* GetInput() { return input_; }
@@ -191,6 +191,9 @@ class CardboardInputProvider {
   }
 
  private:
+  /// TODO(b/191992787): Erase when Cardboard API refactor is done.
+  const char* kClassName = "CardboardInputProvider";
+
   static constexpr int kDeviceIdCardboardHmd = 0;
 
   static constexpr UnityXRInputDeviceCharacteristics kHmdCharacteristics =

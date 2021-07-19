@@ -17,6 +17,7 @@
 #define CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_XR_UNITY_H_
 
 #include <memory>
+#include <string>
 
 #include "unity/xr_unity_plugin/renderer.h"
 #include "IUnityInterface.h"
@@ -37,7 +38,11 @@ namespace cardboard::unity {
 class CardboardApi {
  public:
   /// @brief Constructs a CardboardApi.
-  CardboardApi();
+  /// @param[in] owner_name Name of the class that owns the instance of the
+  /// class. Used for debugging.
+  /// TODO(b/191992787): Refactor Cardboard API. When it is done, remove the
+  /// @p owner_name.
+  explicit CardboardApi(const std::string& owner_name);
 
   /// @brief Destructor.
   /// @details Explicit declaration is required because of pImpl pattern.
@@ -182,6 +187,12 @@ class CardboardApi {
   /// @param xr_interfaces Pointer to Unity XR interface provider.
   static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces);
 
+  /// @brief Sets the viewport orientation that will be used.
+  /// @param viewport_orientation one of the possible orientations of the
+  /// viewport.
+  static void SetViewportOrientation(
+      CardboardViewportOrientation viewport_orientation);
+
   /// @brief Flags a head tracker recentering request.
   static void SetHeadTrackerRecenterRequested();
 
@@ -241,6 +252,11 @@ void CardboardUnity_setDeviceParametersChanged();
 /// @brief Sets the graphics API to use.
 /// @param graphics_api The graphics API to use.
 void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api);
+
+/// @brief Sets the orientation of the device viewport to use.
+/// @param viewport_orientation The orientation of the viewport to use.
+void CardboardUnity_setViewportOrientation(
+            CardboardViewportOrientation viewport_orientation);
 
 /// @brief Flags a head tracker recentering request.
 void CardboardUnity_recenterHeadTracker();

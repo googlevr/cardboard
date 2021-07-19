@@ -24,6 +24,8 @@
 #include <cmath>
 #include <fstream>
 
+#include "cardboard.h"
+
 namespace ndk_hello_cardboard {
 
 namespace {
@@ -366,7 +368,7 @@ Matrix4x4 HelloCardboardApp::GetPose() {
   std::array<float, 3> out_position;
   CardboardHeadTracker_getPose(
       head_tracker_, GetBootTimeNano() + kPredictionTimeWithoutVsyncNanos,
-      &out_position[0], &out_orientation[0]);
+      kLandscapeLeft, &out_position[0], &out_orientation[0]);
   return GetTranslationMatrix(out_position) *
          Quatf::FromXYZW(&out_orientation[0]).ToMatrix();
 }

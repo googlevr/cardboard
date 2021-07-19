@@ -24,6 +24,7 @@
 #include <cstring>
 #include <memory>
 #include <mutex>  // NOLINT(build/c++11)
+#include <string>
 #include <vector>
 
 #include "include/cardboard.h"
@@ -32,32 +33,32 @@
 #if defined(__ANDROID__)
 #include <android/log.h>
 #define LOG_TAG "CardboardXRUnity"
-#define LOGW(fmt, ...)                                                       \
-  __android_log_print(ANDROID_LOG_WARN, LOG_TAG, "[%s : %d] " fmt, __FILE__, \
-                      __LINE__, ##__VA_ARGS__)
-#define LOGD(fmt, ...)                                                        \
-  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "[%s : %d] " fmt, __FILE__, \
-                      __LINE__, ##__VA_ARGS__)
-#define LOGE(fmt, ...)                                                        \
-  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "[%s : %d] " fmt, __FILE__, \
-                      __LINE__, ##__VA_ARGS__)
-#define LOGF(fmt, ...)                                                        \
-  __android_log_print(ANDROID_LOG_FATAL, LOG_TAG, "[%s : %d] " fmt, __FILE__, \
-                      __LINE__, ##__VA_ARGS__)
+#define LOGW(info, fmt, ...)                                           \
+  __android_log_print(ANDROID_LOG_WARN, LOG_TAG, "[%s : %d: %s] " fmt, \
+                      __FILE__, __LINE__, info, ##__VA_ARGS__)
+#define LOGD(info, fmt, ...)                                            \
+  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "[%s : %d: %s] " fmt, \
+                      __FILE__, __LINE__, info, ##__VA_ARGS__)
+#define LOGE(info, fmt, ...)                                            \
+  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "[%s : %d: %s] " fmt, \
+                      __FILE__, __LINE__, info, ##__VA_ARGS__)
+#define LOGF(info, fmt, ...)                                            \
+  __android_log_print(ANDROID_LOG_FATAL, LOG_TAG, "[%s : %d: %s] " fmt, \
+                      __FILE__, __LINE__, info, ##__VA_ARGS__)
 #elif defined(__APPLE__)
 #include <CoreFoundation/CFString.h>
 #include <CoreFoundation/CoreFoundation.h>
 extern "C" {
 void NSLog(CFStringRef format, ...);
 }
-#define LOGW(fmt, ...) \
-  NSLog(CFSTR("[%s : %d] " fmt), __FILE__, __LINE__, ##__VA_ARGS__)
-#define LOGD(fmt, ...) \
-  NSLog(CFSTR("[%s : %d] " fmt), __FILE__, __LINE__, ##__VA_ARGS__)
-#define LOGE(fmt, ...) \
-  NSLog(CFSTR("[%s : %d] " fmt), __FILE__, __LINE__, ##__VA_ARGS__)
-#define LOGF(fmt, ...) \
-  NSLog(CFSTR("[%s : %d] " fmt), __FILE__, __LINE__, ##__VA_ARGS__)
+#define LOGW(info, fmt, ...) \
+  NSLog(CFSTR("[%s : %d : %s] " fmt), __FILE__, __LINE__, info, ##__VA_ARGS__)
+#define LOGD(info, fmt, ...) \
+  NSLog(CFSTR("[%s : %d : %s] " fmt), __FILE__, __LINE__, info, ##__VA_ARGS__)
+#define LOGE(info, fmt, ...) \
+  NSLog(CFSTR("[%s : %d : %s] " fmt), __FILE__, __LINE__, info, ##__VA_ARGS__)
+#define LOGF(info, fmt, ...) \
+  NSLog(CFSTR("[%s : %d : %s] " fmt), __FILE__, __LINE__, info, ##__VA_ARGS__)
 #elif
 #define LOGW(...)
 #define LOGD(...)
@@ -75,7 +76,12 @@ class CardboardApi::CardboardApiImpl {
   // @details Initializes the renderer based on the `selected_graphics_api_`
   // variable. The rest of the instance variables would use default
   // initialization values.
-  CardboardApiImpl() {
+  // @param[in] owner_name: name of the object that owns the instance of the
+  // class. Used for debugging.
+  // TODO(b/191992787): Refactor Cardboard API. When it is done, remove the
+  // @param owner_name.
+  explicit CardboardApiImpl(const std::string& owner_name)
+      : owner_name_(owner_name) {
     switch (selected_graphics_api_) {
       case CardboardGraphicsApi::kOpenGlEs2:
         renderer_ = MakeOpenGlEs2Renderer();
@@ -89,7 +95,11 @@ class CardboardApi::CardboardApiImpl {
         break;
 #endif
       default:
-        LOGF("Unsupported API: %d", static_cast<int>(selected_graphics_api_));
+        LOGF(owner_name_.c_str(),
+             "The Cardboard SDK cannot be initialized given that the selected "
+             "Graphics API (%d) is not supported. Please use OpenGL ES 2.0, "
+             "OpenGL ES 3.0 or Metal.",
+             static_cast<int>(selected_graphics_api_));
         break;
     }
   }
@@ -107,7 +117,7 @@ class CardboardApi::CardboardApiImpl {
 
   void PauseHeadTracker() {
     if (head_tracker_ == nullptr) {
-      LOGW("Uninitialized head tracker was paused.");
+      LOGW(owner_name_.c_str(), "Uninitialized head tracker was paused.");
       return;
     }
     CardboardHeadTracker_pause(head_tracker_.get());
@@ -115,15 +125,18 @@ class CardboardApi::CardboardApiImpl {
 
   void ResumeHeadTracker() {
     if (head_tracker_ == nullptr) {
-      LOGW("Uninitialized head tracker was resumed.");
+      LOGW(owner_name_.c_str(), "Uninitialized head tracker was resumed.");
       return;
     }
     CardboardHeadTracker_resume(head_tracker_.get());
   }
 
+  // TODO(b/192463040): Support different display to sensor orientations
+  //  for Unity.
   void GetHeadTrackerPose(float* position, float* orientation) {
     if (head_tracker_ == nullptr) {
-      LOGW("Uninitialized head tracker was queried for the pose.");
+      LOGW(owner_name_.c_str(),
+           "Uninitialized head tracker was queried for the pose.");
       position[0] = 0.0f;
       position[1] = 0.0f;
       position[2] = 0.0f;
@@ -143,7 +156,7 @@ class CardboardApi::CardboardApiImpl {
     CardboardHeadTracker_getPose(
         head_tracker_.get(),
         CardboardApiImpl::GetBootTimeNano() + kPredictionTimeWithoutVsyncNanos,
-        position, orientation);
+        selected_viewport_orientation_, position, orientation);
   }
 
   static void ScanDeviceParams() {
@@ -153,8 +166,9 @@ class CardboardApi::CardboardApiImpl {
   void UpdateDeviceParams() {
     if (selected_graphics_api_ == kNone) {
       LOGE(
-          "Misconfigured Graphics API. Neither OpenGl ES2.0 nor OpenGl ES3.0 "
-          "was selected.");
+          owner_name_.c_str(),
+          "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
+          "nor Metal was selected.");
       return;
     }
 
@@ -201,7 +215,12 @@ class CardboardApi::CardboardApiImpl {
         break;
 #endif
       default:
-        LOGF("Unsupported API: %d", static_cast<int>(selected_graphics_api_));
+        LOGF(
+            owner_name_.c_str(),
+            "The distortion renderer cannot be initialized given that the "
+            "selected Graphics API (%d) is not supported. Please use OpenGL ES "
+            "2.0, OpenGL ES 3.0 or Metal.",
+            static_cast<int>(selected_graphics_api_));
         break;
     }
 
@@ -297,7 +316,7 @@ class CardboardApi::CardboardApiImpl {
   static void SetWidgetParams(int i, const Renderer::WidgetParams& params) {
     std::lock_guard<std::mutex> l(widget_mutex_);
     if (i < 0 || i >= static_cast<int>(widget_params_.size())) {
-      LOGE("SetWidgetParams parameter i=%d, out of bounds (size=%d)", i,
+      LOGE("static", "SetWidgetParams parameter i=%d, out of bounds (size=%d)", i,
            static_cast<int>(widget_params_.size()));
       return;
     }
@@ -319,6 +338,11 @@ class CardboardApi::CardboardApiImpl {
 
   static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces) {
     xr_interfaces_ = xr_interfaces;
+  }
+
+  static void SetViewPortOrientation(
+      CardboardViewportOrientation viewport_orientation) {
+    selected_viewport_orientation_ = viewport_orientation;
   }
 
   static void SetHeadTrackerRecenterRequested() {
@@ -392,8 +416,9 @@ class CardboardApi::CardboardApiImpl {
   void RenderingResourcesSetup() {
     if (selected_graphics_api_ == kNone) {
       LOGE(
+          owner_name_.c_str(),
           "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
-          "was selected.");
+          "nor Metal was selected.");
       return;
     }
 
@@ -448,6 +473,10 @@ class CardboardApi::CardboardApiImpl {
   // @brief Constant to convert seconds into nano seconds.
   static constexpr int64_t kNanosInSeconds = 1000000000;
 
+  /// @brief Used for debugging.
+  /// TODO(b/191992787): Erase when Cardboard API refactor is done.
+  const std::string owner_name_;
+
   // @brief HeadTracker native pointer.
   std::unique_ptr<CardboardHeadTracker, CardboardHeadTrackerDeleter>
       head_tracker_;
@@ -490,6 +519,10 @@ class CardboardApi::CardboardApiImpl {
   // @brief Holds the Unity XR interfaces.
   static IUnityInterfaces* xr_interfaces_;
 
+  // @brief Holds the selected viewport orientation.
+  static std::atomic<CardboardViewportOrientation>
+      selected_viewport_orientation_;
+
   // @brief Tracks head tracker recentering requests.
   static std::atomic<bool> head_tracker_recenter_requested_;
 };
@@ -509,10 +542,16 @@ std::atomic<CardboardGraphicsApi>
 
 IUnityInterfaces* CardboardApi::CardboardApiImpl::xr_interfaces_{nullptr};
 
+std::atomic<CardboardViewportOrientation>
+    CardboardApi::CardboardApiImpl::selected_viewport_orientation_(
+        kLandscapeLeft);
+
 std::atomic<bool>
     CardboardApi::CardboardApiImpl::head_tracker_recenter_requested_(false);
 
-CardboardApi::CardboardApi() { p_impl_.reset(new CardboardApiImpl()); }
+CardboardApi::CardboardApi(const std::string& owner_name) {
+  p_impl_.reset(new CardboardApiImpl(owner_name));
+}
 
 CardboardApi::~CardboardApi() = default;
 
@@ -596,6 +635,11 @@ void CardboardApi::SetUnityInterfaces(IUnityInterfaces* xr_interfaces) {
   CardboardApi::CardboardApiImpl::SetUnityInterfaces(xr_interfaces);
 }
 
+void CardboardApi::SetViewportOrientation(
+    CardboardViewportOrientation viewport_orientation) {
+  CardboardApi::CardboardApiImpl::SetViewPortOrientation(viewport_orientation);
+}
+
 void CardboardApi::SetHeadTrackerRecenterRequested() {
   CardboardApi::CardboardApiImpl::SetHeadTrackerRecenterRequested();
 }
@@ -637,23 +681,55 @@ void CardboardUnity_setWidgetParams(int i, void* texture, int x, int y,
 void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api) {
   switch (graphics_api) {
     case CardboardGraphicsApi::kOpenGlEs2:
-      LOGD("Configured OpenGL ES2.0 as Graphics API.");
+      LOGD("static", "Configured OpenGL ES2.0 as Graphics API.");
       cardboard::unity::CardboardApi::SetGraphicsApi(graphics_api);
       break;
     case CardboardGraphicsApi::kOpenGlEs3:
-      LOGD("Configured OpenGL ES3.0 as Graphics API.");
+      LOGD("static", "Configured OpenGL ES3.0 as Graphics API.");
       cardboard::unity::CardboardApi::SetGraphicsApi(graphics_api);
       break;
 #if defined(__APPLE__)
     case CardboardGraphicsApi::kMetal:
-      LOGD("Configured Metal as Graphics API.");
+      LOGD("static", "Configured Metal as Graphics API.");
       cardboard::unity::CardboardApi::SetGraphicsApi(graphics_api);
       break;
 #endif
     default:
       LOGE(
+          "static",
           "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
           "nor Metal was selected.");
+  }
+}
+
+void CardboardUnity_setViewportOrientation(
+    CardboardViewportOrientation viewport_orientation) {
+  switch (viewport_orientation) {
+    case CardboardViewportOrientation::kLandscapeLeft:
+      LOGD("static", "Configured viewport orientation as lanscape left.");
+      cardboard::unity::CardboardApi::SetViewportOrientation(
+          viewport_orientation);
+      break;
+    case CardboardViewportOrientation::kLandscapeRight:
+      LOGD("static", "Configured viewport orientation as lanscape right.");
+      cardboard::unity::CardboardApi::SetViewportOrientation(
+          viewport_orientation);
+      break;
+    case CardboardViewportOrientation::kPortrait:
+      LOGD("static", "Configured viewport orientation as portrait.");
+      cardboard::unity::CardboardApi::SetViewportOrientation(
+          viewport_orientation);
+      break;
+    case CardboardViewportOrientation::kPortraitUpsideDown:
+      LOGD("static", "Configured viewport orientation as portrait upside down.");
+      cardboard::unity::CardboardApi::SetViewportOrientation(
+          viewport_orientation);
+      break;
+    default:
+      LOGE("static",
+          "Misconfigured viewport orientation. Neither lanscape left nor "
+          "lanscape right "
+          "nor portrait, nor portrait upside down was selected.");
   }
 }
 

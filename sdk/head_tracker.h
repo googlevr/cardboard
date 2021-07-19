@@ -20,6 +20,7 @@
 #include <memory>
 #include <mutex>  // NOLINT
 
+#include "include/cardboard.h"
 #include "sensors/accelerometer_data.h"
 #include "sensors/gyroscope_data.h"
 #include "sensors/sensor_event_producer.h"
@@ -39,11 +40,13 @@ class HeadTracker {
   // Pauses tracking and sensors.
   void Pause();
 
-  // Resumes tracking ans sensors.
+  // Resumes tracking and sensors.
   void Resume();
 
   // Gets the predicted pose for a given timestamp.
-  void GetPose(int64_t timestamp_ns, std::array<float, 3>& out_position,
+  void GetPose(int64_t timestamp_ns,
+               CardboardViewportOrientation viewport_orientation,
+               std::array<float, 3>& out_position,
                std::array<float, 4>& out_orientation) const;
 
   // Recenters the head tracker.
@@ -69,9 +72,14 @@ class HeadTracker {
   // polling for data.
   void UnregisterCallbacks();
 
-  // Gets the predicted rotation for a given timestamp.
-  // TODO(b/135488467): Support different display to sensor orientations.
-  Rotation GetRotation(int64_t timestamp_ns) const;
+  // Gets the predicted rotation for a given timestamp and viewport orientation.
+  Rotation GetRotation(CardboardViewportOrientation viewport_orientation,
+                       int64_t timestamp_ns) const;
+
+  // Sets the recenter rotation of the head tracker from a given viewport
+  // orientation.
+  void SetRecenterRotationFromViewportOrientation(
+      CardboardViewportOrientation viewport_orientation);
 
   std::atomic<bool> is_tracking_;
   // Sensor Fusion object that stores the internal state of the filter.
@@ -88,11 +96,20 @@ class HeadTracker {
   std::function<void(AccelerometerData)> on_accel_callback_;
   std::function<void(GyroscopeData)> on_gyro_callback_;
 
-  static const Rotation kEkfToHeadTrackerRotation;
-  static const Rotation kSensorToDisplayRotation;
+  // @{ Hold rotations to adapt the pose estimation to the viewport and head
+  // poses. Use the following indexing for each viewport orientation:
+  // [0]: Landscape left.
+  // [1]: Landscape right.
+  // [2]: Portrait.
+  // [3]: Portrait upside down.
+  static const std::array<Rotation, 4> kSensorToDisplayRotations;
+  static const std::array<Rotation, 4> kEkfToHeadTrackerRotations;
+  // @}
 
-  // Quaternion used for recentering the head tracker.
-  Rotation recenter_rotation_;
+  // Array of Quaternions that save the value of the recenter rotation for each
+  // viewport orientation. This is used for recentering the head tracker. All
+  // its rotations are initialized as identity.
+  std::array<Rotation, 4> recenter_rotations_;
 };
 
 }  // namespace cardboard

@@ -21,9 +21,6 @@
 #include "qrcode/cardboard_v1/cardboard_v1.h"
 #import "qrcode/ios/nsurl_connection_data_handler.h"
 
-static NSString *const kCardboardDeviceParamsUrlPrefix = @"http://google.com/cardboard/cfg";
-static NSString *const kOriginalCardboardDeviceParamsUrl = @"http://g.co/cardboard";
-static NSString *const kDeviceParamsDataIdentifier = @"kDeviceParamsDataIdentifier";
 // The value is an array with the creation time and the device params data.
 static NSString *const kCardboardDeviceParamsAndTimeKey =
     @"com.google.cardboard.sdk.DeviceParamsAndTime";
@@ -34,27 +31,13 @@ static NSString *const kCardboardDeviceParamsAndTimeKey =
   if (!url) {
     return nil;
   }
-  // If URI is recognized as original cardboard device, use the default proto values.
-  if ([kOriginalCardboardDeviceParamsUrl isEqualToString:url.absoluteString]) {
+
+  if ([CardboardNSURLConnectionDataHandler isOriginalCardboardDeviceUrl:url]) {
     return [CardboardDeviceParamsHelper createCardboardV1Params];
+  } else if ([CardboardNSURLConnectionDataHandler isCardboardDeviceUrl:url]) {
+    return [CardboardDeviceParamsHelper readDeviceParamsFromUrl:url];
   }
 
-  NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:url
-                                              resolvingAgainstBaseURL:NO];
-  NSString *rawDeviceConfig = nil;
-  for (NSURLQueryItem *queryItem in urlComponents.queryItems) {
-    // Device parameters decoded data is after the p paramers in the url, for example:
-    // http://google.com/cardboard/cfg?p=device_param_encoded_string.
-    if ([queryItem.name isEqualToString:@"p"]) {
-      rawDeviceConfig = queryItem.value;
-      break;
-    }
-  }
-  if (rawDeviceConfig) {
-    rawDeviceConfig = [CardboardDeviceParamsHelper convertToNormalBase64String:rawDeviceConfig];
-    NSData *decodedData = [[NSData alloc] initWithBase64EncodedString:rawDeviceConfig options:0];
-    return decodedData;
-  }
   return nil;
 }
 
@@ -71,20 +54,12 @@ static NSString *const kCardboardDeviceParamsAndTimeKey =
   CardboardNSURLConnectionDataHandler *dataHandler = [[CardboardNSURLConnectionDataHandler alloc]
       initWithOnUrlCompletion:^(NSURL *targetUrl, NSError *error) {
         if (!targetUrl) {
-          // Retry loading the url with https scheme.
-          NSURLComponents *components = [NSURLComponents componentsWithURL:url
-                                                   resolvingAgainstBaseURL:NO];
-          if ([components.scheme.lowercaseString isEqualToString:@"http"]) {
-            components.scheme = @"https";
-            NSURL *secureUrl = [components URL];
-            [self readFromUrl:secureUrl withCompletion:completion];
-            return;
-          } else {
             NSLog(@"failed to result the url = %@", url);
-          }
         }
         completion([CardboardDeviceParamsHelper parseURL:targetUrl], error);
       }];
+  // TODO(b/185123397): NSURLConnection is deprecated. This should be changed to use NSURLSession
+  // instead.
   NSURLConnection *connection = [NSURLConnection connectionWithRequest:request
                                                               delegate:dataHandler];
   [connection start];
@@ -92,6 +67,13 @@ static NSString *const kCardboardDeviceParamsAndTimeKey =
 
 + (void)resolveAndUpdateViewerProfileFromURL:(NSURL *)url
                               withCompletion:(void (^)(BOOL success, NSError *error))completion {
+  // If the scheme is http, replace it with https.
+  NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+  if ([components.scheme.lowercaseString isEqualToString:@"http"]) {
+    components.scheme = @"https";
+    url = [components URL];
+  }
+
   // Try to parse the url if it has the params encoded in it. This can help avoid a network call.
   NSData *viewerParams = [CardboardDeviceParamsHelper parseURL:url];
   if (viewerParams) {
@@ -116,6 +98,23 @@ static NSString *const kCardboardDeviceParamsAndTimeKey =
 + (NSData *)createCardboardV1Params {
   std::vector<uint8_t> deviceParams = cardboard::qrcode::getCardboardV1DeviceParams();
   return [NSData dataWithBytes:deviceParams.data() length:deviceParams.size()];
+}
+
++ (NSData *)readDeviceParamsFromUrl:(NSURL *)url {
+  NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:url
+                                              resolvingAgainstBaseURL:NO];
+  for (NSURLQueryItem *queryItem in urlComponents.queryItems) {
+    // Device parameters decoded data is after the p paramers in the url, for example:
+    // https://google.com/cardboard/cfg?p=device_param_encoded_string.
+    if ([queryItem.name isEqualToString:@"p"]) {
+      NSString *encodedDeviceParams =
+          [CardboardDeviceParamsHelper convertToNormalBase64String:queryItem.value];
+      return [[NSData alloc] initWithBase64EncodedString:encodedDeviceParams options:0];
+    }
+  }
+
+  NSLog(@"No Cardboard parameters in URL: %@", url);
+  return nil;
 }
 
 + (void)update:(NSData *)deviceParams {

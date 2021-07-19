@@ -153,7 +153,7 @@ class CardboardDisplayProvider {
       // Create a new Cardboard SDK to clear previous truncated initializations
       // or just do it for the first time.
       CARDBOARD_DISPLAY_XR_TRACE_LOG(trace_, "Initializes Cardboard API.");
-      cardboard_api_.reset(new cardboard::unity::CardboardApi());
+      cardboard_api_.reset(new cardboard::unity::CardboardApi(kClassName));
       // Deallocate old textures since we're completely reallocating new
       // textures for Cardboard SDK.
       for (auto&& tex : tex_map_) {
@@ -274,6 +274,10 @@ class CardboardDisplayProvider {
     projection->data.halfAngles.left = -std::abs(tan(cardboard_fov[0]));
     projection->data.halfAngles.right = std::abs(tan(cardboard_fov[1]));
   }
+
+  /// @brief Used for debugging.
+  /// TODO(b/191992787): Erase when Cardboard API refactor is done.
+  const char* kClassName = "CardboardDisplayProvider";
 
   /// @brief Points to Unity XR Trace interface.
   IUnityXRTrace* trace_ = nullptr;

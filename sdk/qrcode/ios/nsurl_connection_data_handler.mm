@@ -15,17 +15,31 @@
  */
 #import "qrcode/ios/nsurl_connection_data_handler.h"
 
-static NSString *const kCardboardDeviceParamsUrlPrefix = @"http://google.com/cardboard/cfg";
-static NSString *const kOriginalCardboardDeviceParamsUrl = @"http://g.co/cardboard";
+static NSString *const kCardboardDeviceParamsUrlPrefix = @"https://google.com/cardboard/cfg";
+static NSString *const kOriginalCardboardDeviceParamsUrl = @"https://g.co/cardboard";
 
 @implementation CardboardNSURLConnectionDataHandler {
   OnUrlCompletion _completion;
   BOOL _success;
 }
 
-// Returns true if given URL identifies a Cardboard device using current scheme.
++ (BOOL)isOriginalCardboardDeviceUrl:(NSURL *)url {
+  return [[url absoluteString] isEqualToString:kOriginalCardboardDeviceParamsUrl];
+}
+
 + (BOOL)isCardboardDeviceUrl:(NSURL *)url {
   return [[url absoluteString] hasPrefix:kCardboardDeviceParamsUrlPrefix];
+}
+
+/**
+ * Analyzes if the given URL identifies a Cardboard viewer.
+ *
+ * @param url URL to analyze.
+ * @return true if the given URL identifies a Cardboard viewer.
+ */
++ (BOOL)isCardboardUrl:(NSURL *)url {
+  return [CardboardNSURLConnectionDataHandler isOriginalCardboardDeviceUrl:url] ||
+         [CardboardNSURLConnectionDataHandler isCardboardDeviceUrl:url];
 }
 
 - (instancetype)initWithOnUrlCompletion:(OnUrlCompletion)completion {
@@ -41,15 +55,19 @@ static NSString *const kOriginalCardboardDeviceParamsUrl = @"http://g.co/cardboa
              willSendRequest:(NSURLRequest *)request
             redirectResponse:(NSURLResponse *)response {
   if (request.URL) {
-    if ([CardboardNSURLConnectionDataHandler isCardboardDeviceUrl:request.URL]) {
-      _success = YES;
-      _completion(request.URL, nil);
-      return nil;
+    NSURL *secureUrl = request.URL;
+
+    // If the scheme is http, replace it with https.
+    NSURLComponents *components = [NSURLComponents componentsWithURL:secureUrl
+                                             resolvingAgainstBaseURL:NO];
+    if ([components.scheme.lowercaseString isEqualToString:@"http"]) {
+      components.scheme = @"https";
+      secureUrl = [components URL];
     }
 
-    if ([kOriginalCardboardDeviceParamsUrl isEqualToString:request.URL.absoluteString]) {
+    if ([CardboardNSURLConnectionDataHandler isCardboardUrl:secureUrl]) {
       _success = YES;
-      _completion(request.URL, nil);
+      _completion(secureUrl, nil);
       return nil;
     }
   }

@@ -24,7 +24,6 @@
 #endif
 #include "distortion_renderer.h"
 #include "include/cardboard.h"
-#include "screen_params.h"
 #include "util/is_initialized.h"
 #include "util/logging.h"
 

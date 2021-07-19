@@ -20,9 +20,9 @@ import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Environment;
-import androidx.annotation.Nullable;
 import android.util.Base64;
 import android.util.Log;
+import androidx.annotation.Nullable;
 import com.google.cardboard.sdk.deviceparams.CardboardV1DeviceParams;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -51,6 +51,7 @@ public abstract class CardboardParamsUtils {
   private static final int CARDBOARD_DEVICE_PARAMS_STREAM_SENTINEL = 0x35587a2b;
 
   private static final String HTTPS_SCHEME = "https";
+  private static final String HTTP_SCHEME = "http";
 
   /** URI short host of Google. */
   private static final String URI_HOST_GOOGLE_SHORT = "g.co";
@@ -142,7 +143,8 @@ public abstract class CardboardParamsUtils {
    * obtained string matches a Cardboard V1 string format, the parameters are taken directly from
    * the code. If the obtained string matches a Cardboard V2 string format, the parameters are taken
    * from the URI query string (up to 5 redirections supported). This function only supports HTTPS
-   * connections, so if an HTTP scheme is found, it is replaced by an HTTPS one.
+   * connections. In case a URI containing an HTTP scheme is provided, it will be replaced by an
+   * HTTPS one.
    *
    * @param uriAsString String with the URI to read the parameters from.
    * @param urlFactory Factory for creating URL instance for HTTPS connection.
@@ -159,6 +161,9 @@ public abstract class CardboardParamsUtils {
     // If needed, prefix free text results with a https prefix.
     if (uri.getScheme() == null) {
       uri = Uri.parse(HTTPS_SCHEME_PREFIX + uri);
+    } else if ((uri.getScheme()).equals(HTTP_SCHEME)) {
+      // If the prefix is http, replace it with https.
+      uri = Uri.parse(uri.toString().replaceFirst(HTTP_SCHEME_PREFIX, HTTPS_SCHEME_PREFIX));
     }
 
     // Follow redirects to support URL shortening.
@@ -529,7 +534,6 @@ public abstract class CardboardParamsUtils {
    * @return Cardboard device URI, or null if there is an error.
    */
   @Nullable
-  @SuppressWarnings("nullness:assignment.type.incompatible")
   private static Uri followCardboardParamRedirect(
       Uri uri, int maxRedirects, final UrlFactory urlFactory) throws IOException {
     int numRedirects = 0;

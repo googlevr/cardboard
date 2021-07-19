@@ -296,9 +296,10 @@ void CardboardHeadTracker_resume(CardboardHeadTracker* head_tracker) {
   static_cast<cardboard::HeadTracker*>(head_tracker)->Resume();
 }
 
-void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
-                                  int64_t timestamp_ns, float* position,
-                                  float* orientation) {
+void CardboardHeadTracker_getPose(
+    CardboardHeadTracker* head_tracker, int64_t timestamp_ns,
+    CardboardViewportOrientation viewport_orientation, float* position,
+    float* orientation) {
   if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(head_tracker) ||
       CARDBOARD_IS_ARG_NULL(position) || CARDBOARD_IS_ARG_NULL(orientation)) {
     GetDefaultPosition(position);
@@ -308,7 +309,7 @@ void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
   std::array<float, 3> out_position;
   std::array<float, 4> out_orientation;
   static_cast<cardboard::HeadTracker*>(head_tracker)
-      ->GetPose(timestamp_ns, out_position, out_orientation);
+      ->GetPose(timestamp_ns, viewport_orientation, out_position, out_orientation);
   std::memcpy(position, &out_position[0], 3 * sizeof(float));
   std::memcpy(orientation, &out_orientation[0], 4 * sizeof(float));
 }

@@ -42,6 +42,30 @@ typedef enum CardboardEye {
   kRight = 1,
 } CardboardEye;
 
+/// Enum to describe the possible orientations of the viewport.
+typedef enum CardboardViewportOrientation {
+  /// Landscape left orientation, which maps to:
+  /// - Android: landscape.
+  /// - IOS: UIDeviceOrientationLandscapeLeft.
+  /// - Unity: ScreenOrientation.LandscapeLeft.
+  kLandscapeLeft = 0,
+  /// Landscape right orientation, which maps to:
+  /// - Android: reverseLandscape.
+  /// - IOS: UIDeviceOrientationLandscapeRight.
+  /// - Unity: ScreenOrientation.LandscapeRight.
+  kLandscapeRight = 1,
+  /// Portrait orientation, which maps to:
+  /// - Android: portrait.
+  /// - IOS: UIDeviceOrientationPortrait.
+  /// - Unity: ScreenOrientation.Portrait.
+  kPortrait = 2,
+  /// Portrait upside down orientation, which maps to:
+  /// - Android: reversePortrait.
+  /// - IOS: UIDeviceOrientationPortraitUpsideDown.
+  /// - Unity: ScreenOrientation.PortraitUpsideDown.
+  kPortraitUpsideDown = 3,
+} CardboardViewportOrientation;
+
 /// Struct representing a 3D mesh with 3D vertices and corresponding UV
 /// coordinates.
 typedef struct CardboardMesh {
@@ -494,11 +518,13 @@ void CardboardHeadTracker_resume(CardboardHeadTracker* head_tracker);
 /// @param[in]      head_tracker            Head tracker object pointer.
 /// @param[in]      timestamp_ns            The timestamp for the pose in
 ///                                         nanoseconds.
+/// @param[in]      viewport_orientation    The viewport orientation.
 /// @param[out]     position                3 floats for (x, y, z).
 /// @param[out]     orientation             4 floats for quaternion
-void CardboardHeadTracker_getPose(CardboardHeadTracker* head_tracker,
-                                  int64_t timestamp_ns, float* position,
-                                  float* orientation);
+void CardboardHeadTracker_getPose(
+    CardboardHeadTracker* head_tracker, int64_t timestamp_ns,
+    CardboardViewportOrientation viewport_orientation, float* position,
+    float* orientation);
 
 /// Recenters the head tracker.
 ///
@@ -560,7 +586,9 @@ void CardboardQrCode_destroy(const uint8_t* encoded_device_params);
 ///          https://google.com/cardboard/cfg?p=CgZHb29nbGUSEkNhcmRib2FyZCBJL08gMjAxNR0rGBU9JQHegj0qEAAASEIAAEhCAABIQgAASEJYADUpXA89OggeZnc-Ej6aPlAAYAM).
 ///          Redirection is also supported up to a maximum of 5 possible
 ///          redirects before reaching the proper pattern.
-///          Only HTTPS connections are supported.
+///          This function only supports HTTPS connections. In case a URI
+///          containing an HTTP scheme is provided, it will be replaced by an
+///          HTTPS one.
 ///          Upon termination, it will increment a counter that can be queried
 ///          via @see CardboardQrCode_getDeviceParamsChangedCount() when new
 ///          device parameters were successfully saved.

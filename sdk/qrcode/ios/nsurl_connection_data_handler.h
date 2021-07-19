@@ -25,6 +25,22 @@ typedef void (^OnUrlCompletion)(NSURL* _Nullable targetUrl, NSError* _Nullable e
     : NSObject <NSURLConnectionDataDelegate, NSURLConnectionDelegate>
 
 /**
+ * Analyzes if the given URL identifies an original Cardboard viewer (or equivalent).
+ *
+ * @param url URL to analyze.
+ * @return true if the given URL identifies an original Cardboard viewer (or equivalent).
+ */
++ (BOOL)isOriginalCardboardDeviceUrl:(nonnull NSURL*)url;
+
+/**
+ * Analyzes if the given URL identifies a Cardboard device using current scheme.
+ *
+ * @param url URL to analyze.
+ * @return true if the given URL identifies a Cardboard device using current scheme.
+ */
++ (BOOL)isCardboardDeviceUrl:(nonnull NSURL*)url;
+
+/**
  * Inits handler with OnUrlCompletion callback.
  *
  * @param completion Callback to be executed upon completion.
