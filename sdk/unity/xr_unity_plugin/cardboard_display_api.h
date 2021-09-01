@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_XR_UNITY_H_
-#define CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_XR_UNITY_H_
+#ifndef CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_DISPLAY_API_H_
+#define CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_DISPLAY_API_H_
 
+#include <array>
+#include <atomic>
+#include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <vector>
 
+#include "include/cardboard.h"
 #include "unity/xr_unity_plugin/renderer.h"
 #include "IUnityInterface.h"
 
@@ -33,39 +39,18 @@ typedef enum CardboardGraphicsApi {
 namespace cardboard::unity {
 
 /// Minimalistic wrapper of Cardboard SDK with native and standard types which
-/// hides Cardboard types and exposes enough functionality to be consumed by a
-/// XR Unity plugin.
-class CardboardApi {
+/// hides Cardboard types and exposes enough functionality related to eyes
+/// texture distortion to be consumed by the display provider of a XR Unity
+/// plugin.
+class CardboardDisplayApi {
  public:
-  /// @brief Constructs a CardboardApi.
-  /// @param[in] owner_name Name of the class that owns the instance of the
-  /// class. Used for debugging.
-  /// TODO(b/191992787): Refactor Cardboard API. When it is done, remove the
-  /// @p owner_name.
-  explicit CardboardApi(const std::string& owner_name);
+  /// @brief Constructs a CardboardDisplayApi.
+  /// @details Initializes the renderer based on the `selected_graphics_api_`
+  /// variable.
+  CardboardDisplayApi();
 
-  /// @brief Destructor.
-  /// @details Explicit declaration is required because of pImpl pattern.
-  ~CardboardApi();
-
-  /// @brief Initializes and resumes the HeadTracker module.
-  void InitHeadTracker();
-
-  /// @brief Pauses the HeadTracker module.
-  void PauseHeadTracker();
-
-  /// @brief Resumes the HeadTracker module.
-  void ResumeHeadTracker();
-
-  /// @brief Gets the pose of the HeadTracker module.
-  /// @details When the HeadTracker has not been initialized, @p position and
-  ///          @p rotation are zeroed.
-  /// @param[out] position A pointer to an array with three floats to fill in
-  ///             the position of the head.
-  /// @param[out] orientation A pointer to an array with four floats to fill in
-  ///             the quaternion that denotes the orientation of the head.
-  // TODO(b/154305848): Move argument types to std::array*.
-  void GetHeadTrackerPose(float* position, float* orientation);
+  /// @brief Destructor. Frees renderer resources.
+  ~CardboardDisplayApi();
 
   /// @brief Triggers a device parameters scan.
   /// @pre When using Android, the pointer to `JavaVM` must be previously set.
@@ -187,21 +172,98 @@ class CardboardApi {
   /// @param xr_interfaces Pointer to Unity XR interface provider.
   static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces);
 
-  /// @brief Sets the viewport orientation that will be used.
-  /// @param viewport_orientation one of the possible orientations of the
-  /// viewport.
-  static void SetViewportOrientation(
-      CardboardViewportOrientation viewport_orientation);
-
-  /// @brief Flags a head tracker recentering request.
-  static void SetHeadTrackerRecenterRequested();
-
  private:
-  // Forward declaration of the api implementation.
-  class CardboardApiImpl;
+  // @brief Holds the screen and rendering area details.
+  struct ScreenParams {
+    // @brief The width of the screen in pixels.
+    int width;
+    // @brief The height of the screen in pixels.
+    int height;
+    // @brief x coordinate in pixels of the lower left corner of the rendering
+    // area rectangle.
+    int viewport_x;
+    // @brief y coordinate in pixels of the lower left corner of the rendering
+    // area rectangle.
+    int viewport_y;
+    // @brief The width of the rendering area rectangle in pixels.
+    int viewport_width;
+    // @brief The height of the rendering area rectangle in pixels.
+    int viewport_height;
+  };
 
-  // @brief Implementation of this class that hides Cardboard types.
-  std::unique_ptr<CardboardApiImpl> p_impl_;
+  // @brief Holds eye information.
+  struct EyeData {
+    // @brief The eye-from-head homogeneous transformation for the eye.
+    float eye_from_head_matrix[16];
+
+    // @brief The field of view angles.
+    // @details They are disposed as [left, right, bottom, top] and are in
+    //          radians.
+    float fov[4];
+
+    // @brief Cardboard distortion mesh for the eye.
+    CardboardMesh distortion_mesh;
+
+    // @brief Cardboard texture description for the eye.
+    CardboardEyeTextureDescription texture;
+  };
+
+  // @brief Custom deleter for DistortionRenderer.
+  struct CardboardDistortionRendererDeleter {
+    void operator()(CardboardDistortionRenderer* distortion_renderer) {
+      CardboardDistortionRenderer_destroy(distortion_renderer);
+    }
+  };
+
+  // @brief Configures rendering resources.
+  void RenderingResourcesSetup();
+
+  // @brief Frees rendering resources.
+  void RenderingResourcesTeardown();
+
+  // @brief Default z-axis coordinate for the near clipping plane.
+  static constexpr float kZNear = 0.1f;
+
+  // @brief Default z-axis coordinate for the far clipping plane.
+  static constexpr float kZFar = 10.0f;
+
+  // @brief DistortionRenderer native pointer.
+  std::unique_ptr<CardboardDistortionRenderer,
+                  CardboardDistortionRendererDeleter>
+      distortion_renderer_;
+
+  // @brief Screen parameters.
+  // @details Must be used by rendering calls (or those to set up the pipeline).
+  ScreenParams screen_params_;
+
+  // @brief Eye data information.
+  // @details `CardboardEye::kLeft` index holds left eye data and
+  //          `CardboardEye::kRight` holds the right eye data.
+  std::array<EyeData, 2> eye_data_;
+
+  // @brief Holds the render texture information for each eye.
+  std::array<Renderer::RenderTexture, 2> render_textures_;
+
+  // @brief Manages the rendering elements lifecycle.
+  std::unique_ptr<Renderer> renderer_;
+
+  // @brief Store Unity reported screen params.
+  static std::atomic<ScreenParams> unity_screen_params_;
+
+  // @brief Unity-loaded widgets
+  static std::vector<Renderer::WidgetParams> widget_params_;
+
+  // @brief Mutex for widget_params_ access.
+  static std::mutex widget_mutex_;
+
+  // @brief Track changes to device parameters.
+  static std::atomic<bool> device_params_changed_;
+
+  // @brief Holds the selected graphics API.
+  static std::atomic<CardboardGraphicsApi> selected_graphics_api_;
+
+  // @brief Holds the Unity XR interfaces.
+  static IUnityInterfaces* xr_interfaces_;
 };
 
 #ifdef __cplusplus
@@ -212,7 +274,7 @@ extern "C" {
 /// @details It is expected to be called at
 ///          CardboardXRLoader::Initialize() from C# code when loading the
 ///          provider. Provided parameters will be returned by
-///          CardboardApi::GetScreenParams().
+///          CardboardDisplayApi::GetScreenParams().
 /// @param[in] screen_width The width of the screen in pixels.
 /// @param[in] screen_height The height of the screen in pixels.
 /// @param[in] viewport_x x coordinate in pixels of the lower left corner of the
@@ -253,18 +315,10 @@ void CardboardUnity_setDeviceParametersChanged();
 /// @param graphics_api The graphics API to use.
 void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api);
 
-/// @brief Sets the orientation of the device viewport to use.
-/// @param viewport_orientation The orientation of the viewport to use.
-void CardboardUnity_setViewportOrientation(
-            CardboardViewportOrientation viewport_orientation);
-
-/// @brief Flags a head tracker recentering request.
-void CardboardUnity_recenterHeadTracker();
-
 #ifdef __cplusplus
 }
 #endif
 
 }  // namespace cardboard::unity
 
-#endif  // CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_XR_UNITY_H_
+#endif  // CARDBOARD_SDK_UNITY_XR_UNITY_PLUGIN_CARDBOARD_DISPLAY_API_H_

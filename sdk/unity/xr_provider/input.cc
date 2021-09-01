@@ -20,13 +20,13 @@
 
 #include "unity/xr_provider/load.h"
 #include "unity/xr_provider/math_tools.h"
-#include "unity/xr_unity_plugin/cardboard_xr_unity.h"
+#include "unity/xr_unity_plugin/cardboard_input_api.h"
 #include "IUnityInterface.h"
 #include "IUnityXRInput.h"
 #include "IUnityXRTrace.h"
 #include "UnitySubsystemTypes.h"
 
-#define CARDBOARD_INPUT_XR_TRACE_LOG(trace, message, ...)                \
+#define CARDBOARD_INPUT_XR_TRACE_LOG(trace, message, ...)          \
   XR_TRACE_LOG(trace, "[CardboardXrInputProvider]: " message "\n", \
                ##__VA_ARGS__)
 namespace {
@@ -35,7 +35,7 @@ class CardboardInputProvider {
  public:
   CardboardInputProvider(IUnityXRTrace* trace, IUnityXRInputInterface* input)
       : trace_(trace), input_(input) {
-    cardboard_api_.reset(new cardboard::unity::CardboardApi(kClassName));
+    cardboard_input_api_.reset(new cardboard::unity::CardboardInputApi());
   }
 
   IUnityXRInputInterface* GetInput() { return input_; }
@@ -109,13 +109,13 @@ class CardboardInputProvider {
   }
 
   /// Initializes the head tracker module.
-  void InitHeadTracker() { cardboard_api_->InitHeadTracker(); }
+  void InitHeadTracker() { cardboard_input_api_->InitHeadTracker(); }
 
   /// Callback executed when a subsystem should become active.
   UnitySubsystemErrorCode Start(UnitySubsystemHandle handle) {
     CARDBOARD_INPUT_XR_TRACE_LOG(trace_, "Lifecycle started");
     input_->InputSubsystem_DeviceConnected(handle, kDeviceIdCardboardHmd);
-    cardboard_api_->ResumeHeadTracker();
+    cardboard_input_api_->ResumeHeadTracker();
     return kUnitySubsystemErrorCodeSuccess;
   }
 
@@ -123,16 +123,17 @@ class CardboardInputProvider {
   void Stop(UnitySubsystemHandle handle) {
     CARDBOARD_INPUT_XR_TRACE_LOG(trace_, "Lifecycle stopped");
     input_->InputSubsystem_DeviceDisconnected(handle, kDeviceIdCardboardHmd);
-    cardboard_api_->PauseHeadTracker();
+    cardboard_input_api_->PauseHeadTracker();
   }
 
   UnitySubsystemErrorCode Tick() {
     std::array<float, 4> out_orientation;
     std::array<float, 3> out_position;
-    cardboard_api_->GetHeadTrackerPose(out_position.data(),
-                                       out_orientation.data());
+    cardboard_input_api_->GetHeadTrackerPose(out_position.data(),
+                                             out_orientation.data());
     // TODO(b/151817737): Compute pose position within SDK with custom rotation.
-    head_pose_ = cardboard::unity::CardboardRotationToUnityPose(out_orientation);
+    head_pose_ =
+        cardboard::unity::CardboardRotationToUnityPose(out_orientation);
     return kUnitySubsystemErrorCodeSuccess;
   }
 
@@ -191,9 +192,6 @@ class CardboardInputProvider {
   }
 
  private:
-  /// TODO(b/191992787): Erase when Cardboard API refactor is done.
-  const char* kClassName = "CardboardInputProvider";
-
   static constexpr int kDeviceIdCardboardHmd = 0;
 
   static constexpr UnityXRInputDeviceCharacteristics kHmdCharacteristics =
@@ -207,7 +205,7 @@ class CardboardInputProvider {
 
   UnityXRPose head_pose_;
 
-  std::unique_ptr<cardboard::unity::CardboardApi> cardboard_api_;
+  std::unique_ptr<cardboard::unity::CardboardInputApi> cardboard_input_api_;
 
   static std::unique_ptr<CardboardInputProvider> cardboard_input_provider_;
 };
@@ -251,7 +249,7 @@ UnitySubsystemErrorCode LoadInput(IUnityInterfaces* xr_interfaces) {
         CardboardInputProvider::GetInstance()->GetTrace(),
         "Lifecycle finished");
   };
-  return input->RegisterLifecycleProvider("Cardboard", "Input",
+  return input->RegisterLifecycleProvider("Cardboard", "CardboardInput",
                                           &input_lifecycle_handler);
 }
 

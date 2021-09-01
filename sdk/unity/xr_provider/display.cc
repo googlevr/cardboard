@@ -21,14 +21,14 @@
 #include "util/is_arg_null.h"
 #include "unity/xr_provider/load.h"
 #include "unity/xr_provider/math_tools.h"
-#include "unity/xr_unity_plugin/cardboard_xr_unity.h"
+#include "unity/xr_unity_plugin/cardboard_display_api.h"
 #include "IUnityInterface.h"
 #include "IUnityXRDisplay.h"
 #include "IUnityXRTrace.h"
 #include "UnitySubsystemTypes.h"
 
 // @def Logs to Unity XR Trace interface @p message.
-#define CARDBOARD_DISPLAY_XR_TRACE_LOG(trace, message, ...)                \
+#define CARDBOARD_DISPLAY_XR_TRACE_LOG(trace, message, ...)          \
   XR_TRACE_LOG(trace, "[CardboardXrDisplayProvider]: " message "\n", \
                ##__VA_ARGS__)
 
@@ -63,7 +63,7 @@ class CardboardDisplayProvider {
   static std::unique_ptr<CardboardDisplayProvider>& GetInstance();
 
   /// @brief Keeps a copy of @p xr_interfaces and sets it to
-  ///        cardboard::unity::CardboardApi.
+  ///        cardboard::unity::CardboardDisplayApi.
   /// @param xr_interfaces A pointer to obtain Unity XR interfaces.
   static void SetUnityInterfaces(IUnityInterfaces* xr_interfaces);
 
@@ -136,8 +136,8 @@ class CardboardDisplayProvider {
           trace_, "Skip the rendering because Cardboard SDK is uninitialized.");
       return kUnitySubsystemErrorCodeFailure;
     }
-    cardboard_api_->RenderEyesToDisplay();
-    cardboard_api_->RenderWidgets();
+    cardboard_display_api_->RenderEyesToDisplay();
+    cardboard_display_api_->RenderWidgets();
     return kUnitySubsystemErrorCodeSuccess;
   }
 
@@ -149,11 +149,11 @@ class CardboardDisplayProvider {
     if ((frame_hints->changedFlags &
          kUnityXRFrameSetupHintsChangedTextureResolutionScale) != 0 ||
         !is_initialized_ ||
-        cardboard::unity::CardboardApi::GetDeviceParametersChanged()) {
+        cardboard::unity::CardboardDisplayApi::GetDeviceParametersChanged()) {
       // Create a new Cardboard SDK to clear previous truncated initializations
       // or just do it for the first time.
       CARDBOARD_DISPLAY_XR_TRACE_LOG(trace_, "Initializes Cardboard API.");
-      cardboard_api_.reset(new cardboard::unity::CardboardApi(kClassName));
+      cardboard_display_api_.reset(new cardboard::unity::CardboardDisplayApi());
       // Deallocate old textures since we're completely reallocating new
       // textures for Cardboard SDK.
       for (auto&& tex : tex_map_) {
@@ -161,8 +161,8 @@ class CardboardDisplayProvider {
       }
       tex_map_.clear();
 
-      cardboard::unity::CardboardApi::GetScreenParams(&width_, &height_);
-      cardboard_api_->UpdateDeviceParams();
+      cardboard::unity::CardboardDisplayApi::GetScreenParams(&width_, &height_);
+      cardboard_display_api_->UpdateDeviceParams();
       is_initialized_ = true;
 
       // Initialize texture descriptors.
@@ -173,7 +173,7 @@ class CardboardDisplayProvider {
         texture_descriptors_[i].flags = 0;
 
         const CardboardGraphicsApi graphics_api =
-            cardboard_api_->GetGraphicsApi();
+            cardboard_display_api_->GetGraphicsApi();
         if (graphics_api == kOpenGlEs2 || graphics_api == kOpenGlEs3) {
           texture_descriptors_[i].depthFormat = kUnityXRDepthTextureFormat16bit;
         } else {
@@ -186,11 +186,11 @@ class CardboardDisplayProvider {
     for (size_t i = 0; i < texture_descriptors_.size(); ++i) {
       // Sets the color texture ID to Unity texture descriptors.
       const uint64_t texture_color_buffer_id =
-          i == 0 ? cardboard_api_->GetLeftTextureColorBufferId()
-                 : cardboard_api_->GetRightTextureColorBufferId();
+          i == 0 ? cardboard_display_api_->GetLeftTextureColorBufferId()
+                 : cardboard_display_api_->GetRightTextureColorBufferId();
       const uint64_t texture_depth_buffer_id =
-          i == 0 ? cardboard_api_->GetLeftTextureDepthBufferId()
-                 : cardboard_api_->GetRightTextureDepthBufferId();
+          i == 0 ? cardboard_display_api_->GetLeftTextureDepthBufferId()
+                 : cardboard_display_api_->GetRightTextureDepthBufferId();
 
       UnityXRRenderTextureId unity_texture_id = 0;
       const auto found = tex_map_.find(texture_color_buffer_id);
@@ -216,7 +216,8 @@ class CardboardDisplayProvider {
       for (int i = 0; i < 2; ++i) {
         std::array<float, 4> fov;
         std::array<float, 16> eye_from_head;
-        cardboard_api_->GetEyeMatrices(i, eye_from_head.data(), fov.data());
+        cardboard_display_api_->GetEyeMatrices(i, eye_from_head.data(),
+                                               fov.data());
 
         auto* eye_params = i == 0 ? left_eye_params : right_eye_params;
         // Update pose for rendering.
@@ -247,7 +248,7 @@ class CardboardDisplayProvider {
   }
 
   UnitySubsystemErrorCode GfxThread_Stop() {
-    cardboard_api_.reset();
+    cardboard_display_api_.reset();
     is_initialized_ = false;
     return kUnitySubsystemErrorCodeSuccess;
   }
@@ -256,9 +257,7 @@ class CardboardDisplayProvider {
   /// @brief Converts @p i to a void*
   /// @param i A uint64_t integer to convert to void*.
   /// @return A void* whose value is @p i.
-  static void* ToVoidPointer(uint64_t i) {
-    return reinterpret_cast<void*>(i);
-  }
+  static void* ToVoidPointer(uint64_t i) { return reinterpret_cast<void*>(i); }
 
   /// @brief Loads Unity @p projection eye params from Cardboard field of view.
   /// @details Sets Unity @p projection to use half angles as Cardboard reported
@@ -275,10 +274,6 @@ class CardboardDisplayProvider {
     projection->data.halfAngles.right = std::abs(tan(cardboard_fov[1]));
   }
 
-  /// @brief Used for debugging.
-  /// TODO(b/191992787): Erase when Cardboard API refactor is done.
-  const char* kClassName = "CardboardDisplayProvider";
-
   /// @brief Points to Unity XR Trace interface.
   IUnityXRTrace* trace_ = nullptr;
 
@@ -289,7 +284,7 @@ class CardboardDisplayProvider {
   UnitySubsystemHandle handle_;
 
   /// @brief Tracks Cardboard API initialization status. It is set to true once
-  /// the CardboardApi::UpdateDeviceParams() is called and returns true.
+  /// the CardboardDisplayApi::UpdateDeviceParams() is called and returns true.
   bool is_initialized_ = false;
 
   /// @brief Screen width in pixels.
@@ -299,7 +294,7 @@ class CardboardDisplayProvider {
   int height_;
 
   /// @brief Cardboard SDK API wrapper.
-  std::unique_ptr<cardboard::unity::CardboardApi> cardboard_api_;
+  std::unique_ptr<cardboard::unity::CardboardDisplayApi> cardboard_display_api_;
 
   /// @brief Unity XR texture descriptors.
   std::array<UnityXRRenderTextureDesc, 2> texture_descriptors_{};
@@ -330,7 +325,7 @@ CardboardDisplayProvider::GetInstance() {
 void CardboardDisplayProvider::SetUnityInterfaces(
     IUnityInterfaces* xr_interfaces) {
   xr_interfaces_ = xr_interfaces;
-  cardboard::unity::CardboardApi::SetUnityInterfaces(xr_interfaces_);
+  cardboard::unity::CardboardDisplayApi::SetUnityInterfaces(xr_interfaces_);
 }
 
 }  // namespace
@@ -361,7 +356,7 @@ UnitySubsystemErrorCode LoadDisplay(IUnityInterfaces* xr_interfaces) {
 
   return CardboardDisplayProvider::GetInstance()
       ->GetDisplay()
-      ->RegisterLifecycleProvider("Cardboard", "Display",
+      ->RegisterLifecycleProvider("Cardboard", "CardboardDisplay",
                                   &display_lifecycle_handler);
 }
 
