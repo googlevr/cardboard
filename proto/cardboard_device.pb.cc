@@ -11,26 +11,32 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 namespace cardboard {
-class DeviceParamsDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DeviceParams> _instance;
-} _DeviceParams_default_instance_;
+constexpr DeviceParams::DeviceParams(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : left_eye_field_of_view_angles_()
+  , distortion_coefficients_()
+  , vendor_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , model_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , screen_to_lens_distance_(0)
+  , inter_lens_distance_(0)
+  , tray_to_lens_distance_(0)
+  , vertical_alignment_(0)
+
+  , primary_button_(1)
+{}
+struct DeviceParamsDefaultTypeInternal {
+  constexpr DeviceParamsDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~DeviceParamsDefaultTypeInternal() {}
+  union {
+    DeviceParams _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT DeviceParamsDefaultTypeInternal _DeviceParams_default_instance_;
 }  // namespace cardboard
-static void InitDefaultsscc_info_DeviceParams_cardboard_5fdevice_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::cardboard::_DeviceParams_default_instance_;
-    new (ptr) ::cardboard::DeviceParams();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::cardboard::DeviceParams::InitAsDefaultInstance();
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DeviceParams_cardboard_5fdevice_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_DeviceParams_cardboard_5fdevice_2eproto}, {}};
-
 namespace cardboard {
 bool DeviceParams_VerticalAlignmentType_IsValid(int value) {
   switch (value) {
@@ -78,7 +84,7 @@ const std::string& DeviceParams_VerticalAlignmentType_Name(
                      DeviceParams_VerticalAlignmentType_strings[idx].get();
 }
 bool DeviceParams_VerticalAlignmentType_Parse(
-    const std::string& name, DeviceParams_VerticalAlignmentType* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, DeviceParams_VerticalAlignmentType* value) {
   int int_value;
   bool success = ::PROTOBUF_NAMESPACE_ID::internal::LookUpEnumValue(
       DeviceParams_VerticalAlignmentType_entries, 3, name, &int_value);
@@ -145,7 +151,7 @@ const std::string& DeviceParams_ButtonType_Name(
                      DeviceParams_ButtonType_strings[idx].get();
 }
 bool DeviceParams_ButtonType_Parse(
-    const std::string& name, DeviceParams_ButtonType* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, DeviceParams_ButtonType* value) {
   int int_value;
   bool success = ::PROTOBUF_NAMESPACE_ID::internal::LookUpEnumValue(
       DeviceParams_ButtonType_entries, 4, name, &int_value);
@@ -166,8 +172,6 @@ constexpr int DeviceParams::ButtonType_ARRAYSIZE;
 
 // ===================================================================
 
-void DeviceParams::InitAsDefaultInstance() {
-}
 class DeviceParams::_Internal {
  public:
   using HasBits = decltype(std::declval<DeviceParams>()._has_bits_);
@@ -194,25 +198,32 @@ class DeviceParams::_Internal {
   }
 };
 
-DeviceParams::DeviceParams()
-  : ::PROTOBUF_NAMESPACE_ID::MessageLite(), _internal_metadata_(nullptr) {
+DeviceParams::DeviceParams(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::MessageLite(arena, is_message_owned),
+  left_eye_field_of_view_angles_(arena),
+  distortion_coefficients_(arena) {
   SharedCtor();
-  // @@protoc_insertion_point(constructor:cardboard.DeviceParams)
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
+  // @@protoc_insertion_point(arena_constructor:cardboard.DeviceParams)
 }
 DeviceParams::DeviceParams(const DeviceParams& from)
   : ::PROTOBUF_NAMESPACE_ID::MessageLite(),
-      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       left_eye_field_of_view_angles_(from.left_eye_field_of_view_angles_),
       distortion_coefficients_(from.distortion_coefficients_) {
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  _internal_metadata_.MergeFrom<std::string>(from._internal_metadata_);
   vendor_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_vendor()) {
-    vendor_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.vendor_);
+    vendor_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_vendor(), 
+      GetArenaForAllocation());
   }
   model_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_model()) {
-    model_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.model_);
+    model_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_model(), 
+      GetArenaForAllocation());
   }
   ::memcpy(&screen_to_lens_distance_, &from.screen_to_lens_distance_,
     static_cast<size_t>(reinterpret_cast<char*>(&primary_button_) -
@@ -221,33 +232,37 @@ DeviceParams::DeviceParams(const DeviceParams& from)
 }
 
 void DeviceParams::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_DeviceParams_cardboard_5fdevice_2eproto.base);
-  vendor_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  model_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(&screen_to_lens_distance_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&vertical_alignment_) -
-      reinterpret_cast<char*>(&screen_to_lens_distance_)) + sizeof(vertical_alignment_));
-  primary_button_ = 1;
+vendor_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+model_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&screen_to_lens_distance_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&vertical_alignment_) -
+    reinterpret_cast<char*>(&screen_to_lens_distance_)) + sizeof(vertical_alignment_));
+primary_button_ = 1;
 }
 
 DeviceParams::~DeviceParams() {
   // @@protoc_insertion_point(destructor:cardboard.DeviceParams)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
+  _internal_metadata_.Delete<std::string>();
 }
 
-void DeviceParams::SharedDtor() {
+inline void DeviceParams::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   vendor_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   model_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
+void DeviceParams::ArenaDtor(void* object) {
+  DeviceParams* _this = reinterpret_cast< DeviceParams* >(object);
+  (void)_this;
+}
+void DeviceParams::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
 void DeviceParams::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const DeviceParams& DeviceParams::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DeviceParams_cardboard_5fdevice_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void DeviceParams::Clear() {
 // @@protoc_insertion_point(message_clear_start:cardboard.DeviceParams)
@@ -260,10 +275,10 @@ void DeviceParams::Clear() {
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      vendor_.ClearNonDefaultToEmptyNoArena();
+      vendor_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      model_.ClearNonDefaultToEmptyNoArena();
+      model_.ClearNonDefaultToEmpty();
     }
   }
   if (cached_has_bits & 0x0000007cu) {
@@ -273,7 +288,7 @@ void DeviceParams::Clear() {
     primary_button_ = 1;
   }
   _has_bits_.Clear();
-  _internal_metadata_.Clear();
+  _internal_metadata_.Clear<std::string>();
 }
 
 const char* DeviceParams::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
@@ -282,21 +297,24 @@ const char* DeviceParams::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // optional string vendor = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(_internal_mutable_vendor(), ptr, ctx);
+          auto str = _internal_mutable_vendor();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
       // optional string model = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(_internal_mutable_model(), ptr, ctx);
+          auto str = _internal_mutable_model();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
       // optional float screen_to_lens_distance = 3;
       case 3:
@@ -304,7 +322,8 @@ const char* DeviceParams::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
           _Internal::set_has_screen_to_lens_distance(&has_bits);
           screen_to_lens_distance_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
       // optional float inter_lens_distance = 4;
       case 4:
@@ -312,7 +331,8 @@ const char* DeviceParams::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
           _Internal::set_has_inter_lens_distance(&has_bits);
           inter_lens_distance_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
       // repeated float left_eye_field_of_view_angles = 5 [packed = true];
       case 5:
@@ -322,7 +342,8 @@ const char* DeviceParams::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
         } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 45) {
           _internal_add_left_eye_field_of_view_angles(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr));
           ptr += sizeof(float);
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
       // optional float tray_to_lens_distance = 6;
       case 6:
@@ -330,7 +351,8 @@ const char* DeviceParams::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
           _Internal::set_has_tray_to_lens_distance(&has_bits);
           tray_to_lens_distance_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
       // repeated float distortion_coefficients = 7 [packed = true];
       case 7:
@@ -340,54 +362,60 @@ const char* DeviceParams::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
         } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 61) {
           _internal_add_distortion_coefficients(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr));
           ptr += sizeof(float);
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
       // optional .cardboard.DeviceParams.VerticalAlignmentType vertical_alignment = 11 [default = BOTTOM];
       case 11:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 88)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           if (PROTOBUF_PREDICT_TRUE(::cardboard::DeviceParams_VerticalAlignmentType_IsValid(val))) {
             _internal_set_vertical_alignment(static_cast<::cardboard::DeviceParams_VerticalAlignmentType>(val));
           } else {
             ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(11, val, mutable_unknown_fields());
           }
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
       // optional .cardboard.DeviceParams.ButtonType primary_button = 12 [default = MAGNET];
       case 12:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 96)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           if (PROTOBUF_PREDICT_TRUE(::cardboard::DeviceParams_ButtonType_IsValid(val))) {
             _internal_set_primary_button(static_cast<::cardboard::DeviceParams_ButtonType>(val));
           } else {
             ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(12, val, mutable_unknown_fields());
           }
-        } else goto handle_unusual;
+        } else
+          goto handle_unusual;
         continue;
-      default: {
-      handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
-          ctx->SetLastTag(tag);
-          goto success;
-        }
-        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
-        CHK_(ptr != nullptr);
-        continue;
-      }
+      default:
+        goto handle_unusual;
     }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<std::string>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
   }  // while
-success:
+message_done:
   _has_bits_.Or(has_bits);
   return ptr;
 failure:
   ptr = nullptr;
-  goto success;
+  goto message_done;
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* DeviceParams::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* DeviceParams::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:cardboard.DeviceParams)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -408,13 +436,13 @@ failure:
 
   // optional float screen_to_lens_distance = 3;
   if (cached_has_bits & 0x00000004u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(3, this->_internal_screen_to_lens_distance(), target);
   }
 
   // optional float inter_lens_distance = 4;
   if (cached_has_bits & 0x00000008u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(4, this->_internal_inter_lens_distance(), target);
   }
 
@@ -425,7 +453,7 @@ failure:
 
   // optional float tray_to_lens_distance = 6;
   if (cached_has_bits & 0x00000010u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(6, this->_internal_tray_to_lens_distance(), target);
   }
 
@@ -436,21 +464,21 @@ failure:
 
   // optional .cardboard.DeviceParams.VerticalAlignmentType vertical_alignment = 11 [default = BOTTOM];
   if (cached_has_bits & 0x00000020u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
       11, this->_internal_vertical_alignment(), target);
   }
 
   // optional .cardboard.DeviceParams.ButtonType primary_button = 12 [default = MAGNET];
   if (cached_has_bits & 0x00000040u) {
-    stream->EnsureSpace(&target);
+    target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
       12, this->_internal_primary_button(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = stream->WriteRaw(_internal_metadata_.unknown_fields().data(),
-        static_cast<int>(_internal_metadata_.unknown_fields().size()), target);
+    target = stream->WriteRaw(_internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).data(),
+        static_cast<int>(_internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).size()), target);
   }
   // @@protoc_insertion_point(serialize_to_array_end:cardboard.DeviceParams)
   return target;
@@ -473,9 +501,6 @@ size_t DeviceParams::ByteSizeLong() const {
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
             static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
     }
-    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
-    _left_eye_field_of_view_angles_cached_byte_size_.store(cached_size,
-                                    std::memory_order_relaxed);
     total_size += data_size;
   }
 
@@ -488,9 +513,6 @@ size_t DeviceParams::ByteSizeLong() const {
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
             static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
     }
-    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
-    _distortion_coefficients_cached_byte_size_.store(cached_size,
-                                    std::memory_order_relaxed);
     total_size += data_size;
   }
 
@@ -539,7 +561,7 @@ size_t DeviceParams::ByteSizeLong() const {
 
   }
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    total_size += _internal_metadata_.unknown_fields().size();
+    total_size += _internal_metadata_.unknown_fields<std::string>(::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString).size();
   }
   int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
@@ -555,7 +577,6 @@ void DeviceParams::CheckTypeAndMergeFrom(
 void DeviceParams::MergeFrom(const DeviceParams& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:cardboard.DeviceParams)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -564,12 +585,10 @@ void DeviceParams::MergeFrom(const DeviceParams& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 0x0000007fu) {
     if (cached_has_bits & 0x00000001u) {
-      _has_bits_[0] |= 0x00000001u;
-      vendor_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.vendor_);
+      _internal_set_vendor(from._internal_vendor());
     }
     if (cached_has_bits & 0x00000002u) {
-      _has_bits_[0] |= 0x00000002u;
-      model_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.model_);
+      _internal_set_model(from._internal_model());
     }
     if (cached_has_bits & 0x00000004u) {
       screen_to_lens_distance_ = from.screen_to_lens_distance_;
@@ -588,6 +607,7 @@ void DeviceParams::MergeFrom(const DeviceParams& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
+  _internal_metadata_.MergeFrom<std::string>(from._internal_metadata_);
 }
 
 void DeviceParams::CopyFrom(const DeviceParams& from) {
@@ -603,18 +623,28 @@ bool DeviceParams::IsInitialized() const {
 
 void DeviceParams::InternalSwap(DeviceParams* other) {
   using std::swap;
-  _internal_metadata_.Swap(&other->_internal_metadata_);
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   left_eye_field_of_view_angles_.InternalSwap(&other->left_eye_field_of_view_angles_);
   distortion_coefficients_.InternalSwap(&other->distortion_coefficients_);
-  vendor_.Swap(&other->vendor_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
-  model_.Swap(&other->model_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
-  swap(screen_to_lens_distance_, other->screen_to_lens_distance_);
-  swap(inter_lens_distance_, other->inter_lens_distance_);
-  swap(tray_to_lens_distance_, other->tray_to_lens_distance_);
-  swap(vertical_alignment_, other->vertical_alignment_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &vendor_, lhs_arena,
+      &other->vendor_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &model_, lhs_arena,
+      &other->model_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(DeviceParams, vertical_alignment_)
+      + sizeof(DeviceParams::vertical_alignment_)
+      - PROTOBUF_FIELD_OFFSET(DeviceParams, screen_to_lens_distance_)>(
+          reinterpret_cast<char*>(&screen_to_lens_distance_),
+          reinterpret_cast<char*>(&other->screen_to_lens_distance_));
   swap(primary_button_, other->primary_button_);
 }
 
@@ -627,7 +657,7 @@ std::string DeviceParams::GetTypeName() const {
 }  // namespace cardboard
 PROTOBUF_NAMESPACE_OPEN
 template<> PROTOBUF_NOINLINE ::cardboard::DeviceParams* Arena::CreateMaybeMessage< ::cardboard::DeviceParams >(Arena* arena) {
-  return Arena::CreateInternal< ::cardboard::DeviceParams >(arena);
+  return Arena::CreateMessageInternal< ::cardboard::DeviceParams >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

@@ -528,12 +528,9 @@ void CardboardHeadTracker_getPose(
 
 /// Recenters the head tracker.
 ///
-/// @details        Let Q_0 be the rotation quaternion that makes an
-///                 arbitrary orientation aligned with a zero yaw angle.
-///                 This function computes Q_0 with the current pose, and
-///                 saves it as a rotation attribute in @p head_tracker.
-///                 Future calls to CardboardHeadTracker_getPose() will be
-///                 affected by Q_0.
+/// @details        By recentering, the @p head_tracker orientation gets aligned
+///                 with a zero yaw angle.
+///
 /// @pre @p head_tracker Must not be null.
 ///
 /// @param[in]      head_tracker            Head tracker object pointer.

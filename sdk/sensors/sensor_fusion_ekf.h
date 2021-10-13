@@ -78,6 +78,16 @@ class SensorFusionEkf {
   // @param sample accelerometer sample data.
   void ProcessAccelerometerSample(const AccelerometerData& sample);
 
+  // Rotates the current transformation from Sensor Space to Start Space.
+  //
+  // @details The current state space rotation is post-multiplied by
+  //          @p rotation.
+  //          Typically used when a viewport orientation changes.
+  //
+  // @param rotation The Rotation that maps from the Sensor Space
+  //                 frame to Start Space.
+  void RotateSensorSpaceToStartSpaceTransformation(const Rotation& rotation);
+
  private:
   // Estimates the average timestep between gyroscope event.
   void FilterGyroscopeTimestep(double gyroscope_timestep);

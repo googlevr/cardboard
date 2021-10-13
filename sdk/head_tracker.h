@@ -47,7 +47,7 @@ class HeadTracker {
   void GetPose(int64_t timestamp_ns,
                CardboardViewportOrientation viewport_orientation,
                std::array<float, 3>& out_position,
-               std::array<float, 4>& out_orientation) const;
+               std::array<float, 4>& out_orientation);
 
   // Recenters the head tracker.
   void Recenter();
@@ -76,11 +76,6 @@ class HeadTracker {
   Rotation GetRotation(CardboardViewportOrientation viewport_orientation,
                        int64_t timestamp_ns) const;
 
-  // Sets the recenter rotation of the head tracker from a given viewport
-  // orientation.
-  void SetRecenterRotationFromViewportOrientation(
-      CardboardViewportOrientation viewport_orientation);
-
   std::atomic<bool> is_tracking_;
   // Sensor Fusion object that stores the internal state of the filter.
   std::unique_ptr<SensorFusionEkf> sensor_fusion_;
@@ -106,10 +101,37 @@ class HeadTracker {
   static const std::array<Rotation, 4> kEkfToHeadTrackerRotations;
   // @}
 
-  // Array of Quaternions that save the value of the recenter rotation for each
-  // viewport orientation. This is used for recentering the head tracker. All
-  // its rotations are initialized as identity.
-  std::array<Rotation, 4> recenter_rotations_;
+  // Contains the necessary rotations to account for changes in reported head
+  // pose when the tracker starts/resets in a certain viewport and then changes
+  // to another.
+  //
+  // The rows contain the current viewport orientation, the columns contain the
+  // transformed viewport orientation. See below:
+  //
+  // @code
+  // kViewportChangeRotationCompensation[current_viewport_orientation]
+  //                                    [new_viewport_orientation]
+  // @endcode
+  //
+  // Roll angle needs to change. The following table shows the correction angle
+  // for each combination:
+  //
+  // | Current\New     | LL  | LR  |  P  | PUD |
+  // |-----------------|-----|-----|-----|-----|
+  // | Landscape Left  | 0   | π   |-π/2 | π/2 |
+  // | Landscape Right | π   | 0   | π/2 |-π/2 |
+  // | Portrait        | π/2 |-π/2 | 0   | π   |
+  // | Portrait UD     |-π/2 | π/2 | π   | 0   |
+  static const std::array<std::array<Rotation, 4>, 4>
+      kViewportChangeRotationCompensation;
+
+  // Orientation of the viewport. It is initialized in the first call of
+  // GetPose().
+  CardboardViewportOrientation viewport_orientation_;
+
+  // Tells wheter the attribute viewport_orientation_ has been initialized or
+  // not.
+  bool is_viewport_orientation_initialized_;
 };
 
 }  // namespace cardboard

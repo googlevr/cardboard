@@ -113,6 +113,11 @@ void SensorFusionEkf::Reset() {
   execute_reset_with_next_accelerometer_sample_ = true;
 }
 
+void SensorFusionEkf::RotateSensorSpaceToStartSpaceTransformation(
+    const Rotation& rotation) {
+  current_state_.sensor_from_start_rotation *= rotation;
+}
+
 void SensorFusionEkf::ResetState() {
   current_state_.sensor_from_start_rotation = Rotation::Identity();
   current_state_.sensor_from_start_rotation_velocity = Vector3::Zero();
