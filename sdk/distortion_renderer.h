@@ -32,7 +32,7 @@ class DistortionRenderer {
   virtual void RenderEyeToDisplay(
       uint64_t target, int x, int y, int width, int height,
       const CardboardEyeTextureDescription* left_eye,
-      const CardboardEyeTextureDescription* right_eye) const = 0;
+      const CardboardEyeTextureDescription* right_eye) = 0;
 };
 
 }  // namespace cardboard

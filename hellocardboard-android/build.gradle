@@ -8,10 +8,18 @@ android {
     }
     defaultConfig {
         applicationId "com.google.cardboard.hellocardboard"
-        minSdkVersion 18
+        // #gles3 #vulkan - You can reduce minSdkVersion down to 16 depending
+        // on rendering APIs supported:
+        //
+        // OpenGL ES 2.0 - Requires 16 or higher
+        // OpenGL ES 3.0 - Requires 18 or higher
+        // Vulkan        - Requires 24 or higher
+        //
+        // See the release notes for details.
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode 1
-        versionName "1.9.0"
+        versionName "1.10.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
@@ -42,7 +50,7 @@ dependencies {
     // Android Mobile Vision
     implementation 'com.google.android.gms:play-services-vision:15.0.2'
     implementation 'com.google.android.material:material:1.0.0'
-    implementation 'com.google.protobuf:protobuf-javalite:3.8.0'
+    implementation 'com.google.protobuf:protobuf-javalite:3.10.0'
     implementation project(":sdk")
 }
 

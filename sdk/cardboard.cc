@@ -230,14 +230,6 @@ CardboardUv CardboardLensDistortion_distortedUvForUndistortedUv(
   return ret;
 }
 
-CardboardDistortionRenderer* CardboardVulkanDistortionRenderer_create() {
-  if (CARDBOARD_IS_NOT_INITIALIZED()) {
-    return nullptr;
-  }
-  CARDBOARD_LOGE("Vulkan rendering API not available");
-  return nullptr;
-}
-
 void CardboardDistortionRenderer_destroy(
     CardboardDistortionRenderer* renderer) {
   if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(renderer)) {

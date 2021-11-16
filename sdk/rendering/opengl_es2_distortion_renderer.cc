@@ -202,7 +202,7 @@ class OpenGlEs2DistortionRenderer : public DistortionRenderer {
   void RenderEyeToDisplay(
       uint64_t target, int x, int y, int width, int height,
       const CardboardEyeTextureDescription* left_eye,
-      const CardboardEyeTextureDescription* right_eye) const override {
+      const CardboardEyeTextureDescription* right_eye) override {
     if (elements_count_[0] == 0 || elements_count_[1] == 0) {
       CARDBOARD_LOGE(
           "Distortion mesh is empty. OpenGlEs2DistortionRenderer::SetMesh was "
