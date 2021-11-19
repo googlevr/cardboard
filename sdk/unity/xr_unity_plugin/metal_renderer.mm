@@ -360,7 +360,7 @@ CardboardDistortionRenderer* MakeCardboardMetalDistortionRenderer(IUnityInterfac
   IUnityGraphicsMetalV1* metal_interface = xr_interfaces->Get<IUnityGraphicsMetalV1>();
   const CardboardMetalDistortionRendererConfig config{
       reinterpret_cast<uint64_t>(CFBridgingRetain(metal_interface->MetalDevice())),
-      MTLPixelFormatRGBA8Unorm, MTLPixelFormatDepth32Float_Stencil8,
+      MTLPixelFormatBGRA8Unorm, MTLPixelFormatDepth32Float_Stencil8,
       MTLPixelFormatDepth32Float_Stencil8};
 
   CardboardDistortionRenderer* distortion_renderer =
