@@ -30,7 +30,6 @@
 #include "device_params/android/device_params.h"
 #endif
 
-// TODO(b/134142617): Revisit struct/class hierarchy.
 struct CardboardLensDistortion : cardboard::LensDistortion {};
 struct CardboardDistortionRenderer : cardboard::DistortionRenderer {};
 struct CardboardHeadTracker : cardboard::HeadTracker {};
