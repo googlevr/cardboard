@@ -182,11 +182,6 @@ typedef struct CardboardVulkanDistortionRendererConfig {
   /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkCommandBuffer.html).
   /// Maintained by the user.
   uint64_t command_buffers;
-  /// The texture sampler that would be used in rendering texture.
-  /// This field holds a [VkSampler
-  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSampler.html).
-  /// Maintained by the user.
-  uint64_t texture_sampler;
   /// The number of images in the swapchain.
   uint32_t swapchain_image_count;
   /// The width of the display area.
@@ -195,37 +190,8 @@ typedef struct CardboardVulkanDistortionRendererConfig {
   uint32_t image_height;
 } CardboardVulkanDistortionRendererConfig;
 
-/// Struct to set Vulkan distortion renderer target.
-typedef struct CardboardVulkanDistortionRendererTarget {
-  /// The queue that the command buffers will be submitted to.
-  /// This field holds a [VkQueue
-  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkQueue.html).
-  /// Maintained by the user.
-  uint64_t vk_queue;
-  /// The object specifying a queue submit operation.
-  /// This field holds a [VkSubmitInfo
-  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSubmitInfo.html).
-  /// Maintained by the user.
-  uint64_t vk_submits_info;
-  /// The fence to be signaled once all submitted command buffers have
-  /// completed execution. It is optional, in that, it could be set to
-  /// VK_NULL_HANDLE.
-  /// This field holds a [VkFence
-  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkFence.html).
-  /// Maintained by the user.
-  uint64_t vk_fence;
-  /// The object specifying parameters of the presentation.
-  /// This field holds a [VkPresentInfoKHR
-  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkPresentInfoKHR.html).
-  /// Maintained by the user.
-  uint64_t vk_present_info;
-  /// The index of the image in the swapchain.
-  uint32_t swapchain_image_index;
-} CardboardVulkanDistortionRendererTarget;
-
-/// TODO (b/205317247): Rename it to 'CardboardMetalDistortionRendererTarget'.
 /// Struct to set Metal distortion renderer target configuration.
-typedef struct CardboardDistortionRendererTargetConfig {
+typedef struct CardboardMetalDistortionRendererTargetConfig {
   /// MTLRenderCommandEncoder id.
   /// This field holds a CFTypeRef variable pointing to a
   /// @c MTLRenderCommandEncoder object. The SDK client is expected to manage
@@ -234,7 +200,7 @@ typedef struct CardboardDistortionRendererTargetConfig {
   /// ensure it is properly retained. Usage example:
   ///
   /// @code{.m}
-  /// CardboardDistortionRendererTargetConfig target_config;
+  /// CardboardMetalDistortionRendererTargetConfig target_config;
   /// target_config.render_command_encoder =
   ///     CFBridgingRetain(renderCommandEncoder);
   /// CardboardDistortionRenderer_renderEyeToDisplay(..., &target_config, ...);
@@ -245,7 +211,36 @@ typedef struct CardboardDistortionRendererTargetConfig {
   int screen_width;
   /// Full height of the screen in pixels.
   int screen_height;
-} CardboardDistortionRendererTargetConfig;
+} CardboardMetalDistortionRendererTargetConfig;
+
+/// Struct to set Vulkan distortion renderer target.
+typedef struct CardboardVulkanDistortionRendererTarget {
+  /// The queue that the command buffers will be submitted to.
+  /// This field holds a [VkQueue
+  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkQueue.html).
+  /// Maintained by the user.
+  uint64_t vk_queue;
+  /// The semaphore that handles upon which to wait before the command buffers
+  /// for this batch begin execution.
+  /// This field holds a [VkSemaphore
+  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSemaphore.html).
+  /// Maintained by the user.
+  uint64_t vk_semaphore;
+  /// The fence to be signaled once all submitted command buffers have
+  /// completed execution. It is optional, in that, it could be set to
+  /// VK_NULL_HANDLE.
+  /// This field holds a [VkFence
+  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkFence.html).
+  /// Maintained by the user.
+  uint64_t vk_fence;
+  /// The swapchain that owns the buffers into which the scene is rendered.
+  /// This field holds a [VkSwapchainKHR
+  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSwapchainKHR.html).
+  /// Maintained by the user.
+  uint64_t vk_swapchain;
+  /// The index of the image in the swapchain.
+  uint32_t swapchain_image_index;
+} CardboardVulkanDistortionRendererTarget;
 
 /// An opaque Lens Distortion object.
 typedef struct CardboardLensDistortion CardboardLensDistortion;
@@ -514,7 +509,7 @@ void CardboardDistortionRenderer_setMesh(CardboardDistortionRenderer* renderer,
 ///     underlying API used as follows:
 ///
 ///     * OpenGL ES 2.x or 3.x: @c GLuint.
-///     * Metal: @c CardboardDistortionRendererTargetConfig*.
+///     * Metal: @c CardboardMetalDistortionRendererTargetConfig*.
 ///     * Vulkan: @c CardboardVulkanDistortionRendererTarget*.
 /// @param[in]      x                       x coordinate of the rectangle's
 ///                                         lower left corner in pixels.

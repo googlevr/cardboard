@@ -69,7 +69,6 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     render_pass_ = *reinterpret_cast<VkRenderPass*>(config->render_pass);
     command_buffers_ =
         reinterpret_cast<VkCommandBuffer*>(config->command_buffers);
-    texture_sampler_ = *reinterpret_cast<VkSampler*>(config->texture_sampler);
     swapchain_image_count_ = config->swapchain_image_count;
     image_width_ = config->image_width;
     image_height_ = config->image_height;
@@ -80,6 +79,7 @@ class VulkanDistortionRenderer : public DistortionRenderer {
   }
 
   ~VulkanDistortionRenderer() {
+    vkDestroySampler(logical_device_, texture_sampler_, nullptr);
     vkDestroyPipelineLayout(logical_device_, pipeline_layout_, nullptr);
     vkDestroyDescriptorSetLayout(logical_device_, descriptor_set_layout_,
                                  nullptr);
@@ -131,14 +131,14 @@ class VulkanDistortionRenderer : public DistortionRenderer {
       uint64_t target, int x, int y, int width, int height,
       const CardboardEyeTextureDescription* left_eye,
       const CardboardEyeTextureDescription* right_eye) override {
-    CardboardVulkanDistortionRendererTarget* renderTarget =
+    CardboardVulkanDistortionRendererTarget* render_target =
         reinterpret_cast<CardboardVulkanDistortionRendererTarget*>(target);
-    VkQueue queue = *reinterpret_cast<VkQueue*>(renderTarget->vk_queue);
-    VkFence fence = *reinterpret_cast<VkFence*>(renderTarget->vk_fence);
-    VkSubmitInfo* submitInfo =
-        reinterpret_cast<VkSubmitInfo*>(renderTarget->vk_submits_info);
-    VkPresentInfoKHR* presentInfo =
-        reinterpret_cast<VkPresentInfoKHR*>(renderTarget->vk_present_info);
+    VkQueue queue = *reinterpret_cast<VkQueue*>(render_target->vk_queue);
+    VkFence fence = *reinterpret_cast<VkFence*>(render_target->vk_fence);
+    VkSemaphore* semaphore =
+        reinterpret_cast<VkSemaphore*>(render_target->vk_semaphore);
+    VkSwapchainKHR* swapchain =
+        reinterpret_cast<VkSwapchainKHR*>(render_target->vk_swapchain);
 
     image_width_ = width;
     image_height_ = height;
@@ -150,7 +150,7 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     scissor_[kLeft].offset = {.x = x, .y = y};
     scissor_[kLeft].extent = {.width = static_cast<uint32_t>(image_width_ / 2),
                               .height = static_cast<uint32_t>(image_height_)};
-    RenderDistortionMesh(left_eye, kLeft, renderTarget->swapchain_image_index);
+    RenderDistortionMesh(left_eye, kLeft, render_target->swapchain_image_index);
 
     viewport_[kRight].x = x + image_width_ / 2;
     viewport_[kRight].x = y;
@@ -161,14 +161,38 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     scissor_[kRight].extent = {.width = static_cast<uint32_t>(image_width_ / 2),
                                .height = static_cast<uint32_t>(image_height_)};
     RenderDistortionMesh(right_eye, kRight,
-                         renderTarget->swapchain_image_index);
-
-    submitInfo->pCommandBuffers =
-        &command_buffers_[renderTarget->swapchain_image_index];
+                         render_target->swapchain_image_index);
 
     vkResetFences(logical_device_, 1, &fence);
-    CALL_VK(vkQueueSubmit(queue, 1, submitInfo, fence));
-    CALL_VK(vkQueuePresentKHR(queue, presentInfo));
+
+    const VkPipelineStageFlags wait_stage_mask =
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    const VkSubmitInfo submit_info = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext = nullptr,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = semaphore,
+        .pWaitDstStageMask = &wait_stage_mask,
+        .commandBufferCount = 1,
+        .pCommandBuffers =
+            &command_buffers_[render_target->swapchain_image_index],
+        .signalSemaphoreCount = 0,
+        .pSignalSemaphores = nullptr};
+
+    VkPresentInfoKHR present_info = {
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = 0,
+        .pWaitSemaphores = nullptr,
+        .swapchainCount = 1,
+        .pSwapchains = swapchain,
+        .pImageIndices = &render_target->swapchain_image_index,
+    };
+
+    CALL_VK(vkQueueSubmit(queue, 1, &submit_info, fence));
+    CALL_VK(vkWaitForFences(logical_device_, 1 /* fenceCount */, &fence,
+                            VK_TRUE, 100000000));
+
+    CALL_VK(vkQueuePresentKHR(queue, &present_info));
   }
 
  private:
@@ -246,6 +270,32 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     };
     CALL_VK(vkCreatePipelineLayout(logical_device_, &pipelineLayoutCreateInfo,
                                    nullptr, &pipeline_layout_));
+  }
+
+  void CreateTextureSampler() {
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(physical_device_, &properties);
+
+    VkSamplerCreateInfo sampler = {
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .magFilter = VK_FILTER_NEAREST,
+        .minFilter = VK_FILTER_NEAREST,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        .mipLodBias = 0.0f,
+        .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
+        .compareOp = VK_COMPARE_OP_NEVER,
+        .minLod = 0.0f,
+        .maxLod = 0.0f,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+        .unnormalizedCoordinates = VK_FALSE,
+    };
+
+    CALL_VK(
+        vkCreateSampler(logical_device_, &sampler, nullptr, &texture_sampler_));
   }
 
   void CreateDescriptorPool(CardboardEye eye) {
@@ -518,6 +568,7 @@ class VulkanDistortionRenderer : public DistortionRenderer {
   void CreateSharedVulkanObjects() {
     CreateDescriptorSetLayout();
     CreatePipelineLayout();
+    CreateTextureSampler();
   }
 
   void CreatePerEyeVulkanObjects(CardboardEye eye) {
@@ -612,12 +663,12 @@ class VulkanDistortionRenderer : public DistortionRenderer {
   VkDevice logical_device_;
   VkRenderPass render_pass_;
   VkCommandBuffer* command_buffers_;
-  VkSampler texture_sampler_;
   uint32_t swapchain_image_count_;
   uint32_t image_width_;
   uint32_t image_height_;
 
-  // Variables created and maintained by distortion render.
+  // Variables created and maintained by the distortion renderer.
+  VkSampler texture_sampler_;
   VkDescriptorSetLayout descriptor_set_layout_;
   VkPipelineLayout pipeline_layout_;
   VkViewport viewport_[2];

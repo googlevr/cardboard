@@ -170,8 +170,8 @@ class MetalDistortionRenderer : public DistortionRenderer {
       return;
     }
 
-    CardboardDistortionRendererTargetConfig* target_config =
-        reinterpret_cast<CardboardDistortionRendererTargetConfig*>(target);
+    CardboardMetalDistortionRendererTargetConfig* target_config =
+        reinterpret_cast<CardboardMetalDistortionRendererTargetConfig*>(target);
     if (CARDBOARD_IS_ARG_NULL(target_config)) {
       return;
     }

@@ -41,10 +41,10 @@ class Matrix4x4 {
 
   // @brief Constructs a projection matrix from the field of view half angles
   //        and the z-coordinate of the near and far clipping planes.
-  // @param fov An array with the half angles of the
-  // @param y The y position coordinate.
-  // @param z The z position coordinate.
-  // @returns A translation matrix.
+  // @param fov An array with the half angles of the field of view.
+  // @param zNear The z coordinate of the near clipping plane.
+  // @param zFar The z coordinate of the far clipping plane.
+  // @return A projection matrix.
   static Matrix4x4 Perspective(const std::array<float, 4>& fov, float zNear,
                                float zFar);
 
