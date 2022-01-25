@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     lintOptions {
         abortOnError false
     }
@@ -16,7 +16,7 @@ android {
         //
         // See the release notes for details.
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.12.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
