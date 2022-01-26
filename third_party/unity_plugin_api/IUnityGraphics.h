@@ -26,7 +26,7 @@ typedef enum UnityGfxRenderer
     kUnityGfxRendererNvn               = 22, // Nintendo Switch NVN API
     kUnityGfxRendererXboxOneD3D12      = 23,  // MS XboxOne Direct3D 12
     kUnityGfxRendererGameCoreXboxOne   = 24, // GameCore Xbox One
-    kUnityGfxRendererGameCoreScarlett  = 25, // GameCore Scarlett
+    kUnityGfxRendererGameCoreXboxSeries  = 25, // GameCore XboxSeries
     kUnityGfxRendererPS5               = 26, // PS5
     kUnityGfxRendererPS5NGGC           = 27  // PS5 NGGC
 } UnityGfxRenderer;

@@ -116,6 +116,7 @@ enum UnityProfilerMarkerFlag_
     kUnityProfilerMarkerFlagWarning = 1 << 4,            // Indicates undesirable, performance-wise suboptimal code path.
 
     kCounter = 1 << 7,                                   // Marker is also used as a counter.
+    kUnityProfilerMarkerFlagCounter = kCounter,
 
     kUnityProfilerMarkerFlagVerbosityDebug = 1 << 10,    // Internal debug markers - e.g. JobSystem Idle.
     kUnityProfilerMarkerFlagVerbosityInternal = 1 << 11, // Internal markers - e.g. Mutex/semaphore waits.

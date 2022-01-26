@@ -220,8 +220,8 @@ typedef struct CardboardVulkanDistortionRendererTarget {
   /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkQueue.html).
   /// Maintained by the user.
   uint64_t vk_queue;
-  /// The semaphore that handles upon which to wait before the command buffers
-  /// for this batch begin execution.
+  /// The semaphore that signals which batch/buffer is being waited on before
+  /// the command buffers for this batch begin execution.
   /// This field holds a [VkSemaphore
   /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSemaphore.html).
   /// Maintained by the user.

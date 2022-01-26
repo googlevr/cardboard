@@ -154,7 +154,12 @@ struct UnityVulkanSwapchainConfiguration
     UnityVulkanSwapchainMode mode;
 };
 
-UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkan)
+enum
+{
+    kUnityVulkanInitCallbackMaxPriority = 0x7FFFFFFF
+};
+
+UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkanV2)
 {
     // Vulkan API hooks
     //
@@ -163,6 +168,7 @@ UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkan)
     // The 'getInstanceProcAddr' passed to the callback is the function pointer from the Vulkan Loader
     // The function pointer returned from UnityVulkanInitCallback may be a different implementation
     // This allows intercepting all Vulkan API calls
+    // This function is equivalent to calling `AddInterceptInitialization` with a priority of `kUnityVulkanInitCallbackMaxPriority`
     //
     // Most rules/restrictions for implementing a Vulkan layer apply
     // Returns true on success, false on failure (typically because it is used too late)
@@ -229,6 +235,98 @@ UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkan)
     // Must be called before kUnityGfxDeviceEventInitialize (preload plugin)
     bool(UNITY_INTERFACE_API * ConfigureSwapchain)(const UnityVulkanSwapchainConfiguration * swapChainConfig);
 
+    // see AccessTexture
+    // Accepts UnityTextureID (UnityRenderingExtTextureUpdateParamsV2::textureID, UnityRenderingExtCustomBlitParams::source)
+    bool(UNITY_INTERFACE_API * AccessTextureByID)(UnityTextureID textureID, const VkImageSubresource * subResource, VkImageLayout layout,
+        VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanImage * outImage);
+
+    // Vulkan API hooks
+    //
+    // Must be called before kUnityGfxDeviceEventInitialize (preload plugin)
+    // Unity will call 'func' when initializing the Vulkan API
+    // The 'getInstanceProcAddr' passed to the callback is the function pointer from the Vulkan Loader
+    // The function pointer returned from UnityVulkanInitCallback may be a different implementation
+    // This allows intercepting all Vulkan API calls
+    // The priority is used to sort multiple callbacks such that the highest priority will be called last
+    //   with the original Vulkan loader implementation of vkGetInstanceProcAddress passed in as 'getInstanceProcAddr'.
+    // A priority value of `kUnityVulkanInitCallbackMaxPriority` is used to force a callback to be called immediately before
+    //   the original Vulkan loader implementation of `vkGetInstanceProcAddress`.  Only one callback can be registered with a
+    //   priority of `kUnityVulkanInitCallbackMaxPriority`, if one already exists it will be replaced.
+    // Passing a priority value of `kUnityVulkanInitCallbackMaxPriority` is equivalent to calling the `InterceptInitialization` method.
+    //
+    // Most rules/restrictions for implementing a Vulkan layer apply
+    // Returns true on success, false on failure (typically because it is used too late)
+    bool(UNITY_INTERFACE_API * AddInterceptInitialization)(UnityVulkanInitCallback func, void* userdata, int32_t priority);
+
+    // Remove vulkan intercept initialization callback.
+    // Removal will not take effect until the next time vulkan is initialized.
+    bool(UNITY_INTERFACE_API * RemoveInterceptInitialization)(UnityVulkanInitCallback func);
+};
+UNITY_REGISTER_INTERFACE_GUID(0x329334C09DCA4787ULL, 0xB347DD92A0097FFCULL, IUnityGraphicsVulkanV2)
+
+UNITY_DECLARE_INTERFACE(IUnityGraphicsVulkan)
+{
+    // Vulkan API hooks
+    //
+    // Must be called before kUnityGfxDeviceEventInitialize (preload plugin)
+    // Unity will call 'func' when initializing the Vulkan API
+    // The 'getInstanceProcAddr' passed to the callback is the function pointer from the Vulkan Loader
+    // The function pointer returned from UnityVulkanInitCallback may be a different implementation
+    // This allows intercepting all Vulkan API calls
+    //
+    // Most rules/restrictions for implementing a Vulkan layer apply
+    // Returns true on success, false on failure (typically because it is used too late)
+    bool(UNITY_INTERFACE_API * InterceptInitialization)(UnityVulkanInitCallback func, void* userdata);
+    // Intercept Vulkan API function of the given name with the given function
+    // In contrast to InterceptInitialization this interface can be used at any time
+    // The user must handle all synchronization
+    // Generally this cannot be used to wrap Vulkan object because there might because there may already be non-wrapped instances
+    // returns the previous function pointer
+    PFN_vkVoidFunction(UNITY_INTERFACE_API * InterceptVulkanAPI)(const char* name, PFN_vkVoidFunction func);
+    // Change the precondition for a specific user-defined event
+    // Should be called during initialization
+    void(UNITY_INTERFACE_API * ConfigureEvent)(int eventID, const UnityVulkanPluginEventConfig * pluginEventConfig);
+    // Access the Vulkan instance and render queue created by Unity
+    // UnityVulkanInstance does not change between kUnityGfxDeviceEventInitialize and kUnityGfxDeviceEventShutdown
+    UnityVulkanInstance(UNITY_INTERFACE_API * Instance)();
+    // Access the current command buffer
+    //
+    // outCommandRecordingState is invalidated by any resource access calls.
+    // queueAccess must be kUnityVulkanGraphicsQueueAccess_Allow when called from from a AccessQueue callback or from a event that is configured for queue access.
+    // Otherwise queueAccess must be kUnityVulkanGraphicsQueueAccess_DontCare.
+    bool(UNITY_INTERFACE_API * CommandRecordingState)(UnityVulkanRecordingState * outCommandRecordingState, UnityVulkanGraphicsQueueAccess queueAccess);
+    // Resource access
+    //
+    // Using the following resource query APIs will mark the resources as used for the current frame.
+    // Pipeline barriers will be inserted when needed.
+    //
+    // Resource access APIs may record commands, so the current UnityVulkanRecordingState is invalidated
+    // Must not be called from event callbacks configured for queue access (UnityVulkanGraphicsQueueAccess_Allow)
+    // or from a AccessQueue callback of an event
+    bool(UNITY_INTERFACE_API * AccessTexture)(void* nativeTexture, const VkImageSubresource * subResource, VkImageLayout layout,
+        VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanImage * outImage);
+    bool(UNITY_INTERFACE_API * AccessRenderBufferTexture)(UnityRenderBuffer nativeRenderBuffer, const VkImageSubresource * subResource, VkImageLayout layout,
+        VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanImage * outImage);
+    bool(UNITY_INTERFACE_API * AccessRenderBufferResolveTexture)(UnityRenderBuffer nativeRenderBuffer, const VkImageSubresource * subResource, VkImageLayout layout,
+        VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanImage * outImage);
+    bool(UNITY_INTERFACE_API * AccessBuffer)(void* nativeBuffer, VkPipelineStageFlags pipelineStageFlags, VkAccessFlags accessFlags, UnityVulkanResourceAccessMode accessMode, UnityVulkanBuffer * outBuffer);
+    // Control current state of render pass
+    //
+    // Must not be called from event callbacks configured for queue access (UnityVulkanGraphicsQueueAccess_Allow, UnityVulkanGraphicsQueueAccess_FlushAndAllow)
+    // or from a AccessQueue callback of an event
+    // See kUnityVulkanRenderPass_EnsureInside, kUnityVulkanRenderPass_EnsureOutside
+    void(UNITY_INTERFACE_API * EnsureOutsideRenderPass)();
+    void(UNITY_INTERFACE_API * EnsureInsideRenderPass)();
+    // Allow command buffer submission to the the Vulkan graphics queue from the given UnityRenderingEventAndData callback.
+    // This is an alternative to using ConfigureEvent with kUnityVulkanGraphicsQueueAccess_Allow.
+    //
+    // eventId and userdata are passed to the callback
+    // This may or may not be called synchronously or from the submission thread.
+    // If flush is true then all Unity command buffers of this frame are submitted before UnityQueueAccessCallback
+    void(UNITY_INTERFACE_API * AccessQueue)(UnityRenderingEventAndData, int eventId, void* userData, bool flush);
+    // Configure swapchains that are created by Unity.
+    // Must be called before kUnityGfxDeviceEventInitialize (preload plugin)
+    bool(UNITY_INTERFACE_API * ConfigureSwapchain)(const UnityVulkanSwapchainConfiguration * swapChainConfig);
     // see AccessTexture
     // Accepts UnityTextureID (UnityRenderingExtTextureUpdateParamsV2::textureID, UnityRenderingExtCustomBlitParams::source)
     bool(UNITY_INTERFACE_API * AccessTextureByID)(UnityTextureID textureID, const VkImageSubresource * subResource, VkImageLayout layout,

@@ -228,15 +228,20 @@ class CardboardDisplayProvider {
         ConfigureFieldOfView(fov, &eye_params->projection);
       }
 
-      // Configure the culling pass for the right eye (index == 1) to be the
-      // same as the left eye (index == 0).
+      // Configure the culling passes for both eyes.
+      // - Left eye: index == 0.
+      // - Right eye: index == 1.
       next_frame->renderPasses[0].cullingPassIndex = 0;
-      next_frame->renderPasses[1].cullingPassIndex = 0;
       next_frame->cullingPasses[0].deviceAnchorToCullingPose =
           left_eye_params->deviceAnchorToEyePose;
       next_frame->cullingPasses[0].projection = left_eye_params->projection;
-      // TODO(b/155084408): Properly document this constant.
-      next_frame->cullingPasses[0].separation = 0.064f;
+      next_frame->cullingPasses[0].separation = kCullingSphereDiameter;
+
+      next_frame->renderPasses[1].cullingPassIndex = 1;
+      next_frame->cullingPasses[1].deviceAnchorToCullingPose =
+          right_eye_params->deviceAnchorToEyePose;
+      next_frame->cullingPasses[1].projection = right_eye_params->projection;
+      next_frame->cullingPasses[1].separation = kCullingSphereDiameter;
     }
 
     // Configure multipass rendering with one pass for each eye.
@@ -254,6 +259,10 @@ class CardboardDisplayProvider {
   }
 
  private:
+  /// @brief Diameter of the bounding sphere used for culling.
+  /// TODO(b/155084408): Properly document this constant value.
+  static constexpr float kCullingSphereDiameter = 0.064f;
+
   /// @brief Converts @p i to a void*
   /// @param i A uint64_t integer to convert to void*.
   /// @return A void* whose value is @p i.

@@ -52,11 +52,12 @@ struct UnityD3D12PluginEventConfig
 };
 
 typedef struct UnityGraphicsD3D12PhysicalVideoMemoryControlValues UnityGraphicsD3D12PhysicalVideoMemoryControlValues;
-struct UnityGraphicsD3D12PhysicalVideoMemoryControlValues // all values in bytes
+struct UnityGraphicsD3D12PhysicalVideoMemoryControlValues // all absolute values in bytes
 {
     UINT64 reservation;           // Minimum required physical memory for an application [default = 64MB].
     UINT64 systemMemoryThreshold; // If free physical video memory drops below this threshold, resources will be allocated in system memory. [default = 64MB]
-    UINT64 residencyThreshold;    // Minimum free physical video memory needed to start bringing evicted resources back after shrunken video memory budget expands again. [default = 128MB]
+    UINT64 residencyHysteresisThreshold;    // Minimum free physical video memory needed to start bringing evicted resources back after shrunken video memory budget expands again. [default = 128MB]
+    float nonEvictableRelativeThreshold;    // The relative proportion of the video memory budget that must be kept available for non-evictable resources. [default = 0.25]
 };
 
 // Should only be used on the rendering/submission thread.
@@ -77,7 +78,7 @@ UNITY_DECLARE_INTERFACE(IUnityGraphicsD3D12v6)
 
     ID3D12CommandQueue* (UNITY_INTERFACE_API * GetCommandQueue)();
 
-    ID3D12Resource* (UNITY_INTERFACE_API * TextureFromRenderBuffer)(UnityRenderBuffer * rb);
+    ID3D12Resource* (UNITY_INTERFACE_API * TextureFromRenderBuffer)(UnityRenderBuffer rb);
     ID3D12Resource* (UNITY_INTERFACE_API * TextureFromNativeTexture)(UnityTextureID texture);
 
     // Change the precondition for a specific user-defined event
@@ -106,7 +107,7 @@ UNITY_DECLARE_INTERFACE(IUnityGraphicsD3D12v5)
 
     ID3D12CommandQueue* (UNITY_INTERFACE_API * GetCommandQueue)();
 
-    ID3D12Resource* (UNITY_INTERFACE_API * TextureFromRenderBuffer)(UnityRenderBuffer * rb);
+    ID3D12Resource* (UNITY_INTERFACE_API * TextureFromRenderBuffer)(UnityRenderBuffer rb);
 };
 UNITY_REGISTER_INTERFACE_GUID(0xF5C8D8A37D37BC42ULL, 0xB02DFE93B5064A27ULL, IUnityGraphicsD3D12v5)
 
