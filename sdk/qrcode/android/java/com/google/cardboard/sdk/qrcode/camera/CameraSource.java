@@ -47,12 +47,6 @@ import java.util.Map;
 public class CameraSource {
   private static final String TAG = CameraSource.class.getSimpleName();
 
-  @SuppressLint("InlinedApi")
-  public static final int CAMERA_FACING_BACK = CameraInfo.CAMERA_FACING_BACK;
-
-  @SuppressLint("InlinedApi")
-  public static final int CAMERA_FACING_FRONT = CameraInfo.CAMERA_FACING_FRONT;
-
   private static final float ASPECT_RATIO_TOLERANCE = 0.01f;
 
   // Preferred width in pixels.
@@ -192,7 +186,7 @@ public class CameraSource {
    */
   @SuppressLint("InlinedApi")
   private Camera createCamera() {
-    int requestedCameraId = getIdForRequestedCamera(CAMERA_FACING_BACK);
+    int requestedCameraId = getIdForRequestedCamera(CameraInfo.CAMERA_FACING_BACK);
     if (requestedCameraId == -1) {
       Log.e(TAG, "Could not find requested camera.");
       throw new RuntimeException("Could not find requested camera.");
