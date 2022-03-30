@@ -31,7 +31,6 @@ import com.google.android.gms.common.images.Size;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 import java.io.IOException;
-import java.lang.Thread.State;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,12 +45,6 @@ import java.util.Map;
 @SuppressWarnings("deprecation")
 public class CameraSource {
   private static final String TAG = CameraSource.class.getSimpleName();
-
-  @SuppressLint("InlinedApi")
-  public static final int CAMERA_FACING_BACK = CameraInfo.CAMERA_FACING_BACK;
-
-  @SuppressLint("InlinedApi")
-  public static final int CAMERA_FACING_FRONT = CameraInfo.CAMERA_FACING_FRONT;
 
   private static final float ASPECT_RATIO_TOLERANCE = 0.01f;
 
@@ -192,7 +185,7 @@ public class CameraSource {
    */
   @SuppressLint("InlinedApi")
   private Camera createCamera() {
-    int requestedCameraId = getIdForRequestedCamera(CAMERA_FACING_BACK);
+    int requestedCameraId = getIdForRequestedCamera(CameraInfo.CAMERA_FACING_BACK);
     if (requestedCameraId == -1) {
       Log.e(TAG, "Could not find requested camera.");
       throw new RuntimeException("Could not find requested camera.");

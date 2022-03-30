@@ -89,19 +89,19 @@ typedef struct CardboardEyeTextureDescription {
   /// GLuint variable.
   ///
   /// When using Vulkan, this field corresponds to an uint64_t address pointing
-  /// to a @c VkImageView variable.The SDK client is expected to manage the
+  /// to a @c VkImage variable.The SDK client is expected to manage the
   /// object ownership and to guarantee the pointer validity during the
   /// @c ::CardboardDistortionRenderer_renderEyeToDisplay function execution
   /// to ensure it is properly retained. Usage example:
   ///
   /// @code{.cc}
-  /// VkImageView imageView;
-  /// // Initialize and set up the imageView...
+  /// VkImage image;
+  /// // Initialize and set up the image...
   /// CardboardEyeTextureDescription leftEye;
-  /// leftEye.texture = reinterpret_cast<uint64_t>(&imageView)
+  /// leftEye.texture = reinterpret_cast<uint64_t>(&image)
   /// // Fill remaining fields in leftEye...
   /// CardboardDistortionRenderer_renderEyeToDisplay(..., &leftEye, ...);
-  /// // Clear previous imageView if it is needed.
+  /// // Clear previous image if it is needed.
   /// @endcode
   ///
   /// When using Metal, this field corresponds to a @c CFTypeRef
@@ -170,8 +170,11 @@ typedef struct CardboardVulkanDistortionRendererConfig {
   /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkDevice.html).
   /// Maintained by the user.
   uint64_t logical_device;
-  /// The number of images in the swapchain.
-  uint32_t swapchain_image_count;
+  /// The swapchain that owns the buffers into which the scene is rendered.
+  /// This field holds a [VkSwapchainKHR
+  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSwapchainKHR.html).
+  /// Maintained by the user.
+  uint64_t vk_swapchain;
 } CardboardVulkanDistortionRendererConfig;
 
 /// Struct to set Metal distortion renderer target configuration.
@@ -234,11 +237,6 @@ typedef struct CardboardVulkanDistortionRendererTarget {
   /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkFence.html).
   /// Maintained by the user.
   uint64_t vk_fence;
-  /// The swapchain that owns the buffers into which the scene is rendered.
-  /// This field holds a [VkSwapchainKHR
-  /// value](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSwapchainKHR.html).
-  /// Maintained by the user.
-  uint64_t vk_swapchain;
   /// The index of the image in the swapchain.
   uint32_t swapchain_image_index;
 } CardboardVulkanDistortionRendererTarget;
