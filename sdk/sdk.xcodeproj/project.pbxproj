@@ -75,7 +75,7 @@
 		0F6BA71E25CC53E100C1B015 /* opengl_es3_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_es3_renderer.cc; sourceTree = "<group>"; };
 		0F6BA72325CC5B7D00C1B015 /* metal_renderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = metal_renderer.mm; sourceTree = "<group>"; };
 		0F984F7925C047860033D5C6 /* metal_distortion_renderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = metal_distortion_renderer.mm; sourceTree = "<group>"; };
-		0FD200852357511E00B3C342 /* cardboard_api.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = cardboard_api.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		0FD200852357511E00B3C342 /* GfxPluginCardboard.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = GfxPluginCardboard.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FD201FA23575F3A00B3C342 /* screen_params.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = screen_params.mm; sourceTree = "<group>"; };
 		0FD201FB23575F3A00B3C342 /* lens_distortion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lens_distortion.h; sourceTree = "<group>"; };
 		0FD201FD23575F3A00B3C342 /* rotation.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rotation.cc; sourceTree = "<group>"; };
@@ -227,7 +227,7 @@
 		0FD200862357511E00B3C342 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0FD200852357511E00B3C342 /* cardboard_api.a */,
+				0FD200852357511E00B3C342 /* GfxPluginCardboard.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -452,7 +452,7 @@
 			);
 			name = sdk;
 			productName = sdk;
-			productReference = 0FD200852357511E00B3C342 /* cardboard_api.a */;
+			productReference = 0FD200852357511E00B3C342 /* GfxPluginCardboard.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -685,7 +685,7 @@
 					"-ObjC",
 					"$(inherited)",
 				);
-				PRODUCT_NAME = cardboard_api;
+				PRODUCT_NAME = GfxPluginCardboard;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -716,7 +716,7 @@
 					"-ObjC",
 					"$(inherited)",
 				);
-				PRODUCT_NAME = cardboard_api;
+				PRODUCT_NAME = GfxPluginCardboard;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

@@ -75,7 +75,10 @@ class CardboardInputProvider {
                                     unsigned int) {
       CARDBOARD_INPUT_XR_TRACE_LOG(cardboard_input_provider_->GetTrace(),
                                    "No events to handle");
-      return kUnitySubsystemErrorCodeSuccess;
+      // HandEvent is omitted, a failure must be returned as explained in
+      // https://docs.unity3d.com/2021.3/Documentation/Manual/xrsdk-input.html
+      // under "UnityXRInputProvider.HandleEvent" paragraph.
+      return kUnitySubsystemErrorCodeFailure;
     };
     input_provider.QueryTrackingOriginMode =
         [](UnitySubsystemHandle, void*,

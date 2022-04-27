@@ -482,6 +482,14 @@ class VulkanDistortionRenderer : public DistortionRenderer {
         .dynamicStateCount = 2,
         .pDynamicStates = dynamic_state_enables};
 
+    VkPipelineDepthStencilStateCreateInfo depth_stencil{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+        .depthTestEnable = VK_TRUE,
+        .depthWriteEnable = VK_TRUE,
+        .depthCompareOp = VK_COMPARE_OP_LESS,
+        .depthBoundsTestEnable = VK_FALSE,
+        .stencilTestEnable = VK_FALSE};
+
     // Create the pipeline
     VkGraphicsPipelineCreateInfo pipeline_create_info{
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -495,7 +503,7 @@ class VulkanDistortionRenderer : public DistortionRenderer {
         .pViewportState = &viewport_info,
         .pRasterizationState = &raster_info,
         .pMultisampleState = &multisample_info,
-        .pDepthStencilState = nullptr,
+        .pDepthStencilState = &depth_stencil,
         .pColorBlendState = &color_blend_info,
         .pDynamicState = &dynamic_state_info,
         .layout = pipeline_layout_,

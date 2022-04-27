@@ -18,7 +18,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 30
         versionCode 1
-        versionName "1.14.0"
+        versionName "1.15.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
@@ -57,7 +57,7 @@ task extractNdk(type: Copy)  {
         copy {
             from zipTree("${project.rootDir}/sdk/build/outputs/aar/sdk-release.aar")
             into "libraries/"
-            include "jni/**/libcardboard_api.so"
+            include "jni/**/libGfxPluginCardboard.so"
         }
         copy {
             from "${project.rootDir}/sdk/include/cardboard.h"

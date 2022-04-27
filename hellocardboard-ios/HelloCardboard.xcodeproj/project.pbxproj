@@ -17,7 +17,7 @@
 		0F4614762363635500BDF427 /* sdk.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0F4614752363635500BDF427 /* sdk.bundle */; };
 		0F4614782363636800BDF427 /* HelloCardboard.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0F4614772363636800BDF427 /* HelloCardboard.bundle */; };
 		0FD20275235764AD00B3C342 /* launch.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0FD20265235764AD00B3C342 /* launch.xib */; };
-		0FD2028D23576AC200B3C342 /* cardboard_api.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD20284235768A000B3C342 /* cardboard_api.a */; };
+		0FD2028D23576AC200B3C342 /* GfxPluginCardboard.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD20284235768A000B3C342 /* GfxPluginCardboard.a */; };
 		0FD2029323576FAB00B3C342 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD2029223576FAB00B3C342 /* AVFoundation.framework */; };
 		0FD2029523576FBC00B3C342 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FD2029423576FBC00B3C342 /* CoreMotion.framework */; };
 		0FECE29C25BB279B009C662C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FECE29B25BB279B009C662C /* Metal.framework */; };
@@ -71,7 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0FD2028D23576AC200B3C342 /* cardboard_api.a in Frameworks */,
+				0FD2028D23576AC200B3C342 /* GfxPluginCardboard.a in Frameworks */,
 				0FD2029523576FBC00B3C342 /* CoreMotion.framework in Frameworks */,
 				0FD2029323576FAB00B3C342 /* AVFoundation.framework in Frameworks */,
 				0FECE29C25BB279B009C662C /* Metal.framework in Frameworks */,
@@ -129,7 +129,7 @@
 		0FD20280235768A000B3C342 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0FD20284235768A000B3C342 /* cardboard_api.a */,
+				0FD20284235768A000B3C342 /* GfxPluginCardboard.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -193,10 +193,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		0FD20284235768A000B3C342 /* cardboard_api.a */ = {
+		0FD20284235768A000B3C342 /* GfxPluginCardboard.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = cardboard_api.a;
+			path = GfxPluginCardboard.a;
 			remoteRef = 0FD20283235768A000B3C342 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
