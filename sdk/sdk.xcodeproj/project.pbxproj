@@ -35,7 +35,6 @@
 		0FD2025323575F3B00B3C342 /* polynomial_radial_distortion.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023023575F3B00B3C342 /* polynomial_radial_distortion.cc */; };
 		0FD2025423575F3B00B3C342 /* qr_scan_view_controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023323575F3B00B3C342 /* qr_scan_view_controller.mm */; };
 		0FD2025523575F3B00B3C342 /* qr_code.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023423575F3B00B3C342 /* qr_code.mm */; };
-		0FD2025623575F3B00B3C342 /* nsurl_connection_data_handler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023723575F3B00B3C342 /* nsurl_connection_data_handler.mm */; };
 		0FD2025723575F3B00B3C342 /* device_params_helper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023823575F3B00B3C342 /* device_params_helper.mm */; };
 		0FD2025823575F3B00B3C342 /* cardboard_v1.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023B23575F3B00B3C342 /* cardboard_v1.cc */; };
 		0FD2025923575F3B00B3C342 /* distortion_mesh.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0FD2023D23575F3B00B3C342 /* distortion_mesh.cc */; };
@@ -43,6 +42,7 @@
 		0FD2027C235766E800B3C342 /* cardboard.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0FD2022B23575F3B00B3C342 /* cardboard.h */; };
 		0FECE29825BB2760009C662C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FECE29725BB2760009C662C /* Metal.framework */; };
 		0FECE29A25BB276D009C662C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FECE29925BB276D009C662C /* MetalKit.framework */; };
+		0FEDA006283670070023E8C8 /* nsurl_session_data_handler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0FEDA004283670070023E8C8 /* nsurl_session_data_handler.mm */; };
 		7B2ADACB24E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B2ADAC924E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc */; };
 		7B76813A24A3FA6B00E92050 /* input.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813424A3FA6B00E92050 /* input.cc */; };
 		7B76813B24A3FA6B00E92050 /* display.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813524A3FA6B00E92050 /* display.cc */; };
@@ -127,8 +127,6 @@
 		0FD2023323575F3B00B3C342 /* qr_scan_view_controller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = qr_scan_view_controller.mm; sourceTree = "<group>"; };
 		0FD2023423575F3B00B3C342 /* qr_code.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = qr_code.mm; sourceTree = "<group>"; };
 		0FD2023523575F3B00B3C342 /* device_params_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = device_params_helper.h; sourceTree = "<group>"; };
-		0FD2023623575F3B00B3C342 /* nsurl_connection_data_handler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nsurl_connection_data_handler.h; sourceTree = "<group>"; };
-		0FD2023723575F3B00B3C342 /* nsurl_connection_data_handler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = nsurl_connection_data_handler.mm; sourceTree = "<group>"; };
 		0FD2023823575F3B00B3C342 /* device_params_helper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = device_params_helper.mm; sourceTree = "<group>"; };
 		0FD2023923575F3B00B3C342 /* qr_scan_view_controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qr_scan_view_controller.h; sourceTree = "<group>"; };
 		0FD2023B23575F3B00B3C342 /* cardboard_v1.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cardboard_v1.cc; sourceTree = "<group>"; };
@@ -138,6 +136,8 @@
 		0FD202B92357C0F200B3C342 /* sdk.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = sdk.bundle; path = qrcode/ios/sdk.bundle; sourceTree = "<group>"; };
 		0FECE29725BB2760009C662C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		0FECE29925BB276D009C662C /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk/System/iOSSupport/System/Library/Frameworks/MetalKit.framework; sourceTree = DEVELOPER_DIR; };
+		0FEDA004283670070023E8C8 /* nsurl_session_data_handler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = nsurl_session_data_handler.mm; sourceTree = "<group>"; };
+		0FEDA005283670070023E8C8 /* nsurl_session_data_handler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nsurl_session_data_handler.h; sourceTree = "<group>"; };
 		7B2ADAC924E4779500FEBAA8 /* opengl_es2_distortion_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_es2_distortion_renderer.cc; sourceTree = "<group>"; };
 		7B76813424A3FA6B00E92050 /* input.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cc; sourceTree = "<group>"; };
 		7B76813524A3FA6B00E92050 /* display.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = display.cc; sourceTree = "<group>"; };
@@ -337,11 +337,11 @@
 		0FD2023223575F3B00B3C342 /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				0FEDA005283670070023E8C8 /* nsurl_session_data_handler.h */,
+				0FEDA004283670070023E8C8 /* nsurl_session_data_handler.mm */,
 				0FD2023323575F3B00B3C342 /* qr_scan_view_controller.mm */,
 				0FD2023423575F3B00B3C342 /* qr_code.mm */,
 				0FD2023523575F3B00B3C342 /* device_params_helper.h */,
-				0FD2023623575F3B00B3C342 /* nsurl_connection_data_handler.h */,
-				0FD2023723575F3B00B3C342 /* nsurl_connection_data_handler.mm */,
 				0FD2023823575F3B00B3C342 /* device_params_helper.mm */,
 				0FD2023923575F3B00B3C342 /* qr_scan_view_controller.h */,
 			);
@@ -499,7 +499,6 @@
 				0FD2024D23575F3B00B3C342 /* sensor_event_producer.mm in Sources */,
 				0F29AA62255AC3A200154BD0 /* is_initialized.cc in Sources */,
 				0FD2025023575F3B00B3C342 /* mean_filter.cc in Sources */,
-				0FD2025623575F3B00B3C342 /* nsurl_connection_data_handler.mm in Sources */,
 				0FD2024F23575F3B00B3C342 /* gyroscope_bias_estimator.cc in Sources */,
 				0FD2023E23575F3B00B3C342 /* screen_params.mm in Sources */,
 				0FD2024B23575F3B00B3C342 /* device_gyroscope_sensor.mm in Sources */,
@@ -526,6 +525,7 @@
 				0FD2024E23575F3B00B3C342 /* sensor_helper.mm in Sources */,
 				0F6BA71F25CC53E100C1B015 /* opengl_es2_renderer.cc in Sources */,
 				0FD2024A23575F3B00B3C342 /* sensor_fusion_ekf.cc in Sources */,
+				0FEDA006283670070023E8C8 /* nsurl_session_data_handler.mm in Sources */,
 				0FD2024323575F3B00B3C342 /* matrix_3x3.cc in Sources */,
 				E01C984226B44A72001BB0E3 /* cardboard_display_api.cc in Sources */,
 				0FD2024423575F3B00B3C342 /* lens_distortion.cc in Sources */,
@@ -678,9 +678,7 @@
 					"$(PROJECT_DIR)/../third_party/unity_plugin_api",
 					"$(inherited)",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"$(inherited)",
@@ -709,9 +707,7 @@
 					"$(PROJECT_DIR)/../third_party/unity_plugin_api",
 					"$(inherited)",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"$(inherited)",

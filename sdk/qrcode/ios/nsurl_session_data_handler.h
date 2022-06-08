@@ -19,10 +19,9 @@
 typedef void (^OnUrlCompletion)(NSURL* _Nullable targetUrl, NSError* _Nullable error);
 
 /**
- * Helper class that handles NSURL connection data.
+ * Helper class that handles NSURL session data.
  */
-@interface CardboardNSURLConnectionDataHandler
-    : NSObject <NSURLConnectionDataDelegate, NSURLConnectionDelegate>
+@interface NSURLSessionDataHandler : NSObject <NSURLSessionDataDelegate>
 
 /**
  * Analyzes if the given URL identifies an original Cardboard viewer (or equivalent).

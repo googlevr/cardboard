@@ -68,7 +68,8 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     logical_device_ = *reinterpret_cast<VkDevice*>(config->logical_device);
     swapchain_ = *reinterpret_cast<VkSwapchainKHR*>(config->vk_swapchain);
     swapchain_image_count_ = GetSwapchainImagesCount(swapchain_);
-    current_render_pass_ = 0;
+    swapchain_images_.resize(swapchain_image_count_);
+    swapchain_views_.resize(swapchain_image_count_);
     current_image_width_ = 0;
     current_image_height_ = 0;
 
@@ -79,8 +80,9 @@ class VulkanDistortionRenderer : public DistortionRenderer {
 
   ~VulkanDistortionRenderer() {
     for (uint32_t i = 0; i < swapchain_image_count_; i++) {
-      CleanImageView(kLeft, i);
-      CleanImageView(kRight, i);
+      CleanTextureImageView(kLeft, i);
+      CleanTextureImageView(kRight, i);
+      vkDestroyImageView(logical_device_, swapchain_views_[i], nullptr);
     }
 
     vkDestroySampler(logical_device_, texture_sampler_, nullptr);
@@ -137,70 +139,32 @@ class VulkanDistortionRenderer : public DistortionRenderer {
       const CardboardEyeTextureDescription* right_eye) override {
     CardboardVulkanDistortionRendererTarget* render_target =
         reinterpret_cast<CardboardVulkanDistortionRendererTarget*>(target);
-    VkRenderPass render_pass =
-        *reinterpret_cast<VkRenderPass*>(render_target->vk_render_pass);
     VkCommandBuffer command_buffer =
         *reinterpret_cast<VkCommandBuffer*>(render_target->vk_command_buffer);
-    VkFramebuffer frame_buffer =
-        *reinterpret_cast<VkFramebuffer*>(render_target->vk_frame_buffer);
-    VkQueue queue = *reinterpret_cast<VkQueue*>(render_target->vk_queue);
-    VkFence fence = *reinterpret_cast<VkFence*>(render_target->vk_fence);
-    VkSemaphore semaphore =
-        *reinterpret_cast<VkSemaphore*>(render_target->vk_semaphore);
+    VkRenderPass render_pass =
+        *reinterpret_cast<VkRenderPass*>(render_target->vk_render_pass);
     uint32_t image_index = render_target->swapchain_image_index;
+
+    if (image_index >= swapchain_image_count_) {
+      CARDBOARD_LOGE(
+          "Input swapchain image index is above the swapchain length");
+      return;
+    }
 
     current_image_width_ = width;
     current_image_height_ = height;
-    if (render_pass != current_render_pass_) {
-      CleanPipeline(kLeft);
-      CleanPipeline(kRight);
 
+    if (render_pass != current_render_pass_) {
       current_render_pass_ = render_pass;
       CreateGraphicsPipeline(kLeft);
       CreateGraphicsPipeline(kRight);
     }
-
-    BeginRecordingCurrentRenderPass(command_buffer, frame_buffer);
 
     UpdateViewportAndScissor(kLeft, x, y);
     RenderDistortionMesh(left_eye, kLeft, command_buffer, image_index);
 
     UpdateViewportAndScissor(kRight, x, y);
     RenderDistortionMesh(right_eye, kRight, command_buffer, image_index);
-
-    vkCmdEndRenderPass(command_buffer);
-    CALL_VK(vkEndCommandBuffer(command_buffer));
-
-    vkResetFences(logical_device_, 1, &fence);
-
-    const VkPipelineStageFlags wait_stage_mask =
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    const VkSubmitInfo submit_info = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                                      .pNext = nullptr,
-                                      .waitSemaphoreCount = 1,
-                                      .pWaitSemaphores = &semaphore,
-                                      .pWaitDstStageMask = &wait_stage_mask,
-                                      .commandBufferCount = 1,
-                                      .pCommandBuffers = &command_buffer,
-                                      .signalSemaphoreCount = 0,
-                                      .pSignalSemaphores = nullptr};
-
-    VkPresentInfoKHR present_info = {
-        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        .waitSemaphoreCount = 0,
-        .pWaitSemaphores = nullptr,
-        .swapchainCount = 1,
-        .pSwapchains = &swapchain_,
-        .pImageIndices = &image_index,
-    };
-
-    CALL_VK(vkQueueSubmit(queue, 1, &submit_info, fence));
-    CALL_VK(vkWaitForFences(logical_device_, 1 /* fenceCount */, &fence,
-                            VK_TRUE, 100000000));
-
-    // TODO(b/209801806): Fix error message once the integration with Unity is
-    // finished.
-    CALL_VK(vkQueuePresentKHR(queue, &present_info));
   }
 
  private:
@@ -343,16 +307,14 @@ class VulkanDistortionRenderer : public DistortionRenderer {
 
   /**
    * Create the graphics pipeline for the given eye.
+   * It cleans the previous pipeline if it exists.
    *
    * @param eye CardboardEye input.
    *
    * @return VkPipeline the graphics pipeline output.
    */
   void CreateGraphicsPipeline(CardboardEye eye) {
-    // Skip creating pipelines since they are already created.
-    if (graphics_pipeline_[eye] != VK_NULL_HANDLE) {
-      return;
-    }
+    CleanPipeline(eye);
 
     VkShaderModule vertex_shader =
         LoadShader(distortion_vert, sizeof(distortion_vert));
@@ -512,7 +474,6 @@ class VulkanDistortionRenderer : public DistortionRenderer {
         .basePipelineHandle = VK_NULL_HANDLE,
         .basePipelineIndex = 0,
     };
-
     CALL_VK(vkCreateGraphicsPipelines(logical_device_, VK_NULL_HANDLE, 1,
                                       &pipeline_create_info, nullptr,
                                       &graphics_pipeline_[eye]));
@@ -584,10 +545,58 @@ class VulkanDistortionRenderer : public DistortionRenderer {
                  uniform_buffers_[eye], uniform_buffers_memory_[eye]);
   }
 
+  /**
+   * Create ImageView of given eye and index to the given image.
+   *
+   * @param image VkImage input.
+   * @return VkImageView wrapping given image.
+   */
+  VkImageView CreateImageView(VkImage image) {
+    const VkImageViewCreateInfo view_create_info = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .image = image,
+        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .format = VK_FORMAT_R8G8B8A8_SRGB,
+        .components =
+            {
+                .r = VK_COMPONENT_SWIZZLE_R,
+                .g = VK_COMPONENT_SWIZZLE_G,
+                .b = VK_COMPONENT_SWIZZLE_B,
+                .a = VK_COMPONENT_SWIZZLE_A,
+            },
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
+    };
+
+    VkImageView image_view;
+    CALL_VK(vkCreateImageView(logical_device_, &view_create_info,
+                              nullptr /* pAllocator */, &image_view));
+    return image_view;
+  }
+
+  void CreateSwapchainImageViews() {
+    CALL_VK(vkGetSwapchainImagesKHR(logical_device_, swapchain_,
+                                    &swapchain_image_count_,
+                                    swapchain_images_.data()));
+
+    for (size_t i = 0; i < swapchain_images_.size(); i++) {
+      swapchain_views_[i] = CreateImageView(swapchain_images_[i]);
+    }
+  }
+
   void CreateSharedVulkanObjects() {
     CreateDescriptorSetLayout();
     CreatePipelineLayout();
     CreateTextureSampler();
+    CreateSwapchainImageViews();
   }
 
   void CreatePerEyeVulkanObjects(CardboardEye eye) {
@@ -619,7 +628,7 @@ class VulkanDistortionRenderer : public DistortionRenderer {
    * @param eye CardboardEye input.
    * @param index The index of the image in the swapchain.
    */
-  void CleanImageView(CardboardEye eye, int index) {
+  void CleanTextureImageView(CardboardEye eye, int index) {
     if (image_views_[eye][index] != VK_NULL_HANDLE) {
       vkDestroyImageView(logical_device_, image_views_[eye][index],
                          nullptr /* vkDestroyImageView */);
@@ -639,39 +648,6 @@ class VulkanDistortionRenderer : public DistortionRenderer {
                                     &swapchain_image_count,
                                     nullptr /* pSwapchainImages */));
     return swapchain_image_count;
-  }
-
-  /**
-   * Bind the Begin Render Pass command to the given command buffer.
-   *
-   * @param command_buffer VkCommandBuffer to be bond.
-   * @param frame_buffer VkFramebuffer as the input of VkRenderPassBeginInfo.
-   */
-  void BeginRecordingCurrentRenderPass(VkCommandBuffer command_buffer,
-                                       VkFramebuffer frame_buffer) {
-    // Now we start a renderpass. Any draw command has to be recorded in a
-    // renderpass
-    const VkClearValue clear_vals{
-        .color = {.float32 = {0.0f, 0.0f, 0.0f, 1.0f}}};
-    const VkRenderPassBeginInfo render_pass_begin_info{
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .pNext = nullptr,
-        .renderPass = current_render_pass_,
-        .framebuffer = frame_buffer,
-        .renderArea = {.offset =
-                           {
-                               .x = 0,
-                               .y = 0,
-                           },
-                       .extent =
-                           {
-                               .width = current_image_width_,
-                               .height = current_image_height_,
-                           }},
-        .clearValueCount = 1,
-        .pClearValues = &clear_vals};
-    vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
-                         VK_SUBPASS_CONTENTS_INLINE);
   }
 
   /**
@@ -720,17 +696,18 @@ class VulkanDistortionRenderer : public DistortionRenderer {
    */
   void UpdateViewportAndScissor(CardboardEye eye, int x, int y) {
     if (eye == kLeft) {
-      viewport_[kLeft].x = x;
       scissor_[kLeft].offset = {.x = x, .y = y};
     } else {
-      viewport_[kRight].x = x + current_image_width_ / 2;
       scissor_[kRight].offset = {
           .x = static_cast<int32_t>(x + current_image_width_ / 2), .y = y};
     }
 
-    viewport_[eye].x = y;
+    viewport_[eye].x = x;
+    viewport_[eye].y = y;
     viewport_[eye].width = current_image_width_;
     viewport_[eye].height = current_image_height_;
+    viewport_[eye].minDepth = 0.0;
+    viewport_[eye].maxDepth = 1.0;
     scissor_[eye].extent = {
         .width = static_cast<uint32_t>(current_image_width_ / 2),
         .height = static_cast<uint32_t>(current_image_height_)};
@@ -771,45 +748,6 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     vkUpdateDescriptorSets(logical_device_, 2, descriptor_writes, 0, nullptr);
   }
 
-  /**
-   * Recreate ImageView of given eye and index to the given image.
-   *
-   * @param image VkImage input.
-   * @param eye CardboardEye input.
-   * @param index The index of the image in the swapchain.
-   */
-  void RecreateImageView(VkImage image, CardboardEye eye, int index) {
-    CleanImageView(eye, index);
-
-    const VkImageViewCreateInfo view_create_info = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .image = image,
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .format = VK_FORMAT_R8G8B8A8_SRGB,
-        .components =
-            {
-                .r = VK_COMPONENT_SWIZZLE_R,
-                .g = VK_COMPONENT_SWIZZLE_G,
-                .b = VK_COMPONENT_SWIZZLE_B,
-                .a = VK_COMPONENT_SWIZZLE_A,
-            },
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-    };
-
-    CALL_VK(vkCreateImageView(logical_device_, &view_create_info,
-                              nullptr /* pAllocator */,
-                              &image_views_[eye][index]));
-  }
-
   void RenderDistortionMesh(
       const CardboardEyeTextureDescription* eye_description, CardboardEye eye,
       VkCommandBuffer command_buffer, uint32_t image_index) {
@@ -821,9 +759,9 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     };
     UpdateUniformBuffer(eye, ubo);
 
-    VkImage current_image =
-        *reinterpret_cast<VkImage*>(eye_description->texture);
-    RecreateImageView(current_image, eye, image_index);
+    VkImage current_image = reinterpret_cast<VkImage>(eye_description->texture);
+    CleanTextureImageView(eye, image_index);
+    image_views_[eye][image_index] = CreateImageView(current_image);
     UpdateDescriptorSets(eye, image_index);
     BindCommandBuffer(eye, command_buffer, image_index, indices_count_);
   }
@@ -831,8 +769,8 @@ class VulkanDistortionRenderer : public DistortionRenderer {
   // Variables created externally.
   VkPhysicalDevice physical_device_;
   VkDevice logical_device_;
-  VkRenderPass current_render_pass_;
   VkSwapchainKHR swapchain_;
+  VkRenderPass current_render_pass_;
   uint32_t current_image_width_;
   uint32_t current_image_height_;
   int indices_count_;
@@ -842,6 +780,8 @@ class VulkanDistortionRenderer : public DistortionRenderer {
   VkSampler texture_sampler_;
   VkDescriptorSetLayout descriptor_set_layout_;
   VkPipelineLayout pipeline_layout_;
+  std::vector<VkImage> swapchain_images_;
+  std::vector<VkImageView> swapchain_views_;
   VkViewport viewport_[2];
   VkRect2D scissor_[2];
   VkPipeline graphics_pipeline_[2] = {VK_NULL_HANDLE, VK_NULL_HANDLE};

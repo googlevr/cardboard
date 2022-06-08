@@ -106,6 +106,15 @@ class CardboardDisplayProvider {
         handle, &gfx_thread_provider);
 
     UnityXRDisplayProvider provider{NULL, NULL, NULL};
+    // Note: Setting focusLost to true is a workaround for
+    // <a href=https://fogbugz.unity3d.com/default.asp?1427493_c43j6si13dh08epg>Issue #1427493</a>
+    // in Unity.
+    provider.UpdateDisplayState =
+        [](UnitySubsystemHandle, void*,
+           UnityXRDisplayState* state) -> UnitySubsystemErrorCode {
+      state->focusLost = true;
+      return kUnitySubsystemErrorCodeSuccess;
+    };
     GetInstance()->GetDisplay()->RegisterProvider(handle, &provider);
 
     return kUnitySubsystemErrorCodeSuccess;

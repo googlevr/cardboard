@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "qrcode/cardboard_v1/cardboard_v1.h"
-#import "qrcode/ios/nsurl_connection_data_handler.h"
+#import "qrcode/ios/nsurl_session_data_handler.h"
 
 // The value is an array with the creation time and the device params data.
 static NSString *const kCardboardDeviceParamsAndTimeKey =
@@ -32,9 +32,9 @@ static NSString *const kCardboardDeviceParamsAndTimeKey =
     return nil;
   }
 
-  if ([CardboardNSURLConnectionDataHandler isOriginalCardboardDeviceUrl:url]) {
+  if ([NSURLSessionDataHandler isOriginalCardboardDeviceUrl:url]) {
     return [CardboardDeviceParamsHelper createCardboardV1Params];
-  } else if ([CardboardNSURLConnectionDataHandler isCardboardDeviceUrl:url]) {
+  } else if ([NSURLSessionDataHandler isCardboardDeviceUrl:url]) {
     return [CardboardDeviceParamsHelper readDeviceParamsFromUrl:url];
   }
 
@@ -51,18 +51,20 @@ static NSString *const kCardboardDeviceParamsAndTimeKey =
   // Save bandwidth, just read the header.
   [request setHTTPMethod:@"HEAD"];
 
-  CardboardNSURLConnectionDataHandler *dataHandler = [[CardboardNSURLConnectionDataHandler alloc]
-      initWithOnUrlCompletion:^(NSURL *targetUrl, NSError *error) {
+  NSURLSessionDataHandler *dataHandler =
+      [[NSURLSessionDataHandler alloc] initWithOnUrlCompletion:^(NSURL *targetUrl, NSError *error) {
         if (!targetUrl) {
-            NSLog(@"failed to result the url = %@", url);
+          NSLog(@"failed to result the url = %@", url);
         }
         completion([CardboardDeviceParamsHelper parseURL:targetUrl], error);
       }];
-  // TODO(b/185123397): NSURLConnection is deprecated. This should be changed to use NSURLSession
-  // instead.
-  NSURLConnection *connection = [NSURLConnection connectionWithRequest:request
-                                                              delegate:dataHandler];
-  [connection start];
+
+  NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+  NSURLSession *session = [NSURLSession sessionWithConfiguration:config
+                                                        delegate:dataHandler
+                                                   delegateQueue:[NSOperationQueue mainQueue]];
+  NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request];
+  [dataTask resume];
 }
 
 + (void)resolveAndUpdateViewerProfileFromURL:(NSURL *)url

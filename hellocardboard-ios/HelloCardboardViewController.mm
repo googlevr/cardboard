@@ -24,7 +24,9 @@
   CardboardLensDistortion *_cardboardLensDistortion;
   CardboardHeadTracker *_cardboardHeadTracker;
   std::unique_ptr<cardboard::hello_cardboard::HelloCardboardRenderer> _renderer;
-  BOOL _updateParams;
+
+  // This counter keeps track of the successful device parameters save operations count.
+  int _deviceParamsChangedCount;
 }
 @end
 
@@ -70,7 +72,9 @@
   // Create cardboard head tracker.
   _cardboardHeadTracker = CardboardHeadTracker_create();
   _cardboardLensDistortion = nil;
-  _updateParams = YES;
+
+  // Set the counter to -1 to force a device params update.
+  _deviceParamsChangedCount = -1;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -91,10 +95,8 @@
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-  if (_updateParams) {
-    if (![self updateCardboardParams]) {
-      return;
-    }
+  if (![self updateDeviceParams]) {
+    return;
   }
 
   _renderer->DrawFrame();
@@ -104,7 +106,16 @@
   // Perform GL state update before drawing.
 }
 
-- (BOOL)updateCardboardParams {
+- (BOOL)deviceParamsChanged {
+  return _deviceParamsChangedCount != CardboardQrCode_getDeviceParamsChangedCount();
+}
+
+- (BOOL)updateDeviceParams {
+  // Check if device parameters have changed.
+  if (![self deviceParamsChanged]) {
+    return YES;
+  }
+
   uint8_t *encodedDeviceParams;
   int size;
   CardboardQrCode_getSavedDeviceParams(&encodedDeviceParams, &size);
@@ -138,7 +149,8 @@
 
   CardboardQrCode_destroy(encodedDeviceParams);
 
-  _updateParams = NO;
+  _deviceParamsChangedCount = CardboardQrCode_getDeviceParamsChangedCount();
+
   return YES;
 }
 
@@ -148,9 +160,6 @@
 }
 
 - (void)resumeCardboard {
-  // Parameters may have changed.
-  _updateParams = YES;
-
   // Check for device parameters existence in app storage. If they're missing,
   // we must scan a Cardboard QR code and save the obtained parameters.
   uint8_t *buffer;

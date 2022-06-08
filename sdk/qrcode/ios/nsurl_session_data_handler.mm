@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#import "qrcode/ios/nsurl_connection_data_handler.h"
+#import "qrcode/ios/nsurl_session_data_handler.h"
 
 static NSString *const kCardboardDeviceParamsUrlPrefix = @"https://google.com/cardboard/cfg";
 static NSString *const kOriginalCardboardDeviceParamsUrl = @"https://g.co/cardboard";
 
-@implementation CardboardNSURLConnectionDataHandler {
+@implementation NSURLSessionDataHandler {
   OnUrlCompletion _completion;
   BOOL _success;
 }
@@ -38,8 +38,8 @@ static NSString *const kOriginalCardboardDeviceParamsUrl = @"https://g.co/cardbo
  * @return true if the given URL identifies a Cardboard viewer.
  */
 + (BOOL)isCardboardUrl:(NSURL *)url {
-  return [CardboardNSURLConnectionDataHandler isOriginalCardboardDeviceUrl:url] ||
-         [CardboardNSURLConnectionDataHandler isCardboardDeviceUrl:url];
+  return [NSURLSessionDataHandler isOriginalCardboardDeviceUrl:url] ||
+         [NSURLSessionDataHandler isCardboardDeviceUrl:url];
 }
 
 - (instancetype)initWithOnUrlCompletion:(OnUrlCompletion)completion {
@@ -51,9 +51,11 @@ static NSString *const kOriginalCardboardDeviceParamsUrl = @"https://g.co/cardbo
   return self;
 }
 
-- (NSURLRequest *)connection:(NSURLConnection *)connection
-             willSendRequest:(NSURLRequest *)request
-            redirectResponse:(NSURLResponse *)response {
+- (void)URLSession:(NSURLSession *)session
+                          task:(NSURLSessionTask *)task
+    willPerformHTTPRedirection:(NSHTTPURLResponse *)response
+                    newRequest:(NSURLRequest *)request
+             completionHandler:(void (^)(NSURLRequest *))completionHandler {
   if (request.URL) {
     NSURL *secureUrl = request.URL;
 
@@ -65,24 +67,43 @@ static NSString *const kOriginalCardboardDeviceParamsUrl = @"https://g.co/cardbo
       secureUrl = [components URL];
     }
 
-    if ([CardboardNSURLConnectionDataHandler isCardboardUrl:secureUrl]) {
+    if ([NSURLSessionDataHandler isCardboardUrl:secureUrl]) {
       _success = YES;
       _completion(secureUrl, nil);
-      return nil;
     }
   }
-  return request;
-}
 
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-  if (!_success) {
-    _completion(nil, nil);
+  if (_success) {
+    completionHandler(nil);
+  } else {
+    completionHandler(request);
   }
 }
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-  _success = NO;
-  _completion(nil, error);
+- (void)URLSession:(NSURLSession *)session
+              dataTask:(NSURLSessionDataTask *)dataTask
+    didReceiveResponse:(NSURLResponse *)response
+     completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {
+  completionHandler(NSURLSessionResponseAllow);
+}
+
+- (void)URLSession:(NSURLSession *)session
+                   task:(NSURLSessionTask *)task
+    didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
+      completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                  NSURLCredential *_Nullable))completionHandler {
+  completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+}
+
+- (void)URLSession:(NSURLSession *)session
+                    task:(NSURLSessionTask *)task
+    didCompleteWithError:(NSError *)error {
+  if (error) {
+    _success = NO;
+    _completion(nil, error);
+  } else if (!_success) {
+    _completion(nil, nil);
+  }
 }
 
 @end
