@@ -16,10 +16,10 @@
 package com.google.cardboard.sdk.screenparams;
 
 import android.content.Context;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
+import androidx.annotation.ChecksSdkIntAtLeast;
 
 /** Utility methods to manage the screen parameters. */
 public abstract class ScreenParamsUtils {
@@ -52,20 +52,35 @@ public abstract class ScreenParamsUtils {
   /**
    * Gets the screen pixel density.
    *
-   * @param context The application context. When the {@code VERSION.SDK_INT} is less or equal
-   *     to {@code VERSION_CODES.Q}, @p context will be used to retrieve a {@code WindowManager}.
+   * <p>Deprecation warnings are suppressed on this method given that {@code Display.getMetrics()}
+   * and {@code WindowManager.getDefaultDisplay()} are currently marked as deprecated but
+   * intentionally used in order to support a wider number of Android versions.
+   *
+   * @param context The application context. When the {@code VERSION.SDK_INT} is less or equal to
+   *     {@code VERSION_CODES.Q}, @p context will be used to retrieve a {@code WindowManager}.
    *     Otherwise, {@code Context} interface will be used.
    * @return A ScreenPixelDensity.
    */
+  @SuppressWarnings("deprecation")
   public static ScreenPixelDensity getScreenPixelDensity(Context context) {
     DisplayMetrics displayMetrics = new DisplayMetrics();
-    if (VERSION.SDK_INT <= VERSION_CODES.Q) {
+    if (isAtLeastR()) {
+      context.getDisplay().getMetrics(displayMetrics);
+    } else {
       ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
           .getDefaultDisplay()
           .getMetrics(displayMetrics);
-    } else {
-      context.getDisplay().getMetrics(displayMetrics);
     }
     return new ScreenPixelDensity(displayMetrics.xdpi, displayMetrics.ydpi);
+  }
+
+  /**
+   * Checks whether the current Android version is R or greater.
+   *
+   * @return true if the current Android version is R or greater, false otherwise.
+   */
+  @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.R)
+  private static boolean isAtLeastR() {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R;
   }
 }

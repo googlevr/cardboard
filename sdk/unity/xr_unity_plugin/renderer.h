@@ -119,6 +119,14 @@ class Renderer {
       const CardboardEyeTextureDescription* left_eye,
       const CardboardEyeTextureDescription* right_eye) = 0;
 
+  /// @brief Runs commands needed before rendering.
+  ///
+  /// @param[in] screen_params The screen and rendering area details.
+  virtual void RunRenderingPreProcessing(const ScreenParams& screen_params) = 0;
+
+  /// @brief Runs commands needed after rendering.
+  virtual void RunRenderingPostProcessing() = 0;
+
  protected:
   // Constructs a Renderer.
   //
@@ -152,6 +160,23 @@ std::unique_ptr<Renderer> MakeMetalRenderer(IUnityInterfaces* xr_interfaces);
 /// @return A pointer to a Metal based Cardboard Distortion Renderer
 ///     implementation.
 CardboardDistortionRenderer* MakeCardboardMetalDistortionRenderer(
+    IUnityInterfaces* xr_interfaces);
+#endif
+#if defined(__ANDROID__)
+/// Constructs a Renderer implementation for Vulkan.
+///
+/// @param xr_interfaces Pointer to Unity XR interface provider to obtain the
+///        Vulkan context.
+/// @return A pointer to a Vulkan based Renderer implementation.
+std::unique_ptr<Renderer> MakeVulkanRenderer(IUnityInterfaces* xr_interfaces);
+
+/// Constructs a Cardboard Distortion Renderer implementation for Vulkan.
+///
+/// @param xr_interfaces Pointer to Unity XR interface provider to obtain the
+///     Vulkan context.
+/// @return A pointer to a Vulkan based Cardboard Distortion Renderer
+///     implementation.
+CardboardDistortionRenderer* MakeCardboardVulkanDistortionRenderer(
     IUnityInterfaces* xr_interfaces);
 #endif
 

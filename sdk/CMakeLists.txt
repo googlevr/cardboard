@@ -59,7 +59,10 @@ file(GLOB rendering_vulkan_wrapper_srcs "rendering/android/vulkan/*.cc")
 file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")
 
 # === Cardboard Unity Wrapper ===
-file(GLOB cardboard_xr_unity_srcs "unity/xr_unity_plugin/*.cc")
+file(GLOB cardboard_xr_unity_srcs
+  "unity/xr_unity_plugin/*.cc"
+  "unity/xr_unity_plugin/vulkan/*.cc"
+)
 
 # === Cardboard XR Provider for Unity ===
 file(GLOB cardboard_xr_provider_srcs "unity/xr_provider/*.cc")

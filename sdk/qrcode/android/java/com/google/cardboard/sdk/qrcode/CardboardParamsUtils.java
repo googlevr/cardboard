@@ -17,11 +17,11 @@ package com.google.cardboard.sdk.qrcode;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
+import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.Nullable;
 import com.google.cardboard.sdk.deviceparams.CardboardV1DeviceParams;
 import java.io.File;
@@ -35,7 +35,6 @@ import java.nio.ByteBuffer;
 
 /** Utility methods for managing configuration parameters. */
 public abstract class CardboardParamsUtils {
-
   private static final String TAG = CardboardParamsUtils.class.getSimpleName();
 
   /** URL key used to encode Cardboard device parameters. */
@@ -68,13 +67,20 @@ public abstract class CardboardParamsUtils {
   /** Flags to encode and decode in Base64 device parameters in the Uri. */
   private static final int URI_CODING_PARAMS = Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING;
 
+  /** URI of original cardboard QR code. */
+  private static final Uri URI_ORIGINAL_CARDBOARD_QR_CODE =
+      new Uri.Builder()
+          .scheme(HTTPS_SCHEME)
+          .authority(URI_HOST_GOOGLE_SHORT)
+          .appendEncodedPath(URI_PATH_CARDBOARD_HOME)
+          .build();
+
   private static final int MAX_REDIRECTS = 5;
   private static final String HTTP_SCHEME_PREFIX = "http://";
   private static final String HTTPS_SCHEME_PREFIX = "https://";
   private static final int HTTPS_TIMEOUT_MS = 5 * 1000;
 
   /** Enum to determine which storage source to use. */
-  // TODO(b/167382867): Make it private and modify tests.
   private enum StorageSource {
     SCOPED_STORAGE,
     EXTERNAL_STORAGE
@@ -104,40 +110,40 @@ public abstract class CardboardParamsUtils {
     }
   }
 
-  /** URI of original cardboard QR code. */
-  private static final Uri URI_ORIGINAL_CARDBOARD_QR_CODE =
-      new Uri.Builder()
-          .scheme(HTTPS_SCHEME)
-          .authority(URI_HOST_GOOGLE_SHORT)
-          .appendEncodedPath(URI_PATH_CARDBOARD_HOME)
-          .build();
-
   /**
-   * Writes the Cardboard device parameters from a Uri received as a byte array.
+   * Obtains the Cardboard device parameters from a Uri string and saves them.
    *
-   * <p>Obtains the physical parameters of a Cardboard headset from the Uri (as bytes) by calling
-   * {@code getParamsFromUriString}. Then writes the device parameters to a predefined storage
-   * location by calling {@code writeDeviceParams()}.
+   * <p>Obtains the Cardboard device parameters from a Uri string (passed as a bytes array) and
+   * saves them into a predefined storage location.
    *
-   * @param uriAsBytes A bytes buffer with the URI to read the parameters from.
-   * @param context The current Context. It is generally an Activity instance or wraps one or an
-   *     Application. It is used to write to storage.
+   * @param uriAsBytes URI string (as a bytes array) used to get the device parameters.
+   * @param context The current Context. It is or wraps an Activity or an Application instance.
    */
   public static void saveParamsFromUri(byte[] uriAsBytes, Context context) {
     String uriAsString = new String(uriAsBytes);
     UriToParamsStatus uriToParamsStatus = getParamsFromUriString(uriAsString, new UrlFactory());
-    // If getParamsFromUri() does not return an OK status don't write the device params.
     if (uriToParamsStatus.statusCode != UriToParamsStatus.STATUS_OK) {
-      Log.e(TAG, "Error when trying to get the Cardboard params from URI: " + uriAsString);
+      Log.e(TAG, "Error when trying to get the Cardboard device params from URI: " + uriAsString);
       return;
     }
 
     boolean status = writeDeviceParams(uriToParamsStatus.params, context);
-    Log.d(TAG, "Could " + (!status ? "not " : "") + "write Cardboard parameters to storage.");
+    Log.d(TAG, "Could " + (!status ? "not " : "") + "save Cardboard device parameters.");
   }
 
   /**
-   * Attempts to convert an URI received as a string into device parameters.
+   * Saves the Cardboard V1 device parameters into a predefined storage location.
+   *
+   * @param context The current Context. It is or wraps an Activity or an Application instance.
+   */
+  public static void saveCardboardV1DeviceParams(Context context) {
+    byte[] deviceParams = CardboardV1DeviceParams.build().toByteArray();
+    boolean status = writeDeviceParams(deviceParams, context);
+    Log.d(TAG, "Could " + (!status ? "not " : "") + "save Cardboard V1 device parameters.");
+  }
+
+  /**
+   * Obtains the Cardboard device parameters from a URI string.
    *
    * <p>Analyses the URI obtained from a string in order to get the device parameters. If the
    * obtained string matches a Cardboard V1 string format, the parameters are taken directly from
@@ -146,9 +152,9 @@ public abstract class CardboardParamsUtils {
    * connections. In case a URI containing an HTTP scheme is provided, it will be replaced by an
    * HTTPS one.
    *
-   * @param uriAsString String with the URI to read the parameters from.
+   * @param uriAsString URI string used to get the device parameters.
    * @param urlFactory Factory for creating URL instance for HTTPS connection.
-   * @return Cardboard device parameters, or null if there is an error.
+   * @return A UriToParamsStatus instance containing the obtained result.
    */
   public static UriToParamsStatus getParamsFromUriString(
       String uriAsString, UrlFactory urlFactory) {
@@ -189,12 +195,71 @@ public abstract class CardboardParamsUtils {
   }
 
   /**
+   * Reads the device parameters from a predefined storage location by forwarding a call to {@code
+   * readDeviceParamsFromStorage()}.
+   *
+   * <p>Based on the API level, different behaviours are expected. When the API level is below
+   * Android Q´s API level external storage is used. When the API level is exactly the same as
+   * Android Q's API level, a migration from external storage to scoped storage is performed. When
+   * there are device parameters in both in external and scoped storage, scoped storage is prefered.
+   * When the API level is greater than Android Q's API level scoped storage is used.
+   *
+   * @param context The current Context. It is or wraps an Activity or an Application instance.
+   * @return A byte array with proto encoded device parameters.
+   */
+  public static byte[] readDeviceParams(Context context) {
+    if (!isAtLeastQ()) {
+      Log.d(TAG, "Reading device parameters from external storage.");
+      return readDeviceParamsFromStorage(StorageSource.EXTERNAL_STORAGE, context);
+    }
+
+    Log.d(TAG, "Reading device parameters from both scoped and external storage.");
+    byte[] externalDeviceParams =
+        readDeviceParamsFromStorage(StorageSource.EXTERNAL_STORAGE, context);
+    byte[] internalDeviceParams =
+        readDeviceParamsFromStorage(StorageSource.SCOPED_STORAGE, context);
+
+    // There are device parameters only in external storage --> a copy to internal storage is done.
+    if (externalDeviceParams != null && internalDeviceParams == null) {
+      Log.d(TAG, "About to copy external device parameters to scoped storage.");
+      if (!writeDeviceParamsToStorage(
+          externalDeviceParams, StorageSource.SCOPED_STORAGE, context)) {
+        Log.e(TAG, "Error writing device parameters to scoped storage.");
+      }
+      return externalDeviceParams;
+    }
+    return internalDeviceParams;
+  }
+
+  /**
+   * Writes the device parameters to a predefined storage location by forwarding a call to {@code
+   * writeDeviceParamsToStorage()}.
+   *
+   * <p>Based on the API level, different behaviours are expected. When the API level is below
+   * Android Q´s API level external storage is used. Otherwise, scoped storage is used.
+   *
+   * @param context The current Context. It is or wraps an Activity or an Application instance.
+   * @return true when the write operation is successful.
+   */
+  public static boolean writeDeviceParams(byte[] deviceParams, Context context) {
+    StorageSource storageSource;
+    if (isAtLeastQ()) {
+      storageSource = StorageSource.SCOPED_STORAGE;
+      Log.d(TAG, "Writing device parameters to scoped storage.");
+    } else {
+      storageSource = StorageSource.EXTERNAL_STORAGE;
+      Log.d(TAG, "Writing device parameters to external storage.");
+    }
+    return writeDeviceParamsToStorage(deviceParams, storageSource, context);
+  }
+
+  /**
    * Obtains the physical parameters of a Cardboard headset from a Uri (as bytes).
    *
    * @param uri Uri to read the parameters from.
    * @return A bytes buffer with the Cardboard headset parameters or null in case of error.
    */
-  public static byte[] createFromUri(Uri uri) {
+  private static byte[] createFromUri(Uri uri) {
     if (uri == null) {
       return null;
     }
@@ -218,7 +283,7 @@ public abstract class CardboardParamsUtils {
    * @param uri Uri to analyze.
    * @return true if the given URI identifies a Cardboard viewer.
    */
-  public static boolean isCardboardUri(Uri uri) {
+  private static boolean isCardboardUri(Uri uri) {
     return isOriginalCardboardDeviceUri(uri) || isCardboardDeviceUri(uri);
   }
 
@@ -268,39 +333,6 @@ public abstract class CardboardParamsUtils {
   }
 
   /**
-   * Returns a file in the Cardboard configuration folder of the device.
-   *
-   * <p>This method creates a folder named {@link #CARDBOARD_CONFIG_FOLDER} in either the scoped
-   * storage of the application or the SD card if not already present depending on the value of @p
-   * useScopedStorage.
-   *
-   * @param storageSource When {@code StorageSource.SCOPED_STORAGE}, the path is in the scoped
-   *     storage. Otherwise, the SD card is used.
-   * @param context The current Context. It is generally an Activity instance or wraps one, or an
-   *     Application. It is used to write to scoped storage when @p storageSource is {@code
-   *     StorageSource.SCOPED_STORAGE} via {@code Context.getFilesDir()}.
-   * @return The file object of the desired file. Note that the file might not exist.
-   * @throws IllegalStateException If the configuration folder path exists but it's not a folder.
-   */
-  private static File getDeviceParamsFile(StorageSource storageSource, Context context) {
-    File configFolder =
-        new File(
-            storageSource == StorageSource.SCOPED_STORAGE
-                ? context.getFilesDir()
-                : Environment.getExternalStorageDirectory(),
-            CARDBOARD_CONFIG_FOLDER);
-
-    if (!configFolder.exists()) {
-      configFolder.mkdirs();
-    } else if (!configFolder.isDirectory()) {
-      throw new IllegalStateException(
-          configFolder + " already exists as a file, but is expected to be a directory.");
-    }
-
-    return new File(configFolder, CARDBOARD_DEVICE_PARAMS_FILE);
-  }
-
-  /**
    * Reads the device parameters from a predefined storage location.
    *
    * @param storageSource When {@code StorageSource.SCOPED_STORAGE}, the path is in the scoped
@@ -310,9 +342,7 @@ public abstract class CardboardParamsUtils {
    *     StorageSource.SCOPED_STORAGE} via {@code Context.getFilesDir()}.
    * @return The stored params. Null if the params do not exist or the read fails.
    */
-  // TODO(b/167382867): Make it private and modify tests.
-  private static byte[] readDeviceParamsFromStorage(
-      StorageSource storageSource, Context context) {
+  private static byte[] readDeviceParamsFromStorage(StorageSource storageSource, Context context) {
     byte[] paramBytes = null;
 
     try {
@@ -375,43 +405,6 @@ public abstract class CardboardParamsUtils {
   }
 
   /**
-   * Reads the device parameters from a predefined storage location by forwarding a call to {@code
-   * readDeviceParamsFromStorage()}.
-   *
-   * <p>Based on the API level, different behaviours are expected. When the API level is below
-   * Android Q´s API level external storage is used. When the API level is exactly the same as
-   * Android Q's API level, a migration from external storage to scoped storage is performed. When
-   * there are device parameters in both in external and scoped storage, scoped storage is prefered.
-   * When the API level is greater than Android Q's API level scoped storage is used.
-   *
-   * @param context The current Context. It is generally an Activity instance or wraps one, or an
-   *     Application. It is used to read from scoped storage when {@code VERSION.SDK_INT >=
-   *     VERSION_CODES.Q} via {@code Context.getFilesDir()}.
-   * @return A byte array with proto encoded device params.
-   */
-  public static byte[] readDeviceParams(Context context) {
-    if (VERSION.SDK_INT < VERSION_CODES.Q) {
-      Log.d(TAG, "Reading device parameters from external storage.");
-      return readDeviceParamsFromStorage(StorageSource.EXTERNAL_STORAGE, context);
-    }
-    Log.d(TAG, "Reading device parameters from both scoped and external storage.");
-    byte[] externalDeviceParams =
-        readDeviceParamsFromStorage(StorageSource.EXTERNAL_STORAGE, context);
-    byte[] internalDeviceParams =
-        readDeviceParamsFromStorage(StorageSource.SCOPED_STORAGE, context);
-    // There are device parameters only in external storage --> a copy to internal storage is done.
-    if (externalDeviceParams != null && internalDeviceParams == null) {
-      Log.d(TAG, "About to copy external device parameters to scoped storage.");
-      if (!writeDeviceParamsToStorage(
-          externalDeviceParams, StorageSource.SCOPED_STORAGE, context)) {
-        Log.e(TAG, "Error writing device parameters to scoped storage.");
-      }
-      return externalDeviceParams;
-    }
-    return internalDeviceParams;
-  }
-
-  /**
    * Writes device parameters to external storage.
    *
    * @param paramBytes The parameters to be written.
@@ -422,7 +415,6 @@ public abstract class CardboardParamsUtils {
    *     VERSION_CODES.Q} via {@code Context.getFilesDir()}.
    * @return whether the parameters were successfully written.
    */
-  // TODO(b/167382867): Make it private and modify tests.
   private static boolean writeDeviceParamsToStorage(
       byte[] paramBytes, StorageSource storageSource, Context context) {
     boolean success = false;
@@ -471,55 +463,41 @@ public abstract class CardboardParamsUtils {
   }
 
   /**
-   * Writes the device parameters to a predefined storage location by forwarding a call to {@code
-   * writeDeviceParamsToStorage()}.
+   * Returns a file in the Cardboard configuration folder of the device.
    *
-   * <p>Based on the API level, different behaviours are expected. When the API level is below
-   * Android Q´s API level external storage is used. Otherwise, scoped storage is used.
+   * <p>This method creates a folder named {@link #CARDBOARD_CONFIG_FOLDER} in either the scoped
+   * storage of the application or the SD card if not already present depending on the value of @p
+   * useScopedStorage.
    *
-   * @param context The current Context. It is generally an Activity instance or wraps one or an
-   *     Application. It is used to write to scoped storage when {@code VERSION.SDK_INT >=
-   *     VERSION_CODES.Q} via {@code Context.getFilesDir()}.
-   * @return true when the write operation is successful.
-   */
-  public static boolean writeDeviceParams(byte[] deviceParams, Context context) {
-    StorageSource storageSource =
-        VERSION.SDK_INT < VERSION_CODES.Q
-            ? StorageSource.EXTERNAL_STORAGE
-            : StorageSource.SCOPED_STORAGE;
-    if (storageSource == StorageSource.SCOPED_STORAGE) {
-      Log.d(TAG, "Writing device parameters to scoped storage.");
-    } else {
-      Log.d(TAG, "Writing device parameters to external storage.");
-    }
-    return writeDeviceParamsToStorage(deviceParams, storageSource, context);
-  }
-
-  /**
-   * Writes the Cardboard V1 device parameters to a predefined storage location by forwarding a call
-   * to {@code saveCardboardV1DeviceParams()}.
+   * <p>Deprecation warnings are suppressed on this method given that {@code
+   * Environment.getExternalStorageDirectory()} is currently marked as deprecated but intentionally
+   * used in order to ease the storage migration process.
    *
-   * <p>Based on the API level, different behaviours are expected. When the API level is below
-   * Android Q´s API level external storage is used. Otherwise, scoped storage is used.
-   *
+   * @param storageSource When {@code StorageSource.SCOPED_STORAGE}, the path is in the scoped
+   *     storage. Otherwise, the SD card is used.
    * @param context The current Context. It is generally an Activity instance or wraps one, or an
-   *     Application. It is used to write to scoped storage when {@code VERSION.SDK_INT >=
-   *     VERSION_CODES.Q} via {@code Context.getFilesDir()}.
+   *     Application. It is used to write to scoped storage when @p storageSource is {@code
+   *     StorageSource.SCOPED_STORAGE} via {@code Context.getFilesDir()}.
+   * @return The file object of the desired file. Note that the file might not exist.
+   * @throws IllegalStateException If the configuration folder path exists but it's not a folder.
    */
-  public static void saveCardboardV1DeviceParams(Context context) {
-    StorageSource storageSource =
-        VERSION.SDK_INT < VERSION_CODES.Q
-            ? StorageSource.EXTERNAL_STORAGE
-            : StorageSource.SCOPED_STORAGE;
-    if (storageSource == StorageSource.SCOPED_STORAGE) {
-      Log.d(TAG, "Writing device V1 parameters to scoped storage.");
-    } else {
-      Log.d(TAG, "Writing device V1 parameters to external storage.");
+  @SuppressWarnings("deprecation")
+  private static File getDeviceParamsFile(StorageSource storageSource, Context context) {
+    File configFolder =
+        new File(
+            storageSource == StorageSource.SCOPED_STORAGE
+                ? context.getFilesDir()
+                : Environment.getExternalStorageDirectory(),
+            CARDBOARD_CONFIG_FOLDER);
+
+    if (!configFolder.exists()) {
+      configFolder.mkdirs();
+    } else if (!configFolder.isDirectory()) {
+      throw new IllegalStateException(
+          configFolder + " already exists as a file, but is expected to be a directory.");
     }
-    byte[] deviceParams = CardboardV1DeviceParams.build().toByteArray();
-    if (!writeDeviceParamsToStorage(deviceParams, storageSource, context)) {
-      Log.e(TAG, "Could not write Cardboard parameters to storage.");
-    }
+
+    return new File(configFolder, CARDBOARD_DEVICE_PARAMS_FILE);
   }
 
   /**
@@ -602,5 +580,15 @@ public abstract class CardboardParamsUtils {
       connection.disconnect();
     }
     return uri;
+  }
+
+  /**
+   * Checks whether the current Android version is Q or greater.
+   *
+   * @return true if the current Android version is Q or greater, false otherwise.
+   */
+  @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.Q)
+  private static boolean isAtLeastQ() {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
   }
 }

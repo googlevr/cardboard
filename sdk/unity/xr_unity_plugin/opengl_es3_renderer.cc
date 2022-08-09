@@ -235,6 +235,15 @@ class OpenGlEs3Renderer : public Renderer {
         screen_params.viewport_height, left_eye, right_eye);
   }
 
+  void RunRenderingPreProcessing(
+      const ScreenParams& /* screen_params */) override {
+    // Nothing to do.
+  }
+
+  void RunRenderingPostProcessing() override {
+    // Nothing to do.
+  }
+
  private:
   static constexpr float Lerp(float start, float end, float val) {
     return start + (end - start) * val;

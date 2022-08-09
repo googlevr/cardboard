@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.google.protobuf'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     lintOptions {
         abortOnError false
     }
@@ -16,9 +16,9 @@ android {
         //
         // See the release notes for details.
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
-        versionName "1.16.0"
+        versionName "1.17.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
@@ -71,11 +71,10 @@ protobuf {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
     // Android Mobile Vision
     // TODO(b/217176538) Migrate to ML Kit.
     implementation 'com.google.android.gms:play-services-vision:20.1.3'
-    // TODO(b/219489509): Update to 1.5.0 once b/218868656 is fixed.
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.protobuf:protobuf-javalite:3.19.4'
 }

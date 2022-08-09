@@ -145,8 +145,10 @@ class CardboardDisplayProvider {
           trace_, "Skip the rendering because Cardboard SDK is uninitialized.");
       return kUnitySubsystemErrorCodeFailure;
     }
+    cardboard_display_api_->RunRenderingPreProcessing();
     cardboard_display_api_->RenderEyesToDisplay();
     cardboard_display_api_->RenderWidgets();
+    cardboard_display_api_->RunRenderingPostProcessing();
     return kUnitySubsystemErrorCodeSuccess;
   }
 

@@ -66,7 +66,6 @@ OnGraphicsDeviceEvent(UnityGfxDeviceEventType event_type) {
 }
 #endif
 
-
 extern "C" {
 
 // @note See https://docs.unity3d.com/Manual/NativePluginInterface.html for
@@ -83,10 +82,13 @@ extern "C" {
 void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API
 UnityPluginLoad(IUnityInterfaces *unity_interfaces) {
 #ifdef __ANDROID__
-  unity_interfaces->Get<IUnityGraphics>()->RegisterDeviceEventCallback(
-      OnGraphicsDeviceEvent);
   // Cache the Unity interfaces since it will be used by the callback function.
   global_unity_interfaces = unity_interfaces;
+  global_unity_interfaces->Get<IUnityGraphics>()->RegisterDeviceEventCallback(
+      OnGraphicsDeviceEvent);
+
+  extern void RenderAPI_Vulkan_OnPluginLoad(IUnityInterfaces *);
+  RenderAPI_Vulkan_OnPluginLoad(unity_interfaces);
 #else
   LoadXrSubsystems(unity_interfaces);
 #endif

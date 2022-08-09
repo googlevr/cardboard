@@ -8,10 +8,6 @@
             description="Text shown on Android Toast when camera permission is not granted.
                          [CHAR_LIMIT=70]">
             Camera permission is not granted and is needed to read QR codes</string>
-    <string name="low_storage_error"
-            description="Text shown on Android Toast when detector dependencies can not be
-                         downloaded due to low storage. [CHAR_LIMIT=70]">
-            Detector dependencies cannot be downloaded due to low device storage</string>
     <string name="title_activity_qr_code_capture"
             description="QrCodeCapture activity title. [CHAR_LIMIT=30]">
             QrCodeCapture</string>
@@ -41,7 +37,7 @@
                          content. [CHAR_LIMIT=30]">
             Connection error</string>
     <string name="missing_dependencies"
-            description="Text shown when dependencies are not available to read QR Codes.
-                         [CHAR_LIMIT=100]">
-            QR Code detection dependency is missing. Try connecting to WiFi and update Google Play Services.</string>
+            description="Text shown when dependencies are not available to scan QR Codes.
+                         [CHAR_LIMIT=40]">
+            QR Code detector dependency missing</string>
 </resources>

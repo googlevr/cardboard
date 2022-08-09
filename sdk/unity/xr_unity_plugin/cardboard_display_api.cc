@@ -95,11 +95,16 @@ CardboardDisplayApi::CardboardDisplayApi() {
       renderer_ = MakeMetalRenderer(xr_interfaces_);
       break;
 #endif
+#if defined(__ANDROID__)
+    case CardboardGraphicsApi::kVulkan:
+      renderer_ = MakeVulkanRenderer(xr_interfaces_);
+      break;
+#endif
     default:
       LOGF(
           "The Cardboard SDK cannot be initialized given that the selected "
           "Graphics API (%d) is not supported. Please use OpenGL ES 2.0, "
-          "OpenGL ES 3.0 or Metal.",
+          "OpenGL ES 3.0, Metal or Vulkan.",
           static_cast<int>(selected_graphics_api_));
       break;
   }
@@ -115,7 +120,7 @@ void CardboardDisplayApi::UpdateDeviceParams() {
   if (selected_graphics_api_ == kNone) {
     LOGE(
         "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
-        "nor Metal was selected.");
+        "nor Metal nor Vulkan was selected.");
     return;
   }
 
@@ -159,11 +164,17 @@ void CardboardDisplayApi::UpdateDeviceParams() {
           MakeCardboardMetalDistortionRenderer(xr_interfaces_));
       break;
 #endif
+#if defined(__ANDROID__)
+    case CardboardGraphicsApi::kVulkan:
+      distortion_renderer_.reset(
+          MakeCardboardVulkanDistortionRenderer(xr_interfaces_));
+      break;
+#endif
     default:
       LOGF(
           "The distortion renderer cannot be initialized given that the "
           "selected Graphics API (%d) is not supported. Please use OpenGL ES "
-          "2.0, OpenGL ES 3.0 or Metal.",
+          "2.0, OpenGL ES 3.0, Metal or Vulkan.",
           static_cast<int>(selected_graphics_api_));
       break;
   }
@@ -205,10 +216,8 @@ void CardboardDisplayApi::GetEyeMatrices(int eye, float* eye_from_head,
 }
 
 void CardboardDisplayApi::RenderEyesToDisplay() {
-  const Renderer::ScreenParams screen_params{
-      screen_params_.width,          screen_params_.height,
-      screen_params_.viewport_x,     screen_params_.viewport_y,
-      screen_params_.viewport_width, screen_params_.viewport_height};
+  const Renderer::ScreenParams screen_params =
+      ScreenParamsToRendererScreenParams(screen_params_);
   renderer_->RenderEyesToDisplay(distortion_renderer_.get(), screen_params,
                                  &eye_data_[CardboardEye::kLeft].texture,
                                  &eye_data_[CardboardEye::kRight].texture);
@@ -216,11 +225,19 @@ void CardboardDisplayApi::RenderEyesToDisplay() {
 
 void CardboardDisplayApi::RenderWidgets() {
   std::lock_guard<std::mutex> l(widget_mutex_);
-  Renderer::ScreenParams screen_params{
-      screen_params_.width,          screen_params_.height,
-      screen_params_.viewport_x,     screen_params_.viewport_y,
-      screen_params_.viewport_width, screen_params_.viewport_height};
+  const Renderer::ScreenParams screen_params =
+      ScreenParamsToRendererScreenParams(screen_params_);
   renderer_->RenderWidgets(screen_params, widget_params_);
+}
+
+void CardboardDisplayApi::RunRenderingPreProcessing() {
+  const Renderer::ScreenParams screen_params =
+      ScreenParamsToRendererScreenParams(screen_params_);
+  renderer_->RunRenderingPreProcessing(screen_params);
+}
+
+void CardboardDisplayApi::RunRenderingPostProcessing() {
+  renderer_->RunRenderingPostProcessing();
 }
 
 uint64_t CardboardDisplayApi::GetLeftTextureColorBufferId() {
@@ -297,7 +314,7 @@ void CardboardDisplayApi::RenderingResourcesSetup() {
   if (selected_graphics_api_ == kNone) {
     LOGE(
         "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
-        "nor Metal was selected.");
+        "nor Metal nor Vulkan was selected.");
     return;
   }
 
@@ -337,6 +354,14 @@ void CardboardDisplayApi::RenderingResourcesTeardown() {
   renderer_->DestroyRenderTexture(&render_textures_[CardboardEye::kLeft]);
   renderer_->DestroyRenderTexture(&render_textures_[CardboardEye::kRight]);
   renderer_->TeardownWidgets();
+}
+
+Renderer::ScreenParams CardboardDisplayApi::ScreenParamsToRendererScreenParams(
+    const ScreenParams& screen_params) const {
+  return Renderer::ScreenParams{
+      screen_params.width,          screen_params.height,
+      screen_params.viewport_x,     screen_params.viewport_y,
+      screen_params.viewport_width, screen_params.viewport_height};
 }
 
 }  // namespace cardboard::unity
@@ -389,10 +414,16 @@ void CardboardUnity_setGraphicsApi(CardboardGraphicsApi graphics_api) {
       cardboard::unity::CardboardDisplayApi::SetGraphicsApi(graphics_api);
       break;
 #endif
+#if defined(__ANDROID__)
+    case CardboardGraphicsApi::kVulkan:
+      LOGD("Configured Vulkan as Graphics API.");
+      cardboard::unity::CardboardDisplayApi::SetGraphicsApi(graphics_api);
+      break;
+#endif
     default:
       LOGE(
           "Misconfigured Graphics API. Neither OpenGL ES 2.0 nor OpenGL ES 3.0 "
-          "nor Metal was selected.");
+          "nor Metal nor Vulkan was selected.");
   }
 }
 

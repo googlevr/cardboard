@@ -19,18 +19,17 @@ import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.provider.Settings;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -166,19 +165,11 @@ public class QrCodeCaptureActivity extends AppCompatActivity
 
     // Check that native dependencies are downloaded.
     if (!qrCodeDetector.isOperational()) {
-      Log.w(TAG, "Detector dependencies are not yet available.");
-
-      // Check for low storage.
-      IntentFilter lowStorageFilter = new IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW);
-      boolean hasLowStorage = registerReceiver(null, lowStorageFilter) != null;
-
-      if (hasLowStorage) {
-        Toast.makeText(this, R.string.low_storage_error, Toast.LENGTH_LONG).show();
-        Log.w(TAG, getString(R.string.low_storage_error));
-      } else {
-        Toast.makeText(this, R.string.missing_dependencies, Toast.LENGTH_LONG).show();
-        Log.w(TAG, getString(R.string.missing_dependencies));
-      }
+      Toast.makeText(this, R.string.missing_dependencies, Toast.LENGTH_LONG).show();
+      Log.w(
+          TAG,
+          "QR Code detector is not operational. Try connecting to WiFi and updating Google Play"
+              + " Services or checking that the device storage isn't low.");
     }
 
     // Creates and starts the camera.

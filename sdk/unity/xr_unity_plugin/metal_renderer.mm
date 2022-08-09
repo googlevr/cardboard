@@ -173,6 +173,15 @@ class MetalRenderer : public Renderer {
     }
   }
 
+  void RunRenderingPreProcessing(
+      const ScreenParams& /* screen_params */) override {
+    // Nothing to do.
+  }
+
+  void RunRenderingPostProcessing() override {
+    // Nothing to do.
+  }
+
   void TeardownWidgets() override {
     CARDBOARD_LOGD("TeardownWidgets is a no-op method when using Metal.");
   }

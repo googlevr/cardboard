@@ -16,11 +16,8 @@
 package com.google.cardboard.sdk.qrcode.camera;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.ImageFormat;
-import android.hardware.Camera;
-import android.hardware.Camera.CameraInfo;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.Surface;
@@ -41,6 +38,9 @@ import java.util.Map;
  * Manages the camera in conjunction with an underlying detector. This receives preview frames from
  * the camera at a specified rate, sending those frames to the detector as fast as it is able to
  * process those frames.
+ *
+ * <p>Deprecation warnings are suppressed on this class given that {@code android.hardware.Camera}
+ * is currently marked as deprecated but intentionally used in order to ease the camera usage.
  */
 @SuppressWarnings("deprecation")
 public class CameraSource {
@@ -65,7 +65,7 @@ public class CameraSource {
   private final Object cameraLock = new Object();
 
   // Guarded by cameraLock
-  private Camera camera;
+  private android.hardware.Camera camera;
 
   private int rotation;
 
@@ -183,14 +183,14 @@ public class CameraSource {
    *
    * @throws RuntimeException if the method fails
    */
-  @SuppressLint("InlinedApi")
-  private Camera createCamera() {
-    int requestedCameraId = getIdForRequestedCamera(CameraInfo.CAMERA_FACING_BACK);
+  private android.hardware.Camera createCamera() {
+    int requestedCameraId =
+        getIdForRequestedCamera(android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK);
     if (requestedCameraId == -1) {
       Log.e(TAG, "Could not find requested camera.");
       throw new RuntimeException("Could not find requested camera.");
     }
-    Camera camera = Camera.open(requestedCameraId);
+    android.hardware.Camera camera = android.hardware.Camera.open(requestedCameraId);
 
     SizePair sizePair = selectSizePair(camera, WIDTH, HEIGHT);
     if (sizePair == null) {
@@ -206,7 +206,7 @@ public class CameraSource {
       throw new RuntimeException("Could not find suitable preview frames per second range.");
     }
 
-    Camera.Parameters parameters = camera.getParameters();
+    android.hardware.Camera.Parameters parameters = camera.getParameters();
 
     if (pictureSize != null) {
       parameters.setPictureSize(pictureSize.getWidth(), pictureSize.getHeight());
@@ -214,16 +214,16 @@ public class CameraSource {
 
     parameters.setPreviewSize(previewSize.getWidth(), previewSize.getHeight());
     parameters.setPreviewFpsRange(
-        previewFpsRange[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
-        previewFpsRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
+        previewFpsRange[android.hardware.Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
+        previewFpsRange[android.hardware.Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
     parameters.setPreviewFormat(ImageFormat.NV21);
 
     setRotation(camera, parameters, requestedCameraId);
 
     if (parameters
         .getSupportedFocusModes()
-        .contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
-      parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        .contains(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+      parameters.setFocusMode(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
     } else {
       Log.i(
           TAG, "Camera focus mode: FOCUS_MODE_CONTINUOUS_PICTURE is not supported on this device.");
@@ -253,9 +253,9 @@ public class CameraSource {
    * @param facing the desired camera (front-facing or rear-facing)
    */
   private static int getIdForRequestedCamera(int facing) {
-    CameraInfo cameraInfo = new CameraInfo();
-    for (int i = 0; i < Camera.getNumberOfCameras(); ++i) {
-      Camera.getCameraInfo(i, cameraInfo);
+    android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
+    for (int i = 0; i < android.hardware.Camera.getNumberOfCameras(); ++i) {
+      android.hardware.Camera.getCameraInfo(i, cameraInfo);
       if (cameraInfo.facing == facing) {
         return i;
       }
@@ -271,7 +271,8 @@ public class CameraSource {
    * @param desiredHeight the desired height of the camera preview frames
    * @return the selected preview and picture size pair
    */
-  private static SizePair selectSizePair(Camera camera, int desiredWidth, int desiredHeight) {
+  private static SizePair selectSizePair(
+      android.hardware.Camera camera, int desiredWidth, int desiredHeight) {
     List<SizePair> validPreviewSizes = generateValidPreviewSizeList(camera);
 
     // The method for selecting the best size is to minimize the sum of the differences between
@@ -313,7 +314,6 @@ public class CameraSource {
       return preview;
     }
 
-    @SuppressWarnings("unused")
     public Size pictureSize() {
       return picture;
     }
@@ -324,8 +324,8 @@ public class CameraSource {
    * a corresponding picture size of the same aspect ratio. If there is a corresponding picture size
    * of the same aspect ratio, the picture size is paired up with the preview size.
    */
-  private static List<SizePair> generateValidPreviewSizeList(Camera camera) {
-    Camera.Parameters parameters = camera.getParameters();
+  private static List<SizePair> generateValidPreviewSizeList(android.hardware.Camera camera) {
+    android.hardware.Camera.Parameters parameters = camera.getParameters();
     List<android.hardware.Camera.Size> supportedPreviewSizes =
         parameters.getSupportedPreviewSizes();
     List<android.hardware.Camera.Size> supportedPictureSizes =
@@ -364,7 +364,8 @@ public class CameraSource {
    * @param desiredPreviewFps the desired frames per second for the camera preview frames
    * @return the selected preview frames per second range
    */
-  private static int[] selectPreviewFpsRange(Camera camera, float desiredPreviewFps) {
+  private static int[] selectPreviewFpsRange(
+      android.hardware.Camera camera, float desiredPreviewFps) {
     // The camera API uses integers scaled by a factor of 1000 frame rates.
     int desiredPreviewFpsScaled = (int) (desiredPreviewFps * 1000.0f);
 
@@ -374,8 +375,10 @@ public class CameraSource {
     int minDiff = Integer.MAX_VALUE;
     List<int[]> previewFpsRangeList = camera.getParameters().getSupportedPreviewFpsRange();
     for (int[] range : previewFpsRangeList) {
-      int deltaMin = desiredPreviewFpsScaled - range[Camera.Parameters.PREVIEW_FPS_MIN_INDEX];
-      int deltaMax = desiredPreviewFpsScaled - range[Camera.Parameters.PREVIEW_FPS_MAX_INDEX];
+      int deltaMin =
+          desiredPreviewFpsScaled - range[android.hardware.Camera.Parameters.PREVIEW_FPS_MIN_INDEX];
+      int deltaMax =
+          desiredPreviewFpsScaled - range[android.hardware.Camera.Parameters.PREVIEW_FPS_MAX_INDEX];
       int diff = Math.abs(deltaMin) + Math.abs(deltaMax);
       if (diff < minDiff) {
         selectedFpsRange = range;
@@ -392,7 +395,8 @@ public class CameraSource {
    * @param parameters the camera parameters for which to set the rotation
    * @param cameraId the camera id to set rotation based on
    */
-  private void setRotation(Camera camera, Camera.Parameters parameters, int cameraId) {
+  private void setRotation(
+      android.hardware.Camera camera, android.hardware.Camera.Parameters parameters, int cameraId) {
     WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     int degrees = 0;
     int rotation = windowManager.getDefaultDisplay().getRotation();
@@ -413,12 +417,12 @@ public class CameraSource {
         Log.e(TAG, "Bad rotation value: " + rotation);
     }
 
-    CameraInfo cameraInfo = new CameraInfo();
-    Camera.getCameraInfo(cameraId, cameraInfo);
+    android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
+    android.hardware.Camera.getCameraInfo(cameraId, cameraInfo);
 
     int angle;
     int displayAngle;
-    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+    if (cameraInfo.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT) {
       angle = (cameraInfo.orientation + degrees) % 360;
       displayAngle = (360 - angle) % 360; // compensate for it being mirrored
     } else { // back-facing
@@ -457,9 +461,9 @@ public class CameraSource {
   // ==============================================================================================
 
   /** Called when the camera has a new preview frame. */
-  private class CameraPreviewCallback implements Camera.PreviewCallback {
+  private class CameraPreviewCallback implements android.hardware.Camera.PreviewCallback {
     @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
+    public void onPreviewFrame(byte[] data, android.hardware.Camera camera) {
       frameProcessor.setNextFrame(data, camera);
     }
   }
@@ -506,7 +510,7 @@ public class CameraSource {
      * Sets the frame data received from the camera. This adds the previous unused frame buffer (if
      * present) back to the camera, and keeps a pending reference to the frame data for future use.
      */
-    void setNextFrame(byte[] data, Camera camera) {
+    void setNextFrame(byte[] data, android.hardware.Camera camera) {
       synchronized (lock) {
         if (pendingFrameData != null) {
           camera.addCallbackBuffer(pendingFrameData.array());

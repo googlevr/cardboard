@@ -33,6 +33,7 @@ typedef enum CardboardGraphicsApi {
   kOpenGlEs2 = 1,  ///< Uses OpenGL ES2.0
   kOpenGlEs3 = 2,  ///< Uses OpenGL ES3.0
   kMetal = 3,      ///< Uses Metal
+  kVulkan = 4,     ///< Uses Vulkan
   kNone = -1,      ///< No graphic API is selected.
 } CardboardGraphicsApi;
 
@@ -81,6 +82,14 @@ class CardboardDisplayApi {
   /// @brief Render the Cardboard widgets (X, Gear, divider line) to the screen.
   /// @pre It must be called from the rendering thread.
   void RenderWidgets();
+
+  /// @brief Runs commands needed before rendering.
+  /// @pre It must be called before calling other rendering commands.
+  void RunRenderingPreProcessing();
+
+  /// @brief Runs commands needed after rendering.
+  /// @pre It must be called after calling other rendering commands.
+  void RunRenderingPostProcessing();
 
   /// @brief Gets the left eye texture color buffer ID.
   /// @pre UpdateDeviceParams() must have been successfully called.
@@ -220,6 +229,22 @@ class CardboardDisplayApi {
 
   // @brief Frees rendering resources.
   void RenderingResourcesTeardown();
+
+  /// @brief Creates a variable of type Renderer::ScreenParams with the
+  /// information provided by a variable of type ScreenParams.
+  /// @param[in] screen_params Variable with the input information.
+  ///
+  /// @return A Renderer::ScreenParams variable.
+  Renderer::ScreenParams ScreenParamsToRendererScreenParams(
+      const ScreenParams& screen_params) const;
+
+  /// @brief Creates a variable of type Renderer::ScreenParams with the
+  /// information provided by a variable of type ScreenParams.
+  /// @param[in] screen_params Variable with the input information.
+  ///
+  /// @return A Renderer::ScreenParams variable.
+  Renderer::ScreenParams ScreenParamsToRendererSreenParams(
+      const ScreenParams& screen_params) const;
 
   // @brief Default z-axis coordinate for the near clipping plane.
   static constexpr float kZNear = 0.1f;

@@ -16,10 +16,8 @@
 package com.google.cardboard.sdk.qrcode;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
-import androidx.annotation.Nullable;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.cardboard.sdk.R;
 
@@ -49,8 +47,8 @@ public class QrCodeContentProcessor {
    * Processes detected QR code and save obtained device parameters.
    *
    * @param context The current Context. It is generally an Activity instance or wraps one, or an
-   *     Application. It is used to write device params to scoped storage via
-   *     {@code Context.getFilesDir()}.
+   *     Application. It is used to write device params to scoped storage via {@code
+   *     Context.getFilesDir()}.
    */
   public void processAndSaveQrCode(Barcode qrCode, Context context) {
     new ProcessAndSaveQrCodeTask(context).execute(qrCode);
@@ -61,30 +59,28 @@ public class QrCodeContentProcessor {
    * external storage.
    */
   public class ProcessAndSaveQrCodeTask
-      extends AsyncTask<Barcode, Void, CardboardParamsUtils.UriToParamsStatus> {
+      extends AsyncTask<Barcode, CardboardParamsUtils.UriToParamsStatus> {
     private final Context context;
 
     /**
      * Contructs a ProcessAndSaveQrCodeTask.
      *
      * @param context The current Context. It is generally an Activity instance or wraps one, or an
-     *     Application. It is used to write device params to scoped storage via
-     *     {@code Context.getFilesDir()}.
+     *     Application. It is used to write device params to scoped storage via {@code
+     *     Context.getFilesDir()}.
      */
     public ProcessAndSaveQrCodeTask(Context context) {
       this.context = context;
     }
 
     @Override
-    @Nullable
-    protected CardboardParamsUtils.UriToParamsStatus doInBackground(Barcode... qrCode) {
+    protected CardboardParamsUtils.UriToParamsStatus doInBackground(Barcode qrCode) {
       UrlFactory urlFactory = new UrlFactory();
-      return getParamsFromQrCode(qrCode[0], urlFactory);
+      return getParamsFromQrCode(qrCode, urlFactory);
     }
 
     @Override
     protected void onPostExecute(CardboardParamsUtils.UriToParamsStatus result) {
-      super.onPostExecute(result);
       boolean status = false;
       if (result.statusCode == CardboardParamsUtils.UriToParamsStatus.STATUS_UNEXPECTED_FORMAT) {
         Log.d(TAG, String.valueOf(R.string.invalid_qr_code));
