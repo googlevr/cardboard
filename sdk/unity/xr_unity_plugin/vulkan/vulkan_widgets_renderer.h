@@ -215,6 +215,7 @@ class VulkanWidgetsRenderer {
   VkDescriptorPool descriptor_pool_;
   std::vector<VkDescriptorSet> descriptor_sets_;
   std::vector<VkImageView> image_views_;
+  std::vector<Renderer::WidgetParams> current_widget_params_;
 };
 
 }  // namespace cardboard::unity

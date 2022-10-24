@@ -36,9 +36,18 @@
   }
 
 namespace cardboard::unity {
+namespace {
+bool widgetsOccupySameArea(const Renderer::WidgetParams& widget_params_left,
+                           const Renderer::WidgetParams& widget_params_right) {
+  return (widget_params_left.x == widget_params_right.x &&
+          widget_params_left.y == widget_params_right.y &&
+          widget_params_left.width == widget_params_right.width &&
+          widget_params_left.height == widget_params_right.height);
+}
+}  // namespace
 
 VulkanWidgetsRenderer::VulkanWidgetsRenderer(VkPhysicalDevice physical_device,
-                                           VkDevice logical_device)
+                                             VkDevice logical_device)
     : physical_device_(physical_device),
       logical_device_(logical_device),
       widget_image_count_(1),
@@ -61,7 +70,7 @@ VulkanWidgetsRenderer::VulkanWidgetsRenderer(VkPhysicalDevice physical_device,
 }
 
 VulkanWidgetsRenderer::~VulkanWidgetsRenderer() {
-  for (uint32_t i = 0; i < widget_image_count_; i++) {
+  for (uint32_t i = 0; i < image_views_.size(); i++) {
     CleanTextureImageView(i);
   }
 
@@ -79,7 +88,7 @@ VulkanWidgetsRenderer::~VulkanWidgetsRenderer() {
   rendering::vkDestroyBuffer(logical_device_, index_buffers_, nullptr);
   rendering::vkFreeMemory(logical_device_, index_buffers_memory_, nullptr);
 
-  for (uint32_t i = 0; i < widget_image_count_; i++) {
+  for (uint32_t i = 0; i < vertex_buffers_.size(); i++) {
     if (vertex_buffers_[i] != VK_NULL_HANDLE) {
       rendering::vkDestroyBuffer(logical_device_, vertex_buffers_[i], nullptr);
       rendering::vkFreeMemory(logical_device_, vertex_buffers_memory_[i],
@@ -92,10 +101,23 @@ void VulkanWidgetsRenderer::RenderWidgets(
     const Renderer::ScreenParams& screen_params,
     const std::vector<Renderer::WidgetParams>& widgets_params,
     const VkCommandBuffer command_buffer, const VkRenderPass render_pass) {
-  // TODO(241768790): Improve widgets renderer.
-  widget_image_count_ = widgets_params.size();
-  CreatePerWidgetVulkanObjects();
-  UpdateVertexBuffers(widgets_params, screen_params);
+  // If the amount of widgets change, then recreate the objects related to them.
+  if (widget_image_count_ != widgets_params.size()) {
+    widget_image_count_ = widgets_params.size();
+    CreatePerWidgetVulkanObjects();
+    UpdateVertexBuffers(widgets_params, screen_params);
+    current_widget_params_ = widgets_params;
+  } else {
+    // If the position or the size of a widget changes, then update its vertex
+    // buffer.
+    for (uint32_t i = 0; i < widget_image_count_; i++) {
+      if (!widgetsOccupySameArea(current_widget_params_[i],
+                                 widgets_params[i])) {
+        UpdateVertexBuffer(widgets_params[i], screen_params, i);
+        current_widget_params_[i] = widgets_params[i];
+      }
+    }
+  }
 
   if (render_pass != current_render_pass_) {
     current_render_pass_ = render_pass;
@@ -108,10 +130,10 @@ void VulkanWidgetsRenderer::RenderWidgets(
 }
 
 void VulkanWidgetsRenderer::CreateBuffer(VkDeviceSize size,
-                                        VkBufferUsageFlags usage,
-                                        VkMemoryPropertyFlags properties,
-                                        VkBuffer& buffer,
-                                        VkDeviceMemory& buffer_memory) {
+                                         VkBufferUsageFlags usage,
+                                         VkMemoryPropertyFlags properties,
+                                         VkBuffer& buffer,
+                                         VkDeviceMemory& buffer_memory) {
   VkBufferCreateInfo buffer_info{.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
                                  .size = size,
                                  .usage = usage,
@@ -239,10 +261,8 @@ void VulkanWidgetsRenderer::CreatePerWidgetVulkanObjects() {
 void VulkanWidgetsRenderer::CreateGraphicsPipeline() {
   CleanPipeline();
 
-  VkShaderModule vertex_shader =
-      LoadShader(widget_vert, sizeof(widget_vert));
-  VkShaderModule fragment_shader =
-      LoadShader(widget_frag, sizeof(widget_frag));
+  VkShaderModule vertex_shader = LoadShader(widget_vert, sizeof(widget_vert));
+  VkShaderModule fragment_shader = LoadShader(widget_frag, sizeof(widget_frag));
 
   // Specify vertex and fragment shader stages
   VkPipelineShaderStageCreateInfo vertex_shader_state = {
@@ -414,7 +434,7 @@ void VulkanWidgetsRenderer::CreateGraphicsPipeline() {
 }
 
 VkShaderModule VulkanWidgetsRenderer::LoadShader(const uint32_t* const content,
-                                                size_t size) const {
+                                                 size_t size) const {
   VkShaderModule shader;
   VkShaderModuleCreateInfo shader_module_create_info{
       .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -502,8 +522,9 @@ void VulkanWidgetsRenderer::RenderWidget(
       .flags = 0,
       .image = *current_image,
       .viewType = VK_IMAGE_VIEW_TYPE_2D,
-      // This is the format set by Unity
-      .format = VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK,
+      // This format must match the images format as can be seen in the Unity 
+      // editor inspector.
+      .format = VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK,
       .components =
           {
               .r = VK_COMPONENT_SWIZZLE_R,
@@ -528,7 +549,7 @@ void VulkanWidgetsRenderer::RenderWidget(
   VkDescriptorImageInfo image_info{
       .sampler = texture_sampler_,
       .imageView = image_views_[image_index],
-      .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+      .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
   };
 
   VkWriteDescriptorSet descriptor_writes[1];
@@ -600,7 +621,7 @@ void VulkanWidgetsRenderer::CleanTextureImageView(int index) {
 }
 
 void VulkanWidgetsRenderer::CreateVertexBuffer(std::vector<Vertex> vertices,
-                                              const uint32_t index) {
+                                               const uint32_t index) {
   if (index >= vertex_buffers_.size()) {
     CARDBOARD_LOGE("Index is bigger than the buffers vector size.");
     return;

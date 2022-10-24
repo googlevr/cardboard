@@ -21,18 +21,56 @@
 #include "rendering/android/vulkan/android_vulkan_loader.h"
 #include "util/is_arg_null.h"
 #include "util/logging.h"
+#include "unity/xr_unity_plugin/cardboard_display_api.h"
 #include "unity/xr_unity_plugin/renderer.h"
 #include "unity/xr_unity_plugin/vulkan/vulkan_widgets_renderer.h"
+// clang-format off
 #include "IUnityRenderingExtensions.h"
 #include "IUnityGraphicsVulkan.h"
+// clang-format on
 
 namespace cardboard::unity {
 namespace {
+/**
+ * Holds and manages the version of the swapchain.
+ * Dependent code on the swapchain handle must own both a copy of the handle and
+ * its version.
+ * In case Vulkan entities have been created with an old swapchain handle and
+ * it has been torn down, those entities must no be used as it could produce
+ * unexpected crashes.
+ */
+class VkSwapchainCache final {
+ public:
+  /**
+   * Updates the swapchain handle and increases its version.
+   */
+  static void Update(VkSwapchainKHR swapchain) {
+    swapchain_ = swapchain;
+    version_++;
+  }
+
+  /** Gets the swapchain handle. */
+  static VkSwapchainKHR& Get() { return swapchain_; }
+
+  /** Gets the swapchain handle version. */
+  static int GetVersion() { return version_; }
+
+  /** Tells whether or not the version is up to date. */
+  static bool IsCacheUpToDate(int version) { return version_ == version; }
+
+ private:
+  VkSwapchainCache() = default;
+  static VkSwapchainKHR swapchain_;
+  static int version_;
+};
+
+VkSwapchainKHR VkSwapchainCache::swapchain_ = VK_NULL_HANDLE;
+int VkSwapchainCache::version_ = 0;
 
 PFN_vkGetInstanceProcAddr Orig_GetInstanceProcAddr;
 PFN_vkCreateSwapchainKHR Orig_vkCreateSwapchainKHR;
+PFN_vkDestroySwapchainKHR Orig_vkDestroySwapchainKHR;
 PFN_vkAcquireNextImageKHR Orig_vkAcquireNextImageKHR;
-VkSwapchainKHR cached_swapchain;
 uint32_t image_index;
 
 /**
@@ -44,7 +82,19 @@ static VKAPI_ATTR void VKAPI_CALL Hook_vkCreateSwapchainKHR(
     const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain) {
   cardboard::rendering::vkCreateSwapchainKHR(device, pCreateInfo, pAllocator,
                                              pSwapchain);
-  cached_swapchain = *pSwapchain;
+  VkSwapchainCache::Update(*pSwapchain);
+  CardboardDisplayApi::SetDeviceParametersChanged();
+}
+
+/**
+ * Function registerd to intercept the vulkan function `vkDestroySwapchainKHR`.
+ * Through this function we could destroy and invalidate the swapchain.
+ */
+static VKAPI_ATTR void VKAPI_CALL
+Hook_vkDestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain,
+                           const VkAllocationCallbacks* pAllocator) {
+  cardboard::rendering::vkDestroySwapchainKHR(device, swapchain, pAllocator);
+  VkSwapchainCache::Update(VK_NULL_HANDLE);
 }
 
 /**
@@ -69,6 +119,12 @@ PFN_vkVoidFunction VKAPI_PTR MyGetInstanceProcAddr(VkInstance instance,
     Orig_vkCreateSwapchainKHR =
         (PFN_vkCreateSwapchainKHR)Orig_GetInstanceProcAddr(instance, pName);
     return (PFN_vkVoidFunction)&Hook_vkCreateSwapchainKHR;
+  }
+
+  if (strcmp(pName, "vkDestroySwapchainKHR") == 0) {
+    Orig_vkDestroySwapchainKHR =
+        (PFN_vkDestroySwapchainKHR)Orig_GetInstanceProcAddr(instance, pName);
+    return (PFN_vkVoidFunction)&Hook_vkDestroySwapchainKHR;
   }
 
   if (strcmp(pName, "vkAcquireNextImageKHR") == 0) {
@@ -113,17 +169,19 @@ class VulkanRenderer : public Renderer {
     UnityVulkanInstance vulkanInstance = vulkan_interface_->Instance();
     logical_device_ = vulkanInstance.device;
     physical_device_ = vulkanInstance.physicalDevice;
+    swapchain_ = VkSwapchainCache::Get();
+    swapchain_version_ = VkSwapchainCache::GetVersion();
 
     cardboard::rendering::vkGetSwapchainImagesKHR(
-        logical_device_, cached_swapchain, &swapchain_image_count_, nullptr);
+        logical_device_, swapchain_, &swapchain_image_count_, nullptr);
     swapchain_images_.resize(swapchain_image_count_);
     swapchain_views_.resize(swapchain_image_count_);
     frame_buffers_.resize(swapchain_image_count_);
 
     // Get the images from the swapchain and wrap it into a image view.
-    cardboard::rendering::vkGetSwapchainImagesKHR(
-        logical_device_, cached_swapchain, &swapchain_image_count_,
-        swapchain_images_.data());
+    cardboard::rendering::vkGetSwapchainImagesKHR(logical_device_, swapchain_,
+                                                  &swapchain_image_count_,
+                                                  swapchain_images_.data());
 
     for (size_t i = 0; i < swapchain_images_.size(); i++) {
       const VkImageViewCreateInfo view_create_info = {
@@ -132,7 +190,7 @@ class VulkanRenderer : public Renderer {
           .flags = 0,
           .image = swapchain_images_[i],
           .viewType = VK_IMAGE_VIEW_TYPE_2D,
-          .format = VK_FORMAT_R8G8B8A8_SRGB,
+          .format = VK_FORMAT_R8G8B8A8_UNORM,
           .components =
               {
                   .r = VK_COMPONENT_SWIZZLE_R,
@@ -220,6 +278,10 @@ class VulkanRenderer : public Renderer {
 
   void RenderWidgets(const ScreenParams& screen_params,
                      const std::vector<WidgetParams>& widget_params) override {
+    if (!VkSwapchainCache::IsCacheUpToDate(swapchain_version_)) {
+      return;
+    }
+
     widget_renderer_->RenderWidgets(screen_params, widget_params,
                                     current_command_buffer_, render_pass_);
   }
@@ -290,6 +352,10 @@ class VulkanRenderer : public Renderer {
       CardboardDistortionRenderer* renderer, const ScreenParams& screen_params,
       const CardboardEyeTextureDescription* left_eye,
       const CardboardEyeTextureDescription* right_eye) override {
+    if (!VkSwapchainCache::IsCacheUpToDate(swapchain_version_)) {
+      return;
+    }
+
     // Setup rendering content
     CardboardVulkanDistortionRendererTarget target_config{
         .vk_render_pass = reinterpret_cast<uint64_t>(&render_pass_),
@@ -306,6 +372,10 @@ class VulkanRenderer : public Renderer {
   }
 
   void RunRenderingPreProcessing(const ScreenParams& screen_params) override {
+    if (!VkSwapchainCache::IsCacheUpToDate(swapchain_version_)) {
+      return;
+    }
+
     UnityVulkanRecordingState vulkanRecordingState;
     vulkan_interface_->EnsureOutsideRenderPass();
     vulkan_interface_->CommandRecordingState(
@@ -373,6 +443,10 @@ class VulkanRenderer : public Renderer {
   }
 
   void RunRenderingPostProcessing() override {
+    if (!VkSwapchainCache::IsCacheUpToDate(swapchain_version_)) {
+      return;
+    }
+
     cardboard::rendering::vkCmdEndRenderPass(current_command_buffer_);
   }
 
@@ -411,6 +485,8 @@ class VulkanRenderer : public Renderer {
   VkDevice logical_device_;
   VkCommandBuffer current_command_buffer_;
   std::vector<VkImage> swapchain_images_;
+  VkSwapchainKHR swapchain_;
+  int swapchain_version_;
 
   // Variables created and maintained by the vulkan renderer.
   uint32_t swapchain_image_count_;
@@ -436,7 +512,7 @@ CardboardDistortionRenderer* MakeCardboardVulkanDistortionRenderer(
       .physical_device =
           reinterpret_cast<uint64_t>(&vulkan_instance.physicalDevice),
       .logical_device = reinterpret_cast<uint64_t>(&vulkan_instance.device),
-      .vk_swapchain = reinterpret_cast<uint64_t>(&cached_swapchain),
+      .vk_swapchain = reinterpret_cast<uint64_t>(&VkSwapchainCache::Get()),
   };
 
   CardboardDistortionRenderer* distortion_renderer =
