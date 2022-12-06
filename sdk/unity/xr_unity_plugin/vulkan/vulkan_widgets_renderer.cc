@@ -47,10 +47,14 @@ bool widgetsOccupySameArea(const Renderer::WidgetParams& widget_params_left,
 }  // namespace
 
 VulkanWidgetsRenderer::VulkanWidgetsRenderer(VkPhysicalDevice physical_device,
-                                             VkDevice logical_device)
+                                             VkDevice logical_device,
+                                             const int swapchain_image_count)
     : physical_device_(physical_device),
       logical_device_(logical_device),
-      widget_image_count_(1),
+      current_render_pass_(VK_NULL_HANDLE),
+      swapchain_image_count_(swapchain_image_count),
+      indices_count_(0),
+      texture_sampler_(VK_NULL_HANDLE),
       descriptor_set_layout_(VK_NULL_HANDLE),
       pipeline_layout_(VK_NULL_HANDLE),
       graphics_pipeline_(VK_NULL_HANDLE),
@@ -58,9 +62,8 @@ VulkanWidgetsRenderer::VulkanWidgetsRenderer(VkPhysicalDevice physical_device,
       vertex_buffers_memory_(0),
       index_buffers_(VK_NULL_HANDLE),
       index_buffers_memory_(VK_NULL_HANDLE),
-      descriptor_pool_(VK_NULL_HANDLE),
-      descriptor_sets_(0),
-      image_views_(0) {
+      widgets_data_(0),
+      current_widget_params_(0) {
   if (!rendering::LoadVulkan()) {
     CARDBOARD_LOGE("Failed to load vulkan lib in cardboard!");
     return;
@@ -70,47 +73,37 @@ VulkanWidgetsRenderer::VulkanWidgetsRenderer(VkPhysicalDevice physical_device,
 }
 
 VulkanWidgetsRenderer::~VulkanWidgetsRenderer() {
-  for (uint32_t i = 0; i < image_views_.size(); i++) {
-    CleanTextureImageView(i);
-  }
-
   rendering::vkDestroySampler(logical_device_, texture_sampler_, nullptr);
   rendering::vkDestroyPipelineLayout(logical_device_, pipeline_layout_,
                                      nullptr);
   rendering::vkDestroyDescriptorSetLayout(logical_device_,
                                           descriptor_set_layout_, nullptr);
 
-  rendering::vkDestroyDescriptorPool(logical_device_, descriptor_pool_,
-                                     nullptr);
-
+  SetWidgetImageCount(0);
   CleanPipeline();
 
   rendering::vkDestroyBuffer(logical_device_, index_buffers_, nullptr);
   rendering::vkFreeMemory(logical_device_, index_buffers_memory_, nullptr);
 
   for (uint32_t i = 0; i < vertex_buffers_.size(); i++) {
-    if (vertex_buffers_[i] != VK_NULL_HANDLE) {
-      rendering::vkDestroyBuffer(logical_device_, vertex_buffers_[i], nullptr);
-      rendering::vkFreeMemory(logical_device_, vertex_buffers_memory_[i],
-                              nullptr);
-    }
+    CleanVertexBuffer(i);
   }
 }
 
 void VulkanWidgetsRenderer::RenderWidgets(
     const Renderer::ScreenParams& screen_params,
     const std::vector<Renderer::WidgetParams>& widgets_params,
-    const VkCommandBuffer command_buffer, const VkRenderPass render_pass) {
+    const VkCommandBuffer command_buffer, const uint32_t swapchain_image_index,
+    const VkRenderPass render_pass) {
   // If the amount of widgets change, then recreate the objects related to them.
-  if (widget_image_count_ != widgets_params.size()) {
-    widget_image_count_ = widgets_params.size();
-    CreatePerWidgetVulkanObjects();
+  if (widgets_data_.size() != widgets_params.size()) {
+    SetWidgetImageCount(widgets_params.size());
     UpdateVertexBuffers(widgets_params, screen_params);
     current_widget_params_ = widgets_params;
   } else {
     // If the position or the size of a widget changes, then update its vertex
     // buffer.
-    for (uint32_t i = 0; i < widget_image_count_; i++) {
+    for (uint32_t i = 0; i < widgets_data_.size(); i++) {
       if (!widgetsOccupySameArea(current_widget_params_[i],
                                  widgets_params[i])) {
         UpdateVertexBuffer(widgets_params[i], screen_params, i);
@@ -124,8 +117,9 @@ void VulkanWidgetsRenderer::RenderWidgets(
     CreateGraphicsPipeline();
   }
 
-  for (uint32_t i = 0; i < widget_image_count_; i++) {
-    RenderWidget(widgets_params[i], command_buffer, i, screen_params);
+  for (uint32_t i = 0; i < widgets_data_.size(); i++) {
+    RenderWidget(widgets_params[i], command_buffer, i, swapchain_image_index,
+                 screen_params);
   }
 }
 
@@ -222,40 +216,61 @@ void VulkanWidgetsRenderer::CreateSharedVulkanObjects() {
   CreateIndexBuffer(square_texture_indices);
 }
 
-void VulkanWidgetsRenderer::CreatePerWidgetVulkanObjects() {
-  // Create Descriptor Pool
-  VkDescriptorPoolSize pool_sizes[1];
-  pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  pool_sizes[0].descriptorCount = static_cast<uint32_t>(widget_image_count_);
+void VulkanWidgetsRenderer::SetWidgetImageCount(
+    const uint32_t widget_image_count) {
+  // Clean.
+  for (uint32_t widget_index = 0; widget_index < widgets_data_.size();
+       widget_index++) {
+    // Clean image views per widget.
+    for (uint32_t image_index = 0;
+         image_index < widgets_data_[widget_index].image_views.size();
+         image_index++) {
+      CleanTextureImageView(widget_index, image_index);
+    }
+    // Clean descriptor pool per widget.
+    rendering::vkDestroyDescriptorPool(
+        logical_device_, widgets_data_[widget_index].descriptor_pool, nullptr);
+  }
 
-  VkDescriptorPoolCreateInfo pool_info{};
-  pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  pool_info.poolSizeCount = 1;
-  pool_info.pPoolSizes = pool_sizes;
-  pool_info.maxSets = static_cast<uint32_t>(widget_image_count_);
+  // Resize.
+  widgets_data_.resize(widget_image_count);
 
-  CALL_VK(rendering::vkCreateDescriptorPool(logical_device_, &pool_info,
-                                            nullptr, &descriptor_pool_));
+  // Recreate.
+  for (uint32_t widget = 0; widget < widgets_data_.size(); widget++) {
+    // Create Descriptor Pool
+    VkDescriptorPoolSize pool_sizes[1];
+    pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    pool_sizes[0].descriptorCount =
+        static_cast<uint32_t>(swapchain_image_count_);
 
-  // Create Descriptor Sets
-  std::vector<VkDescriptorSetLayout> layouts(widget_image_count_,
-                                             descriptor_set_layout_);
-  VkDescriptorSetAllocateInfo alloc_info{};
-  alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  alloc_info.descriptorPool = descriptor_pool_;
-  alloc_info.descriptorSetCount = static_cast<uint32_t>(widget_image_count_);
-  alloc_info.pSetLayouts = layouts.data();
+    VkDescriptorPoolCreateInfo pool_info{};
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.poolSizeCount = 1;
+    pool_info.pPoolSizes = pool_sizes;
+    pool_info.maxSets = static_cast<uint32_t>(swapchain_image_count_);
 
-  descriptor_sets_.resize(widget_image_count_);
-  CALL_VK(rendering::vkAllocateDescriptorSets(logical_device_, &alloc_info,
-                                              descriptor_sets_.data()));
+    CALL_VK(rendering::vkCreateDescriptorPool(
+        logical_device_, &pool_info, nullptr,
+        &widgets_data_[widget].descriptor_pool));
 
-  // Set the size of image view array to the amount of widgets.
-  image_views_.resize(widget_image_count_);
+    // Create Descriptor Sets
+    std::vector<VkDescriptorSetLayout> layouts(swapchain_image_count_,
+                                               descriptor_set_layout_);
+    VkDescriptorSetAllocateInfo alloc_info{};
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    alloc_info.descriptorPool = widgets_data_[widget].descriptor_pool;
+    alloc_info.descriptorSetCount =
+        static_cast<uint32_t>(swapchain_image_count_);
+    alloc_info.pSetLayouts = layouts.data();
+    widgets_data_[widget].descriptor_sets.resize(swapchain_image_count_);
 
-  // Set the size of the vertex buffers array to the amount of widgets.
-  vertex_buffers_.resize(widget_image_count_);
-  vertex_buffers_memory_.resize(widget_image_count_);
+    CALL_VK(rendering::vkAllocateDescriptorSets(
+        logical_device_, &alloc_info,
+        widgets_data_[widget].descriptor_sets.data()));
+
+    // Set the size of image view array to the amount of swapchain images.
+    widgets_data_[widget].image_views.resize(swapchain_image_count_);
+  }
 }
 
 void VulkanWidgetsRenderer::CreateGraphicsPipeline() {
@@ -470,20 +485,30 @@ uint32_t VulkanWidgetsRenderer::FindMemoryType(
 void VulkanWidgetsRenderer::UpdateVertexBuffers(
     const std::vector<unity::Renderer::WidgetParams>& widgets_params,
     const unity::Renderer::ScreenParams& screen_params) {
-  for (uint32_t i = 0; i < widget_image_count_; i++) {
-    UpdateVertexBuffer(widgets_params[i], screen_params, i);
+  vertex_buffers_.resize(widgets_params.size());
+  vertex_buffers_memory_.resize(widgets_params.size());
+
+  for (uint32_t widget_index = 0; widget_index < widgets_params.size();
+       widget_index++) {
+    UpdateVertexBuffer(widgets_params[widget_index], screen_params,
+                       widget_index);
+  }
+}
+
+void VulkanWidgetsRenderer::CleanVertexBuffer(const uint32_t widget_index) {
+  if (vertex_buffers_[widget_index] != VK_NULL_HANDLE) {
+    rendering::vkDestroyBuffer(logical_device_, vertex_buffers_[widget_index],
+                               nullptr);
+    rendering::vkFreeMemory(logical_device_,
+                            vertex_buffers_memory_[widget_index], nullptr);
   }
 }
 
 void VulkanWidgetsRenderer::UpdateVertexBuffer(
     const unity::Renderer::WidgetParams& widget_params,
-    const unity::Renderer::ScreenParams& screen_params, const uint32_t index) {
-  if (vertex_buffers_[index] != VK_NULL_HANDLE) {
-    rendering::vkDestroyBuffer(logical_device_, vertex_buffers_[index],
-                               nullptr);
-    rendering::vkFreeMemory(logical_device_, vertex_buffers_memory_[index],
-                            nullptr);
-  }
+    const unity::Renderer::ScreenParams& screen_params,
+    const uint32_t widget_index) {
+  CleanVertexBuffer(widget_index);
 
   // Convert coordinates to normalized space (-1,-1 - +1,+1)
   float x =
@@ -506,23 +531,24 @@ void VulkanWidgetsRenderer::UpdateVertexBuffer(
                                         {x + width, y, 1.0f, 1.0f}};
 
   // Create vertices for the widget.
-  CreateVertexBuffer(vertices, index);
+  CreateVertexBuffer(vertices, widget_index);
 }
 
 void VulkanWidgetsRenderer::RenderWidget(
     const unity::Renderer::WidgetParams& widget_params,
-    VkCommandBuffer command_buffer, uint32_t image_index,
+    VkCommandBuffer command_buffer, const uint32_t widget_index,
+    const uint32_t swapchain_image_index,
     const unity::Renderer::ScreenParams& screen_params) {
   // Update image and view
   VkImage* current_image = reinterpret_cast<VkImage*>(widget_params.texture);
-  CleanTextureImageView(image_index);
+  CleanTextureImageView(widget_index, swapchain_image_index);
   const VkImageViewCreateInfo view_create_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
       .pNext = nullptr,
       .flags = 0,
       .image = *current_image,
       .viewType = VK_IMAGE_VIEW_TYPE_2D,
-      // This format must match the images format as can be seen in the Unity 
+      // This format must match the images format as can be seen in the Unity
       // editor inspector.
       .format = VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK,
       .components =
@@ -541,21 +567,23 @@ void VulkanWidgetsRenderer::RenderWidget(
               .layerCount = 1,
           },
   };
-  CALL_VK(rendering::vkCreateImageView(logical_device_, &view_create_info,
-                                       nullptr /* pAllocator */,
-                                       &image_views_[image_index]));
+  CALL_VK(rendering::vkCreateImageView(
+      logical_device_, &view_create_info, nullptr /* pAllocator */,
+      &widgets_data_[widget_index].image_views[swapchain_image_index]));
 
   // Update Descriptor Sets
   VkDescriptorImageInfo image_info{
       .sampler = texture_sampler_,
-      .imageView = image_views_[image_index],
+      .imageView =
+          widgets_data_[widget_index].image_views[swapchain_image_index],
       .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
   };
 
   VkWriteDescriptorSet descriptor_writes[1];
 
   descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  descriptor_writes[0].dstSet = descriptor_sets_[image_index];
+  descriptor_writes[0].dstSet =
+      widgets_data_[widget_index].descriptor_sets[swapchain_image_index];
   descriptor_writes[0].dstBinding = 0;
   descriptor_writes[0].dstArrayElement = 0;
   descriptor_writes[0].descriptorType =
@@ -593,14 +621,14 @@ void VulkanWidgetsRenderer::RenderWidget(
 
   VkDeviceSize offset = 0;
   rendering::vkCmdBindVertexBuffers(command_buffer, 0, 1,
-                                    &vertex_buffers_[image_index], &offset);
-
+                                    &vertex_buffers_[widget_index], &offset);
   rendering::vkCmdBindIndexBuffer(command_buffer, index_buffers_, 0,
                                   VK_INDEX_TYPE_UINT16);
 
   rendering::vkCmdBindDescriptorSets(
       command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_, 0, 1,
-      &descriptor_sets_[image_index], 0, nullptr);
+      &widgets_data_[widget_index].descriptor_sets[swapchain_image_index], 0,
+      nullptr);
   rendering::vkCmdDrawIndexed(
       command_buffer, static_cast<uint32_t>(indices_count_), 1, 0, 0, 0);
 }
@@ -612,11 +640,16 @@ void VulkanWidgetsRenderer::CleanPipeline() {
   }
 }
 
-void VulkanWidgetsRenderer::CleanTextureImageView(int index) {
-  if (image_views_[index] != VK_NULL_HANDLE) {
-    rendering::vkDestroyImageView(logical_device_, image_views_[index],
-                                  nullptr /* vkDestroyImageView */);
-    image_views_[index] = VK_NULL_HANDLE;
+void VulkanWidgetsRenderer::CleanTextureImageView(
+    const int widget_index, const int swapchain_image_index) {
+  if (widgets_data_[widget_index].image_views[swapchain_image_index] !=
+      VK_NULL_HANDLE) {
+    rendering::vkDestroyImageView(
+        logical_device_,
+        widgets_data_[widget_index].image_views[swapchain_image_index],
+        nullptr /* vkDestroyImageView */);
+    widgets_data_[widget_index].image_views[swapchain_image_index] =
+        VK_NULL_HANDLE;
   }
 }
 

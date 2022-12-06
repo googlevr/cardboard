@@ -190,7 +190,7 @@ class VulkanRenderer : public Renderer {
           .flags = 0,
           .image = swapchain_images_[i],
           .viewType = VK_IMAGE_VIEW_TYPE_2D,
-          .format = VK_FORMAT_R8G8B8A8_UNORM,
+          .format = VK_FORMAT_R8G8B8A8_SRGB,
           .components =
               {
                   .r = VK_COMPONENT_SWIZZLE_R,
@@ -272,8 +272,8 @@ class VulkanRenderer : public Renderer {
   }
 
   void SetupWidgets() override {
-    widget_renderer_ = std::make_unique<VulkanWidgetsRenderer>(physical_device_,
-                                                              logical_device_);
+    widget_renderer_ = std::make_unique<VulkanWidgetsRenderer>(
+        physical_device_, logical_device_, swapchain_image_count_);
   }
 
   void RenderWidgets(const ScreenParams& screen_params,
@@ -283,7 +283,8 @@ class VulkanRenderer : public Renderer {
     }
 
     widget_renderer_->RenderWidgets(screen_params, widget_params,
-                                    current_command_buffer_, render_pass_);
+                                    current_command_buffer_, image_index,
+                                    render_pass_);
   }
 
   void TeardownWidgets() override {

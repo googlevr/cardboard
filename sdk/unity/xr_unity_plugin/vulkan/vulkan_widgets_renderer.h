@@ -35,9 +35,11 @@ class VulkanWidgetsRenderer {
    *
    * @param physical_device Vulkan physical device.
    * @param logical_device Vulkan logical device.
+   * @param swapchain_image_count Number of images available in the swapchain.
    */
   VulkanWidgetsRenderer(VkPhysicalDevice physical_device,
-                        VkDevice logical_device);
+                        VkDevice logical_device,
+                        const int swapchain_image_count);
 
   /**
    * Destructor. Frees renderer resources.
@@ -51,11 +53,13 @@ class VulkanWidgetsRenderer {
    * @param widgets_params Params for each widget. This includes position to
    * render and texture.
    * @param command_buffer VkCommandBuffer to be bond.
+   * @param swapchain_image_index Swapchain image to be rendered.
    * @param render_pass Render pass used.
    */
   void RenderWidgets(const Renderer::ScreenParams& screen_params,
                      const std::vector<Renderer::WidgetParams>& widgets_params,
                      const VkCommandBuffer command_buffer,
+                     const uint32_t swapchain_image_index,
                      const VkRenderPass render_pass);
 
  private:
@@ -76,6 +80,17 @@ class VulkanWidgetsRenderer {
     // tex_v: y-axis position of the texture to be renderer. Normalized between
     // 0 and 1.
     float tex_v;
+  };
+
+  /**
+   * @struct Data required for each widget.
+   */
+  struct PerWidgetData {
+    VkDescriptorPool descriptor_pool;
+    // Size should be the size of the swapchain.
+    std::vector<VkDescriptorSet> descriptor_sets;
+    // Size should be the size of the swapchain.
+    std::vector<VkImageView> image_views;
   };
 
   static constexpr float Lerp(float start, float end, float val) {
@@ -126,12 +141,14 @@ class VulkanWidgetsRenderer {
   void CreateSharedVulkanObjects();
 
   /**
-   * Creates required vulkan objects for the given eye.
+   * Creates required vulkan objects for the given widget.
+   *
+   * @param widget Number of the widget.
    */
-  void CreatePerWidgetVulkanObjects();
+  void SetWidgetImageCount(const uint32_t widget);
 
   /**
-   * Creates the graphics pipeline for the given eye.
+   * Creates the graphics pipeline.
    * It cleans the previous pipeline if it exists.
    */
   void CreateGraphicsPipeline();
@@ -162,32 +179,44 @@ class VulkanWidgetsRenderer {
    *
    * @param widget_params Texture for the widget.
    * @param command_buffer VkCommandBuffer to be bond.
-   * @param image_index Index of current image in the image views array.
+   * @param swapchain_image_index Index of current image in the image views
+   * array.
    * @param screen_params Screen parameters of the rendering area.
    */
   void RenderWidget(const unity::Renderer::WidgetParams& widget_params,
-                    VkCommandBuffer command_buffer, uint32_t image_index,
+                    VkCommandBuffer command_buffer, const uint32_t widget_index,
+                    const uint32_t swapchain_image_index,
                     const unity::Renderer::ScreenParams& screen_params);
 
   /**
-   * Cleans the graphics pipeline of the given eye.
+   * Cleans the graphics pipeline.
    */
   void CleanPipeline();
 
   /**
-   * Cleans the image view of the given eye and swapchain image index.
+   * Cleans the image view of the given widget and swapchain image index.
    *
-   * @param index The index of the image in the swapchain.
+   * @param widget_index The index of the widget.
+   * @param swapchain_image_index The index of the image in the swapchain.
    */
-  void CleanTextureImageView(int index);
+  void CleanTextureImageView(const int widget_index,
+                             const int swapchain_image_index);
 
   /**
    * Creates a vertex buffer and store it internally.
    *
    * @param vertices Content of the vertex buffer.
-   * @param index The index of the buffer.
+   * @param widget_index The index of the widget related to the buffer.
    */
-  void CreateVertexBuffer(std::vector<Vertex> vertices, const uint32_t index);
+  void CreateVertexBuffer(std::vector<Vertex> vertices,
+                          const uint32_t widget_index);
+
+  /**
+   * Cleans a vertex buffer.
+   *
+   * @param widget_index The index of the widget related to the buffer.
+   */
+  void CleanVertexBuffer(const uint32_t widget_index);
 
   /**
    * Creates an index buffer and store it internally.
@@ -202,7 +231,7 @@ class VulkanWidgetsRenderer {
   VkRenderPass current_render_pass_;
 
   // Variables created and maintained by the widget renderer.
-  uint32_t widget_image_count_;
+  uint32_t swapchain_image_count_;
   int indices_count_;
   VkSampler texture_sampler_;
   VkDescriptorSetLayout descriptor_set_layout_;
@@ -212,9 +241,7 @@ class VulkanWidgetsRenderer {
   std::vector<VkDeviceMemory> vertex_buffers_memory_;
   VkBuffer index_buffers_;
   VkDeviceMemory index_buffers_memory_;
-  VkDescriptorPool descriptor_pool_;
-  std::vector<VkDescriptorSet> descriptor_sets_;
-  std::vector<VkImageView> image_views_;
+  std::vector<PerWidgetData> widgets_data_;
   std::vector<Renderer::WidgetParams> current_widget_params_;
 };
 

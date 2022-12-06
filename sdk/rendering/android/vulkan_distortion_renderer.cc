@@ -40,7 +40,7 @@
 
 namespace cardboard::rendering {
 
-struct UniformBufferObject {
+struct PushConstantsObject {
   float left_u;
   float right_u;
   float top_v;
@@ -102,11 +102,6 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     vkFreeMemory(logical_device_, vertex_buffers_memory_[kLeft], nullptr);
     vkDestroyBuffer(logical_device_, vertex_buffers_[kRight], nullptr);
     vkFreeMemory(logical_device_, vertex_buffers_memory_[kRight], nullptr);
-
-    vkDestroyBuffer(logical_device_, uniform_buffers_[kLeft], nullptr);
-    vkFreeMemory(logical_device_, uniform_buffers_memory_[kLeft], nullptr);
-    vkDestroyBuffer(logical_device_, uniform_buffers_[kRight], nullptr);
-    vkFreeMemory(logical_device_, uniform_buffers_memory_[kRight], nullptr);
   }
 
   void SetMesh(const CardboardMesh* mesh, CardboardEye eye) override {
@@ -216,7 +211,7 @@ class VulkanDistortionRenderer : public DistortionRenderer {
    */
   void CreateSharedVulkanObjects() {
     // Create DescriptorSet Layout
-    VkDescriptorSetLayoutBinding bindings[2];
+    VkDescriptorSetLayoutBinding bindings[1];
 
     VkDescriptorSetLayoutBinding sampler_layout_binding{
         .binding = 0,
@@ -227,22 +222,20 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     };
     bindings[0] = sampler_layout_binding;
 
-    VkDescriptorSetLayoutBinding ubo_layout_binding{
-        .binding = 1,
-        .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = 1,
-        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-        .pImmutableSamplers = nullptr,
-    };
-    bindings[1] = ubo_layout_binding;
-
     VkDescriptorSetLayoutCreateInfo layout_info = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .bindingCount = 2,
+        .bindingCount = 1,
         .pBindings = bindings,
     };
     CALL_VK(vkCreateDescriptorSetLayout(logical_device_, &layout_info, nullptr,
                                         &descriptor_set_layout_));
+
+    // Setup push constants.
+    VkPushConstantRange push_constant_range = {
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+      .offset = 0,
+      .size = sizeof(PushConstantsObject),
+    };
 
     // Create Pipeline Layout
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{
@@ -250,8 +243,8 @@ class VulkanDistortionRenderer : public DistortionRenderer {
         .pNext = nullptr,
         .setLayoutCount = 1,
         .pSetLayouts = &descriptor_set_layout_,
-        .pushConstantRangeCount = 0,
-        .pPushConstantRanges = nullptr,
+        .pushConstantRangeCount = 1,
+        .pPushConstantRanges = &push_constant_range,
     };
     CALL_VK(vkCreatePipelineLayout(logical_device_,
                                    &pipeline_layout_create_info, nullptr,
@@ -290,30 +283,19 @@ class VulkanDistortionRenderer : public DistortionRenderer {
    */
   void CreatePerEyeVulkanObjects(CardboardEye eye) {
     // Create Descriptor Pool
-    VkDescriptorPoolSize pool_sizes[2];
+    VkDescriptorPoolSize pool_sizes[1];
     pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     pool_sizes[0].descriptorCount =
-        static_cast<uint32_t>(swapchain_image_count_);
-    pool_sizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    pool_sizes[1].descriptorCount =
         static_cast<uint32_t>(swapchain_image_count_);
 
     VkDescriptorPoolCreateInfo pool_info{};
     pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    pool_info.poolSizeCount = 2;
+    pool_info.poolSizeCount = 1;
     pool_info.pPoolSizes = pool_sizes;
     pool_info.maxSets = static_cast<uint32_t>(swapchain_image_count_);
 
     CALL_VK(vkCreateDescriptorPool(logical_device_, &pool_info, nullptr,
                                    &descriptor_pool_[eye]));
-
-    // Create Uniform Buffers
-    VkDeviceSize buffer_size = sizeof(UniformBufferObject);
-
-    CreateBuffer(buffer_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                 uniform_buffers_[eye], uniform_buffers_memory_[eye]);
 
     // Create Descriptor Sets
     std::vector<VkDescriptorSetLayout> layouts(swapchain_image_count_,
@@ -567,18 +549,14 @@ class VulkanDistortionRenderer : public DistortionRenderer {
       const CardboardEyeTextureDescription* eye_description, CardboardEye eye,
       VkCommandBuffer command_buffer, uint32_t image_index, int x, int y,
       int width, int height) {
-    // Update Uniform Buffer
-    UniformBufferObject ubo{
+    // Update Push constants.
+    PushConstantsObject push_constants {
         .left_u = eye_description->left_u,
         .right_u = eye_description->right_u,
         .top_v = eye_description->top_v,
         .bottom_v = eye_description->bottom_v,
     };
-    void* data;
-    vkMapMemory(logical_device_, uniform_buffers_memory_[eye], 0, sizeof(ubo),
-                0, &data);
-    memcpy(data, &ubo, sizeof(ubo));
-    vkUnmapMemory(logical_device_, uniform_buffers_memory_[eye]);
+    vkCmdPushConstants(command_buffer, pipeline_layout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantsObject), &push_constants);
 
     // Update image and view
     VkImage current_image = reinterpret_cast<VkImage>(eye_description->texture);
@@ -611,17 +589,13 @@ class VulkanDistortionRenderer : public DistortionRenderer {
                               &image_views_[eye][image_index]));
 
     // Update Descriptor Sets
-    VkDescriptorBufferInfo buffer_info{.buffer = uniform_buffers_[eye],
-                                       .offset = 0,
-                                       .range = sizeof(UniformBufferObject)};
-
     VkDescriptorImageInfo image_info{
         .sampler = texture_sampler_,
         .imageView = image_views_[eye][image_index],
         .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
     };
 
-    VkWriteDescriptorSet descriptor_writes[2];
+    VkWriteDescriptorSet descriptor_writes[1];
 
     descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptor_writes[0].dstSet = descriptor_sets_[eye][image_index];
@@ -633,16 +607,7 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     descriptor_writes[0].pImageInfo = &image_info;
     descriptor_writes[0].pNext = nullptr;
 
-    descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_writes[1].dstSet = descriptor_sets_[eye][image_index];
-    descriptor_writes[1].dstBinding = 1;
-    descriptor_writes[1].dstArrayElement = 0;
-    descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_writes[1].descriptorCount = 1;
-    descriptor_writes[1].pBufferInfo = &buffer_info;
-    descriptor_writes[1].pNext = nullptr;
-
-    vkUpdateDescriptorSets(logical_device_, 2, descriptor_writes, 0, nullptr);
+    vkUpdateDescriptorSets(logical_device_, 1, descriptor_writes, 0, nullptr);
 
     // Update Viewport and scissor
     VkViewport viewport = {.x = static_cast<float>(x),
@@ -725,8 +690,6 @@ class VulkanDistortionRenderer : public DistortionRenderer {
   VkDeviceMemory vertex_buffers_memory_[2];
   VkBuffer index_buffers_[2];
   VkDeviceMemory index_buffers_memory_[2];
-  VkBuffer uniform_buffers_[2];
-  VkDeviceMemory uniform_buffers_memory_[2];
   VkDescriptorPool descriptor_pool_[2];
   std::vector<VkDescriptorSet> descriptor_sets_[2];
   std::vector<VkImageView> image_views_[2];
