@@ -51,11 +51,6 @@ class DeviceGyroscopeSensor {
   // Stops the sensor capture process.
   void Stop();
 
-  // Provides initial system bias. This is only valid after the first sample has
-  // been polled. This function is thread-safe.
-  // @return The initial bias provide by the OS.
-  static Vector3 GetInitialSystemBias();
-
   // The implementation of device sensors differs between iOS and Android.
   struct SensorInfo;
 

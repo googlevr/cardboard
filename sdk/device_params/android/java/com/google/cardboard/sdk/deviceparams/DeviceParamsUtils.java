@@ -18,6 +18,7 @@ package com.google.cardboard.sdk.deviceparams;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import com.google.cardboard.proto.CardboardDevice;
+import com.google.cardboard.sdk.UsedByNative;
 import com.google.protobuf.ExtensionRegistryLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -36,6 +37,7 @@ public class DeviceParamsUtils {
    * @return The embedded params. Null if the embedded params do not exist or parsing fails.
    */
   @Nullable
+  @UsedByNative
   public static CardboardDevice.DeviceParams parseCardboardDeviceParams(
       byte[] serializedDeviceParams) {
     try {

@@ -31,6 +31,8 @@
 
 namespace cardboard::unity {
 namespace {
+const uint64_t kFenceTimeoutNs = 100000000;
+
 /**
  * Holds and manages the version of the swapchain.
  * Dependent code on the swapchain handle must own both a copy of the handle and
@@ -178,6 +180,60 @@ class VulkanRenderer : public Renderer {
     swapchain_views_.resize(swapchain_image_count_);
     frame_buffers_.resize(swapchain_image_count_);
 
+    // Create command pool.
+    const VkCommandPoolCreateInfo cmd_pool_create_info{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = vulkanInstance.queueFamilyIndex,
+    };
+    cardboard::rendering::vkCreateCommandPool(
+        logical_device_, &cmd_pool_create_info, nullptr, &command_pool_);
+
+    // Create command buffers.
+    command_buffers_.resize(swapchain_image_count_);
+    const VkCommandBufferAllocateInfo cmd_buffer_create_info{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .commandPool = command_pool_,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = swapchain_image_count_,
+    };
+    cardboard::rendering::vkAllocateCommandBuffers(
+        logical_device_, &cmd_buffer_create_info, command_buffers_.data());
+
+    // Create fences.
+    fences_.resize(swapchain_image_count_);
+
+    // We need a fence in the main thread so the frame buffer won't be swapped
+    // until drawing commands are completed.
+    const VkFenceCreateInfo fence_create_info{
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+    };
+
+    for (auto& fence : fences_) {
+      cardboard::rendering::vkCreateFence(logical_device_, &fence_create_info,
+                                          nullptr, &fence);
+    }
+
+    // Create semaphores.
+    semaphores_.resize(swapchain_image_count_);
+
+    // We need a semaphore in the main thread so it could wait until the frame
+    // buffer is available.
+    const VkSemaphoreCreateInfo semaphore_create_info{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+    };
+
+    for (auto& semaphore : semaphores_) {
+      cardboard::rendering::vkCreateSemaphore(
+          logical_device_, &semaphore_create_info, nullptr, &semaphore);
+    }
+
     // Get the images from the swapchain and wrap it into a image view.
     cardboard::rendering::vkGetSwapchainImagesKHR(logical_device_, swapchain_,
                                                   &swapchain_image_count_,
@@ -222,7 +278,7 @@ class VulkanRenderer : public Renderer {
         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
     };
 
     const VkAttachmentReference colour_reference = {
@@ -256,6 +312,8 @@ class VulkanRenderer : public Renderer {
   }
 
   ~VulkanRenderer() {
+    WaitForAllFences(kFenceTimeoutNs);
+
     TeardownWidgets();
 
     // Remove the Vulkan resources created by this VulkanRenderer.
@@ -269,6 +327,30 @@ class VulkanRenderer : public Renderer {
 
     cardboard::rendering::vkDestroyRenderPass(logical_device_, render_pass_,
                                               nullptr);
+    // Clean semaphores.
+    for (auto& semaphore : semaphores_) {
+      if (semaphore != VK_NULL_HANDLE) {
+        cardboard::rendering::vkDestroySemaphore(logical_device_, semaphore,
+                                                 nullptr);
+        semaphore = VK_NULL_HANDLE;
+      }
+    }
+
+    // Clean fences.
+    for (auto& fence : fences_) {
+      if (fence != VK_NULL_HANDLE) {
+        cardboard::rendering::vkDestroyFence(logical_device_, fence, nullptr);
+        fence = VK_NULL_HANDLE;
+      }
+    }
+
+    // Delete command buffers.
+    cardboard::rendering::vkFreeCommandBuffers(logical_device_, command_pool_,
+                                               swapchain_image_count_,
+                                               command_buffers_.data());
+
+    cardboard::rendering::vkDestroyCommandPool(logical_device_, command_pool_,
+                                               nullptr);
   }
 
   void SetupWidgets() override {
@@ -283,11 +365,13 @@ class VulkanRenderer : public Renderer {
     }
 
     widget_renderer_->RenderWidgets(screen_params, widget_params,
-                                    current_command_buffer_, image_index,
+                                    command_buffers_[image_index], image_index,
                                     render_pass_);
   }
 
   void TeardownWidgets() override {
+    WaitForAllFences(kFenceTimeoutNs);
+
     if (widget_renderer_ != nullptr) {
       widget_renderer_.reset(nullptr);
     }
@@ -361,9 +445,14 @@ class VulkanRenderer : public Renderer {
     CardboardVulkanDistortionRendererTarget target_config{
         .vk_render_pass = reinterpret_cast<uint64_t>(&render_pass_),
         .vk_command_buffer =
-            reinterpret_cast<uint64_t>(&current_command_buffer_),
+            reinterpret_cast<uint64_t>(&command_buffers_[image_index]),
         .swapchain_image_index = image_index,
     };
+
+    current_image_left_ = reinterpret_cast<VkImage>(left_eye->texture);
+    current_image_right_ = reinterpret_cast<VkImage>(right_eye->texture);
+    TransitionEyeImagesLayoutFromUnityToDistortionRenderer(
+        current_image_left_, current_image_right_);
 
     CardboardDistortionRenderer_renderEyeToDisplay(
         renderer, reinterpret_cast<uint64_t>(&target_config),
@@ -382,7 +471,6 @@ class VulkanRenderer : public Renderer {
     vulkan_interface_->CommandRecordingState(
         &vulkanRecordingState, kUnityVulkanGraphicsQueueAccess_DontCare);
 
-    current_command_buffer_ = vulkanRecordingState.commandBuffer;
     // If width or height of the rendering area changes, then we need to
     // recreate all frame buffers.
     if (screen_params.viewport_width != current_rendering_width_ ||
@@ -416,6 +504,21 @@ class VulkanRenderer : public Renderer {
       frames_to_update_count_--;
     }
 
+    // Begin recording command buffers.
+    cardboard::rendering::vkWaitForFences(logical_device_, 1 /* fenceCount */,
+                                          &fences_[image_index], VK_TRUE,
+                                          kFenceTimeoutNs);
+
+    // We start by creating and declaring the "beginning" of our command buffer
+    VkCommandBufferBeginInfo cmd_buffer_begin_info{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .pInheritanceInfo = nullptr,
+    };
+    cardboard::rendering::vkBeginCommandBuffer(command_buffers_[image_index],
+                                               &cmd_buffer_begin_info);
+
     // Begin RenderPass
     const VkClearValue clear_vals = {
         .color = {.float32 = {0.0f, 0.0f, 0.0f, 1.0f}}};
@@ -438,7 +541,7 @@ class VulkanRenderer : public Renderer {
                            }},
         .clearValueCount = 1,
         .pClearValues = &clear_vals};
-    cardboard::rendering::vkCmdBeginRenderPass(current_command_buffer_,
+    cardboard::rendering::vkCmdBeginRenderPass(command_buffers_[image_index],
                                                &render_pass_begin_info,
                                                VK_SUBPASS_CONTENTS_INLINE);
   }
@@ -448,10 +551,99 @@ class VulkanRenderer : public Renderer {
       return;
     }
 
-    cardboard::rendering::vkCmdEndRenderPass(current_command_buffer_);
+    cardboard::rendering::vkCmdEndRenderPass(command_buffers_[image_index]);
+    cardboard::rendering::vkEndCommandBuffer(command_buffers_[image_index]);
+
+    // Submit recording command buffer.
+    cardboard::rendering::vkResetFences(logical_device_, 1,
+                                        &fences_[image_index]);
+
+    VkSemaphore wait_semaphores[] = {semaphores_[image_index]};
+    VkPipelineStageFlags wait_stages[] = {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    const VkSubmitInfo submit_info = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 0,
+        .pWaitSemaphores = wait_semaphores,
+        .pWaitDstStageMask = wait_stages,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &command_buffers_[image_index]};
+
+    UnityVulkanInstance vulkanInstance = vulkan_interface_->Instance();
+
+    VkResult result = cardboard::rendering::vkQueueSubmit(
+        vulkanInstance.graphicsQueue, 1, &submit_info, fences_[image_index]);
+    if (result != VK_SUCCESS) {
+      CARDBOARD_LOGE("Failed to submit command buffer due to error code %d",
+                     result);
+    }
+
+    // Once the commands have been submited, set the layout that Unity uses to
+    // draw on the images.
+    TransitionEyeImagesLayoutFromDistortionRendererToUnity(
+        current_image_left_, current_image_right_);
+  }
+
+  void WaitForAllFences(uint64_t timeout_ns) {
+    cardboard::rendering::vkWaitForFences(logical_device_,
+                                          fences_.size() /* fenceCount */,
+                                          fences_.data(), VK_TRUE, timeout_ns);
   }
 
  private:
+  // @{ The distortion renderer needs the VkImages for both eyes to have
+  // VK_IMAGE_LAYOUT_GENERAL in order to use them as image samplers.
+  //
+  // However, after Unity processes the VkImages
+  // for both eyes to get undistorted pictures of the world, it returns the
+  // images with different layouts:
+  // - Left: VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
+  // - Right: VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL.
+  //
+  // This set of methods and variables is a workaround for this unexpected
+  // behavior setting the layout that the. distortion renderer requires before
+  // passing the images to it and changing them to what. Unity requires after
+  // the command buffers are submitted to the queue.
+  static const VkImageLayout kUnityLeftEyeImageLayout =
+      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+  static const VkImageLayout kUnityRightEyeImageLayout =
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  static const VkImageLayout kDistortionRendererEyeImagesLayout =
+      VK_IMAGE_LAYOUT_GENERAL;
+
+  /**
+   * Changes the image layout of the received images from the layout used by
+   * Unity to draw on them to the layout used by the distortion renderer as an
+   * image sampler.
+   *
+   * @param left_eye_image Image used for the left eye.
+   * @param right_eye_image Image used for the right eye.
+   */
+  void TransitionEyeImagesLayoutFromUnityToDistortionRenderer(
+      VkImage left_eye_image, VkImage right_eye_image) {
+    TransitionImageLayout(left_eye_image, kUnityLeftEyeImageLayout,
+                          kDistortionRendererEyeImagesLayout);
+    TransitionImageLayout(right_eye_image, kUnityRightEyeImageLayout,
+                          kDistortionRendererEyeImagesLayout);
+  }
+
+  /**
+   * Changes the image layout of the received images from the layout used by the
+   * distortion renderer as an image sampler to the layout used by Unity to draw
+   * on them.
+   *
+   * @param left_eye_image Image used for the left eye.
+   * @param right_eye_image Image used for the right eye.
+   */
+  void TransitionEyeImagesLayoutFromDistortionRendererToUnity(
+      VkImage left_eye_image, VkImage right_eye_image) {
+    TransitionImageLayout(left_eye_image, kDistortionRendererEyeImagesLayout,
+                          kUnityLeftEyeImageLayout);
+    TransitionImageLayout(right_eye_image, kDistortionRendererEyeImagesLayout,
+                          kUnityRightEyeImageLayout);
+  }
+  // @}
+
   /**
    * Find the memory type of the physical device.
    *
@@ -478,21 +670,115 @@ class VulkanRenderer : public Renderer {
     return 0;
   }
 
+  /**
+   * Changes the layout of the received image.
+   *
+   * @param image The image whose layout will be changed.
+   * @param old_layout Current layout of the image.
+   * @param new_layout New layout for the image.
+   */
+  void TransitionImageLayout(VkImage image, VkImageLayout old_layout,
+                             VkImageLayout new_layout) {
+    VkCommandBuffer command_buffer = BeginSingleTimeCommands();
+
+    VkImageMemoryBarrier barrier{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .oldLayout = old_layout,
+        .newLayout = new_layout,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = image,
+        .subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .subresourceRange.baseMipLevel = 0,
+        .subresourceRange.levelCount = 1,
+        .subresourceRange.baseArrayLayer = 0,
+        .subresourceRange.layerCount = 1,
+    };
+
+    VkPipelineStageFlags source_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    VkPipelineStageFlags destination_stage =
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    cardboard::rendering::vkCmdPipelineBarrier(command_buffer, source_stage,
+                                               destination_stage, 0, 0, nullptr,
+                                               0, nullptr, 1, &barrier);
+    EndSingleTimeCommands(command_buffer);
+  }
+
+  /**
+   * Creates a command buffer that is supossed to be used once and returns it.
+   *
+   * @return The command buffer.
+   */
+  VkCommandBuffer BeginSingleTimeCommands() {
+    VkCommandBufferAllocateInfo alloc_info{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = command_pool_,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1,
+    };
+
+    VkCommandBuffer command_buffer;
+    cardboard::rendering::vkAllocateCommandBuffers(logical_device_, &alloc_info,
+                                                   &command_buffer);
+
+    VkCommandBufferBeginInfo begin_info{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+    };
+
+    cardboard::rendering::vkBeginCommandBuffer(command_buffer, &begin_info);
+
+    return command_buffer;
+  }
+
+  /**
+   * Submits a single timme command buffer to the current queue and frees its
+   * memory.
+   *
+   * @param The command buffer.
+   */
+  void EndSingleTimeCommands(VkCommandBuffer command_buffer) {
+    cardboard::rendering::vkEndCommandBuffer(command_buffer);
+
+    VkSubmitInfo submit_info{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &command_buffer,
+    };
+
+    UnityVulkanInstance vulkan_instance = vulkan_interface_->Instance();
+
+    cardboard::rendering::vkQueueSubmit(vulkan_instance.graphicsQueue, 1,
+                                        &submit_info, VK_NULL_HANDLE);
+    cardboard::rendering::vkQueueWaitIdle(vulkan_instance.graphicsQueue);
+
+    cardboard::rendering::vkFreeCommandBuffers(logical_device_, command_pool_,
+                                               1, &command_buffer);
+  }
+
   // Variables created externally.
   int current_rendering_width_;
   int current_rendering_height_;
   IUnityGraphicsVulkanV2* vulkan_interface_{nullptr};
   VkPhysicalDevice physical_device_;
   VkDevice logical_device_;
-  VkCommandBuffer current_command_buffer_;
   std::vector<VkImage> swapchain_images_;
   VkSwapchainKHR swapchain_;
   int swapchain_version_;
+  VkImage current_image_left_;
+  VkImage current_image_right_;
 
   // Variables created and maintained by the vulkan renderer.
   uint32_t swapchain_image_count_;
   uint32_t frames_to_update_count_;
   VkRenderPass render_pass_;
+  VkCommandPool command_pool_;
+  std::vector<VkFence> fences_;
+  std::vector<VkSemaphore> semaphores_;
+  std::vector<VkCommandBuffer> command_buffers_;
   std::vector<VkImageView> swapchain_views_;
   std::vector<VkFramebuffer> frame_buffers_;
   std::unique_ptr<VulkanWidgetsRenderer> widget_renderer_;

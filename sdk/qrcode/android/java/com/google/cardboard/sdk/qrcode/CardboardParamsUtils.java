@@ -23,6 +23,7 @@ import android.util.Base64;
 import android.util.Log;
 import androidx.annotation.ChecksSdkIntAtLeast;
 import androidx.annotation.Nullable;
+import com.google.cardboard.sdk.UsedByNative;
 import com.google.cardboard.sdk.deviceparams.CardboardV1DeviceParams;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -119,6 +120,7 @@ public abstract class CardboardParamsUtils {
    * @param uriAsBytes URI string (as a bytes array) used to get the device parameters.
    * @param context The current Context. It is or wraps an Activity or an Application instance.
    */
+  @UsedByNative
   public static void saveParamsFromUri(byte[] uriAsBytes, Context context) {
     String uriAsString = new String(uriAsBytes);
     UriToParamsStatus uriToParamsStatus = getParamsFromUriString(uriAsString, new UrlFactory());
@@ -207,6 +209,7 @@ public abstract class CardboardParamsUtils {
    * @param context The current Context. It is or wraps an Activity or an Application instance.
    * @return A byte array with proto encoded device parameters.
    */
+  @UsedByNative
   public static byte[] readDeviceParams(Context context) {
     if (!isAtLeastQ()) {
       Log.d(TAG, "Reading device parameters from external storage.");

@@ -20,15 +20,16 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 import androidx.annotation.ChecksSdkIntAtLeast;
+import com.google.cardboard.sdk.UsedByNative;
 
 /** Utility methods to manage the screen parameters. */
 public abstract class ScreenParamsUtils {
   /** Holds the screen pixel density. */
   public static class ScreenPixelDensity {
     /** The exact number of pixels per inch in the x direction. */
-    public final float xdpi;
+    @UsedByNative public final float xdpi;
     /** The exact number of pixels per inch in the y direction. */
-    public final float ydpi;
+    @UsedByNative public final float ydpi;
 
     /**
      * Constructor.
@@ -62,6 +63,7 @@ public abstract class ScreenParamsUtils {
    * @return A ScreenPixelDensity.
    */
   @SuppressWarnings("deprecation")
+  @UsedByNative
   public static ScreenPixelDensity getScreenPixelDensity(Context context) {
     DisplayMetrics displayMetrics = new DisplayMetrics();
     if (isAtLeastR()) {

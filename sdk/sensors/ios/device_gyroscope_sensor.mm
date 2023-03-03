@@ -31,12 +31,7 @@ static const int64_t kNsecPerSec = 1000000000;
 
 // This struct holds gyroscope specific sensor information.
 struct DeviceGyroscopeSensor::SensorInfo {
-  // The initial System gyro bias values. *used for testing*
-  static Vector3 initial_system_gyro_bias;
 };
-
-// Defines the static variable.
-Vector3 DeviceGyroscopeSensor::SensorInfo::initial_system_gyro_bias = Vector3::Zero();
 
 DeviceGyroscopeSensor::DeviceGyroscopeSensor() : sensor_info_(new SensorInfo()) {}
 
@@ -66,11 +61,6 @@ bool DeviceGyroscopeSensor::Start() {
 
 void DeviceGyroscopeSensor::Stop() {
   // This should never be called on iOS.
-}
-
-// This function returns gyroscope initial system bias
-Vector3 DeviceGyroscopeSensor::GetInitialSystemBias() {
-  return SensorInfo::initial_system_gyro_bias;
 }
 
 }  // namespace cardboard

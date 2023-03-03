@@ -18,7 +18,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 31
         versionCode 1
-        versionName "1.19.0"
+        versionName "1.20.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
@@ -43,7 +43,7 @@ android {
         // Sets path to java, jni, resources files and manifest location as it is not the default one.
         main {
             manifest.srcFile 'qrcode/android/AndroidManifest.xml'
-            java.srcDirs = ['qrcode/android/java', 'device_params/android/java', 'screen_params/android/java']
+            java.srcDirs = ['qrcode/android/java', 'device_params/android/java', 'screen_params/android/java', 'java_utils/android/java']
             jni.srcDirs = ['qrcode/android/jni']
             res.srcDirs = ['qrcode/android/res']
         }

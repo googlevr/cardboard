@@ -23,58 +23,95 @@
 #include "util/vectorutils.h"
 
 namespace cardboard {
+// @{ Hold rotations to adapt the pose estimation to the viewport and head
+// poses. Use the following indexing for each viewport orientation:
+// [0]: Landscape left.
+// [1]: Landscape right.
+// [2]: Portrait.
+// [3]: Portrait upside down.
+static std::array<Rotation, 4> SensorToDisplayRotations() {
+  static std::array<Rotation, 4> kSensorToDisplayRotations{
+      // LandscapeLeft: This is the same than initializing the rotation from
+      // Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), M_PI / 2.).
+      Rotation::FromQuaternion(Rotation::QuaternionType(
+          0., 0., 0.7071067811865476, 0.7071067811865476)),
+      // LandscapeRight: This is the same than initializing the rotation from
+      // Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), -M_PI / 2.).
+      Rotation::FromQuaternion(Rotation::QuaternionType(
+          0., 0., -0.7071067811865476, 0.7071067811865476)),
+      // Portrait: This is the same than initializing the rotation from
+      // Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), 0.).
+      Rotation::FromQuaternion(Rotation::QuaternionType(0., 0., 0., 1.)),
+      // PortaitUpsideDown: This is the same than initializing the rotation from
+      // Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), M_PI).
+      Rotation::FromQuaternion(Rotation::QuaternionType(0., 0., 1., 0.))};
+  return kSensorToDisplayRotations;
+}
 
-const std::array<Rotation, 4> HeadTracker::kEkfToHeadTrackerRotations{
-    // LandscapeLeft: This is the same than initializing the rotation from
-    // Rotation::FromYawPitchRoll(-M_PI / 2., 0, -M_PI / 2.).
-    Rotation::FromQuaternion(Rotation::QuaternionType(0.5, -0.5, -0.5, 0.5)),
-    // LandscapeRight: This is the same than initializing the rotation from
-    // Rotation::FromYawPitchRoll(M_PI / 2., 0, M_PI / 2.).
-    Rotation::FromQuaternion(Rotation::QuaternionType(0.5, 0.5, 0.5, 0.5)),
-    // Portrait: This is the same than initializing the rotation from
-    // Rotation::FromYawPitchRoll(M_PI / 2., M_PI / 2., M_PI / 2.).
-    Rotation::FromQuaternion(Rotation::QuaternionType(0.7071067811865476, 0.,
-                                                      0., 0.7071067811865476)),
-    // Portrait upside down: This is the same than initializing the rotation
-    // from Rotation::FromYawPitchRoll(-M_PI / 2., -M_PI / 2., -M_PI / 2.).
-    Rotation::FromQuaternion(Rotation::QuaternionType(
-        0., -0.7071067811865476, -0.7071067811865476, 0.))};
+static std::array<Rotation, 4> EkfToHeadTrackerRotations() {
+  static std::array<Rotation, 4> kEkfToHeadTrackerRotations{
+      // LandscapeLeft: This is the same than initializing the rotation from
+      // Rotation::FromYawPitchRoll(-M_PI / 2., 0, -M_PI / 2.).
+      Rotation::FromQuaternion(Rotation::QuaternionType(0.5, -0.5, -0.5, 0.5)),
+      // LandscapeRight: This is the same than initializing the rotation from
+      // Rotation::FromYawPitchRoll(M_PI / 2., 0, M_PI / 2.).
+      Rotation::FromQuaternion(Rotation::QuaternionType(0.5, 0.5, 0.5, 0.5)),
+      // Portrait: This is the same than initializing the rotation from
+      // Rotation::FromYawPitchRoll(M_PI / 2., M_PI / 2., M_PI / 2.).
+      Rotation::FromQuaternion(Rotation::QuaternionType(
+          0.7071067811865476, 0., 0., 0.7071067811865476)),
+      // Portrait upside down: This is the same than initializing the rotation
+      // from Rotation::FromYawPitchRoll(-M_PI / 2., -M_PI / 2., -M_PI / 2.).
+      Rotation::FromQuaternion(Rotation::QuaternionType(
+          0., -0.7071067811865476, -0.7071067811865476, 0.))};
+  return kEkfToHeadTrackerRotations;
+}
+// @}
 
-const std::array<Rotation, 4> HeadTracker::kSensorToDisplayRotations{
-    // LandscapeLeft: This is the same than initializing the rotation from
-    // Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), M_PI / 2.).
-    Rotation::FromQuaternion(Rotation::QuaternionType(
-        0., 0., 0.7071067811865476, 0.7071067811865476)),
-    // LandscapeRight: This is the same than initializing the rotation from
-    // Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), -M_PI / 2.).
-    Rotation::FromQuaternion(Rotation::QuaternionType(
-        0., 0., -0.7071067811865476, 0.7071067811865476)),
-    // Portrait: This is the same than initializing the rotation from
-    // Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), 0.).
-    Rotation::FromQuaternion(Rotation::QuaternionType(0., 0., 0., 1.)),
-    // PortaitUpsideDown: This is the same than initializing the rotation from
-    // Rotation::FromAxisAndAngle(Vector3(0., 0., 1.), M_PI).
-    Rotation::FromQuaternion(Rotation::QuaternionType(0., 0., 1., 0.))};
-
-const std::array<std::array<Rotation, 4>, 4>
-    HeadTracker::kViewportChangeRotationCompensation{{
-        // Landscape left.
-        {Rotation::Identity(), Rotation::FromYawPitchRoll(0, 0, M_PI),
-         Rotation::FromYawPitchRoll(0, 0, -M_PI / 2),
-         Rotation::FromYawPitchRoll(0, 0, M_PI / 2)},
-        // Landscape Right.
-        {Rotation::FromYawPitchRoll(0, 0, M_PI), Rotation::Identity(),
-         Rotation::FromYawPitchRoll(0, 0, M_PI / 2),
-         Rotation::FromYawPitchRoll(0, 0, -M_PI / 2)},
-        // Portrait.
-        {Rotation::FromYawPitchRoll(0, 0, M_PI / 2),
-         Rotation::FromYawPitchRoll(0, 0, -M_PI / 2), Rotation::Identity(),
-         Rotation::FromYawPitchRoll(0, 0, M_PI)},
-        // Portrait Upside Down.
-        {Rotation::FromYawPitchRoll(0, 0, -M_PI / 2),
-         Rotation::FromYawPitchRoll(0, 0, M_PI / 2),
-         Rotation::FromYawPitchRoll(0, 0, M_PI), Rotation::Identity()},
-    }};
+// Contains the necessary rotations to account for changes in reported head
+// pose when the tracker starts/resets in a certain viewport and then changes
+// to another.
+//
+// The rows contain the current viewport orientation, the columns contain the
+// transformed viewport orientation. See below:
+//
+// @code
+// kViewportChangeRotationCompensation[current_viewport_orientation]
+//                                    [new_viewport_orientation]
+// @endcode
+//
+// Roll angle needs to change. The following table shows the correction angle
+// for each combination:
+//
+// | Current\New     | LL  | LR  |  P  | PUD |
+// |-----------------|-----|-----|-----|-----|
+// | Landscape Left  | 0   | π   |-π/2 | π/2 |
+// | Landscape Right | π   | 0   | π/2 |-π/2 |
+// | Portrait        | π/2 |-π/2 | 0   | π   |
+// | Portrait UD     |-π/2 | π/2 | π   | 0   |
+static std::array<std::array<Rotation, 4>, 4>
+ViewportChangeRotationCompensation() {
+  static std::array<std::array<Rotation, 4>, 4>
+      kViewportChangeRotationCompensation{{
+          // Landscape left.
+          {Rotation::Identity(), Rotation::FromYawPitchRoll(0, 0, M_PI),
+           Rotation::FromYawPitchRoll(0, 0, -M_PI / 2),
+           Rotation::FromYawPitchRoll(0, 0, M_PI / 2)},
+          // Landscape Right.
+          {Rotation::FromYawPitchRoll(0, 0, M_PI), Rotation::Identity(),
+           Rotation::FromYawPitchRoll(0, 0, M_PI / 2),
+           Rotation::FromYawPitchRoll(0, 0, -M_PI / 2)},
+          // Portrait.
+          {Rotation::FromYawPitchRoll(0, 0, M_PI / 2),
+           Rotation::FromYawPitchRoll(0, 0, -M_PI / 2), Rotation::Identity(),
+           Rotation::FromYawPitchRoll(0, 0, M_PI)},
+          // Portrait Upside Down.
+          {Rotation::FromYawPitchRoll(0, 0, -M_PI / 2),
+           Rotation::FromYawPitchRoll(0, 0, M_PI / 2),
+           Rotation::FromYawPitchRoll(0, 0, M_PI), Rotation::Identity()},
+      }};
+  return kViewportChangeRotationCompensation;
+}
 
 HeadTracker::HeadTracker()
     : is_tracking_(false),
@@ -125,8 +162,8 @@ void HeadTracker::GetPose(int64_t timestamp_ns,
   if (is_viewport_orientation_initialized_ &&
       viewport_orientation != viewport_orientation_) {
     sensor_fusion_->RotateSensorSpaceToStartSpaceTransformation(
-        kViewportChangeRotationCompensation[viewport_orientation_]
-                                           [viewport_orientation]);
+        ViewportChangeRotationCompensation()[viewport_orientation_]
+                                            [viewport_orientation]);
   }
   viewport_orientation_ = viewport_orientation;
   is_viewport_orientation_initialized_ = true;
@@ -178,8 +215,8 @@ Rotation HeadTracker::GetRotation(
   // inverse default orientation (the orientation returned by a reset sensor,
   // i.e. since the last Reset() call), apply the current sensor transformation,
   // and then transform into display space.
-  return kSensorToDisplayRotations[viewport_orientation] * predicted_rotation *
-         kEkfToHeadTrackerRotations[viewport_orientation];
+  return SensorToDisplayRotations()[viewport_orientation] * predicted_rotation *
+         EkfToHeadTrackerRotations()[viewport_orientation];
 }
 
 }  // namespace cardboard

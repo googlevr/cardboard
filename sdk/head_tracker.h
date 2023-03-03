@@ -91,40 +91,6 @@ class HeadTracker {
   std::function<void(AccelerometerData)> on_accel_callback_;
   std::function<void(GyroscopeData)> on_gyro_callback_;
 
-  // @{ Hold rotations to adapt the pose estimation to the viewport and head
-  // poses. Use the following indexing for each viewport orientation:
-  // [0]: Landscape left.
-  // [1]: Landscape right.
-  // [2]: Portrait.
-  // [3]: Portrait upside down.
-  static const std::array<Rotation, 4> kSensorToDisplayRotations;
-  static const std::array<Rotation, 4> kEkfToHeadTrackerRotations;
-  // @}
-
-  // Contains the necessary rotations to account for changes in reported head
-  // pose when the tracker starts/resets in a certain viewport and then changes
-  // to another.
-  //
-  // The rows contain the current viewport orientation, the columns contain the
-  // transformed viewport orientation. See below:
-  //
-  // @code
-  // kViewportChangeRotationCompensation[current_viewport_orientation]
-  //                                    [new_viewport_orientation]
-  // @endcode
-  //
-  // Roll angle needs to change. The following table shows the correction angle
-  // for each combination:
-  //
-  // | Current\New     | LL  | LR  |  P  | PUD |
-  // |-----------------|-----|-----|-----|-----|
-  // | Landscape Left  | 0   | π   |-π/2 | π/2 |
-  // | Landscape Right | π   | 0   | π/2 |-π/2 |
-  // | Portrait        | π/2 |-π/2 | 0   | π   |
-  // | Portrait UD     |-π/2 | π/2 | π   | 0   |
-  static const std::array<std::array<Rotation, 4>, 4>
-      kViewportChangeRotationCompensation;
-
   // Orientation of the viewport. It is initialized in the first call of
   // GetPose().
   CardboardViewportOrientation viewport_orientation_;
