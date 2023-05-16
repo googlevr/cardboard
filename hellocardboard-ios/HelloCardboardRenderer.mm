@@ -183,7 +183,8 @@ void HelloCardboardRenderer::InitializeGl() {
   CardboardLensDistortion_getDistortionMesh(_lensDistortion, kLeft, &leftMesh);
   CardboardLensDistortion_getDistortionMesh(_lensDistortion, kRight, &rightMesh);
 
-  _distortionRenderer = CardboardOpenGlEs2DistortionRenderer_create();
+  const CardboardOpenGlEsDistortionRendererConfig config{kGlTexture2D};
+  _distortionRenderer = CardboardOpenGlEs2DistortionRenderer_create(&config);
   CardboardDistortionRenderer_setMesh(_distortionRenderer, &leftMesh, kLeft);
   CardboardDistortionRenderer_setMesh(_distortionRenderer, &rightMesh, kRight);
   CheckGLError("Cardboard distortion renderer set up");

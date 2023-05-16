@@ -25,8 +25,12 @@
 #ifdef __APPLE__
 #include <OpenGLES/ES3/gl.h>
 #endif
+#ifdef __ANDROID__
+#include <GLES2/gl2ext.h>
+#endif
 #include "distortion_renderer.h"
 #include "include/cardboard.h"
+#include "util/is_arg_null.h"
 #include "util/is_initialized.h"
 #include "util/logging.h"
 
@@ -43,7 +47,7 @@ constexpr const char* kDistortionVertexShader =
       v_TexCoords = a_TexCoords;
     })glsl";
 
-constexpr const char* kDistortionFragmentShader =
+constexpr const char* kDistortionFragmentShaderTexture2D =
     R"glsl(#version 300 es
     precision mediump float;
 
@@ -57,6 +61,23 @@ constexpr const char* kDistortionFragmentShader =
       vec2 coords = u_Start + v_TexCoords * (u_End - u_Start);
       o_FragColor = texture(u_Texture, coords);
     })glsl";
+
+#ifdef __ANDROID__
+constexpr const char* kDistortionFragmentShaderTextureExternalOes =
+    R"glsl(
+    #extension GL_OES_EGL_image_external : require
+    precision mediump float;
+
+    uniform samplerExternalOES u_Texture;
+    uniform vec2 u_Start;
+    uniform vec2 u_End;
+    varying vec2 v_TexCoords;
+
+    void main() {
+      vec2 coords = u_Start + v_TexCoords * (u_End - u_Start);
+      gl_FragColor = texture2D(u_Texture, coords);
+    })glsl";
+#endif
 
 void CheckGlError(const char* label) {
   int gl_error = glGetError();
@@ -140,13 +161,37 @@ namespace cardboard::rendering {
 // @brief OpenGL ES 3.0 concrete implementation of DistortionRenderer.
 class OpenGlEs3DistortionRenderer : public DistortionRenderer {
  public:
-  OpenGlEs3DistortionRenderer()
+  OpenGlEs3DistortionRenderer(
+      const CardboardOpenGlEsDistortionRendererConfig* config)
       : vertices_vbo_{0, 0},
         uvs_vbo_{0, 0},
         elements_vbo_{0, 0},
-        elements_count_{0, 0} {
-    program_ =
-        CreateProgram(kDistortionVertexShader, kDistortionFragmentShader);
+        elements_count_{0, 0},
+        eye_texture_type_{GL_TEXTURE_2D} {
+    const char* fragment_shader;
+
+    switch (config->texture_type) {
+      case kGlTexture2D:
+        fragment_shader = kDistortionFragmentShaderTexture2D;
+        eye_texture_type_ = GL_TEXTURE_2D;
+        break;
+#ifdef __ANDROID__
+      case kGlTextureExternalOes:
+        fragment_shader = kDistortionFragmentShaderTextureExternalOes;
+        eye_texture_type_ = GL_TEXTURE_EXTERNAL_OES;
+        break;
+#endif
+      default:
+        CARDBOARD_LOGE(
+            "The Cardboard SDK does not support the selected texture type on "
+            "this platform. Setting GL_TEXTURE_2D as default.");
+
+        fragment_shader = kDistortionFragmentShaderTexture2D;
+        eye_texture_type_ = GL_TEXTURE_2D;
+        break;
+    }
+
+    program_ = CreateProgram(kDistortionVertexShader, fragment_shader);
     attrib_pos_ = glGetAttribLocation(program_, "a_Position");
     attrib_tex_ = glGetAttribLocation(program_, "a_TexCoords");
     uniform_start_ = glGetUniformLocation(program_, "u_Start");
@@ -276,7 +321,8 @@ class OpenGlEs3DistortionRenderer : public DistortionRenderer {
     glEnableVertexAttribArray(attrib_tex_);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(eye_description->texture));
+    glBindTexture(eye_texture_type_,
+                  static_cast<GLuint>(eye_description->texture));
 
     glUniform2f(uniform_start_, eye_description->left_u,
                 eye_description->bottom_v);
@@ -298,18 +344,21 @@ class OpenGlEs3DistortionRenderer : public DistortionRenderer {
   GLuint attrib_tex_;
   GLuint uniform_start_;
   GLuint uniform_end_;
+
+  GLenum eye_texture_type_;
 };
 
 }  // namespace cardboard::rendering
 
 extern "C" {
 
-CardboardDistortionRenderer* CardboardOpenGlEs3DistortionRenderer_create() {
-  if (CARDBOARD_IS_NOT_INITIALIZED()) {
+CardboardDistortionRenderer* CardboardOpenGlEs3DistortionRenderer_create(
+    const CardboardOpenGlEsDistortionRendererConfig* config) {
+  if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(config)) {
     return nullptr;
   }
   return reinterpret_cast<CardboardDistortionRenderer*>(
-      new cardboard::rendering::OpenGlEs3DistortionRenderer());
+      new cardboard::rendering::OpenGlEs3DistortionRenderer(config));
 }
 
 }  // extern "C"

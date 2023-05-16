@@ -27,8 +27,6 @@
 #include <string>
 #include <vector>
 
-#include "include/cardboard.h"
-
 // The following block makes log macros available for Android and iOS.
 #if defined(__ANDROID__)
 #include <android/log.h>
@@ -149,14 +147,18 @@ void CardboardDisplayApi::UpdateDeviceParams() {
 
   RenderingResourcesSetup();
 
+  const CardboardOpenGlEsDistortionRendererConfig
+      opengl_distortion_renderer_config{kGlTexture2D};
   switch (selected_graphics_api_) {
     case CardboardGraphicsApi::kOpenGlEs2:
-      distortion_renderer_.reset(CardboardOpenGlEs2DistortionRenderer_create());
+      distortion_renderer_.reset(CardboardOpenGlEs2DistortionRenderer_create(
+          &opengl_distortion_renderer_config));
       break;
     case CardboardGraphicsApi::kOpenGlEs3:
       // #gles3 - This call is only needed if OpenGL ES 3.0 support is
       // desired. Remove the following line if OpenGL ES 3.0 is not needed.
-      distortion_renderer_.reset(CardboardOpenGlEs3DistortionRenderer_create());
+      distortion_renderer_.reset(CardboardOpenGlEs3DistortionRenderer_create(
+          &opengl_distortion_renderer_config));
       break;
 #if defined(__APPLE__)
     case CardboardGraphicsApi::kMetal:

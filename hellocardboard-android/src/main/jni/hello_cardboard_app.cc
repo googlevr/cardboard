@@ -270,7 +270,8 @@ bool HelloCardboardApp::UpdateDeviceParams() {
   GlSetup();
 
   CardboardDistortionRenderer_destroy(distortion_renderer_);
-  distortion_renderer_ = CardboardOpenGlEs2DistortionRenderer_create();
+  const CardboardOpenGlEsDistortionRendererConfig config{kGlTexture2D};
+  distortion_renderer_ = CardboardOpenGlEs2DistortionRenderer_create(&config);
 
   CardboardMesh left_mesh;
   CardboardMesh right_mesh;

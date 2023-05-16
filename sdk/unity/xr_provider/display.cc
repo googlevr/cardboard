@@ -107,8 +107,9 @@ class CardboardDisplayProvider {
 
     UnityXRDisplayProvider provider{NULL, NULL, NULL};
     // Note: Setting focusLost to true is a workaround for
-    // <a href=https://fogbugz.unity3d.com/default.asp?1427493_c43j6si13dh08epg>Issue #1427493</a>
-    // in Unity.
+    // <a
+    // href=https://fogbugz.unity3d.com/default.asp?1427493_c43j6si13dh08epg>Issue
+    // #1427493</a> in Unity.
     provider.UpdateDisplayState =
         [](UnitySubsystemHandle, void*,
            UnityXRDisplayState* state) -> UnitySubsystemErrorCode {
@@ -183,13 +184,8 @@ class CardboardDisplayProvider {
         texture_descriptors_[i].height = height_;
         texture_descriptors_[i].flags = 0;
 
-        const CardboardGraphicsApi graphics_api =
-            cardboard_display_api_->GetGraphicsApi();
-        if (graphics_api == kOpenGlEs2 || graphics_api == kOpenGlEs3) {
-          texture_descriptors_[i].depthFormat = kUnityXRDepthTextureFormat16bit;
-        } else {
-          texture_descriptors_[i].depthFormat = kUnityXRDepthTextureFormatNone;
-        }
+        texture_descriptors_[i].depthFormat =
+            kUnityXRDepthTextureFormat24bitOrGreater;
       }
     }
 
