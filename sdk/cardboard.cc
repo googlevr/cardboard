@@ -323,6 +323,10 @@ void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
   }
   std::vector<uint8_t> device_params =
       cardboard::qrcode::getCurrentSavedDeviceParams();
+  if (device_params.size() == 0) {
+    GetDefaultEncodedDeviceParams(encoded_device_params, size);
+    return;
+  }
   *size = static_cast<int>(device_params.size());
   *encoded_device_params = new uint8_t[*size];
   memcpy(*encoded_device_params, &device_params[0], *size);
