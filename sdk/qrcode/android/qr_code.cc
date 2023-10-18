@@ -17,6 +17,7 @@
 
 #include <jni.h>
 
+#include <array>
 #include <atomic>
 
 #include "jni_utils/android/jni_utils.h"
@@ -24,6 +25,13 @@
 #define JNI_METHOD(return_type, clazz, method_name) \
   JNIEXPORT return_type JNICALL                     \
       Java_com_google_cardboard_sdk_##clazz##_##method_name
+
+extern "C" {
+
+JNI_METHOD(void, QrCodeCaptureActivity, nativeIncrementDeviceParamsChangedCount)
+(JNIEnv* /*env*/, jobject /*obj*/);
+
+}  // extern "C"
 
 namespace cardboard::qrcode {
 
@@ -35,6 +43,13 @@ jclass intent_class_;
 jclass component_name_class_;
 std::atomic<int> device_params_changed_count_(0);
 
+static const std::array<JNINativeMethod, 1>
+    kMethods_com_google_cardboard_sdk_QrCodeCaptureActivity = {
+        {{"nativeIncrementDeviceParamsChangedCount", "()V",
+          reinterpret_cast<void*>(
+              Java_com_google_cardboard_sdk_QrCodeCaptureActivity_nativeIncrementDeviceParamsChangedCount)}},
+};
+
 // TODO(b/180938531): Release these global references.
 void LoadJNIResources(JNIEnv* env) {
   cardboard_params_utils_class_ =
@@ -44,11 +59,20 @@ void LoadJNIResources(JNIEnv* env) {
       cardboard::jni::LoadJClass(env, "android/content/Intent")));
   component_name_class_ = reinterpret_cast<jclass>(env->NewGlobalRef(
       cardboard::jni::LoadJClass(env, "android/content/ComponentName")));
+
+  // Registering native methods used within the SDK by the Java class
+  // QrCodeCaptureActivity. See
+  // https://developer.android.com/training/articles/perf-jni#native-libraries
+  jclass qr_code_scanner_activity_name_class =
+      reinterpret_cast<jclass>(cardboard::jni::LoadJClass(
+          env, "com/google/cardboard/sdk/QrCodeCaptureActivity"));
+  env->RegisterNatives(
+      qr_code_scanner_activity_name_class,
+      kMethods_com_google_cardboard_sdk_QrCodeCaptureActivity.data(),
+      kMethods_com_google_cardboard_sdk_QrCodeCaptureActivity.size());
 }
 
-void IncrementDeviceParamsChangedCount() {
-  device_params_changed_count_++;
-}
+void IncrementDeviceParamsChangedCount() { device_params_changed_count_++; }
 
 }  // anonymous namespace
 

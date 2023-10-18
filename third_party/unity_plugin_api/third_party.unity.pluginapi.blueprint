@@ -1,0 +1,19 @@
+include "devtools/blueprint/bluze/public/bluze.ncl";
+include bytes "third_party/unity/PluginApi/bluze.textproto" as textproto;
+
+// See go/bluze/guide before editing. To check the generated final blueprint run
+// rncl third_party/unity/PluginApi/third_party.unity.pluginapi.blueprint printproto blueprint_file
+
+blueprint_file = ::bluze::BlueprintFile(
+  textproto,
+
+  project_name = "third_party.unity.pluginapi",
+  teams_product_id = 1134145041667,
+  tech_lead = ["jfinder"],
+  dev_mailing_list = "arcore-build-infra@google.com",
+  mdb_groups = ["third-party-tap-forge"],
+  buganizer_component_ids = [437622],
+  metadata_path = "//depot/google3/third_party/unity/PluginApi/METADATA",
+
+// Customize your blueprint here: go/blueprint/howto-write.
+);

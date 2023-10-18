@@ -28,6 +28,7 @@
 #include "util/logging.h"
 #ifdef __ANDROID__
 #include "device_params/android/device_params.h"
+#include "jni_utils/android/jni_utils.h"
 #endif
 
 // TODO(b/134142617): Revisit struct/class hierarchy.
@@ -111,6 +112,7 @@ void Cardboard_initializeAndroid(JavaVM* vm, jobject context) {
   vm->GetEnv((void**)&env, JNI_VERSION_1_6);
   jobject global_context = env->NewGlobalRef(context);
 
+  cardboard::jni::initializeAndroid(vm, global_context);
   cardboard::qrcode::initializeAndroid(vm, global_context);
   cardboard::screen_params::initializeAndroid(vm, global_context);
   cardboard::DeviceParams::initializeAndroid(vm, global_context);
@@ -323,6 +325,12 @@ void CardboardQrCode_getSavedDeviceParams(uint8_t** encoded_device_params,
   }
   std::vector<uint8_t> device_params =
       cardboard::qrcode::getCurrentSavedDeviceParams();
+  if (device_params.empty()) {
+    CARDBOARD_LOGD("No device parameters currently saved.");
+    *size = 0;
+    *encoded_device_params = nullptr;
+    return;
+  }
   *size = static_cast<int>(device_params.size());
   *encoded_device_params = new uint8_t[*size];
   memcpy(*encoded_device_params, &device_params[0], *size);

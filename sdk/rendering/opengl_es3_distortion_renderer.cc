@@ -19,6 +19,11 @@
 #include <array>
 #include <vector>
 
+#ifdef CARDBOARD_USE_CUSTOM_GL_BINDINGS
+// If required, add a configuration header file with the OpenGL ES 3.0 binding
+// customization.
+#include "opengl_es3_custom_bindings.h"
+#else
 #ifdef __ANDROID__
 #include <GLES3/gl3.h>
 #endif
@@ -28,6 +33,7 @@
 #ifdef __ANDROID__
 #include <GLES2/gl2ext.h>
 #endif
+#endif  // CARDBOARD_USE_CUSTOM_GL_BINDINGS
 #include "distortion_renderer.h"
 #include "include/cardboard.h"
 #include "util/is_arg_null.h"

@@ -59,6 +59,10 @@ NSString *const kGIPDeviceGenerationiPhone14 = @"iPhone 14";
 NSString *const kGIPDeviceGenerationiPhone14Plus = @"iPhone 14 Plus";
 NSString *const kGIPDeviceGenerationiPhone14Pro = @"iPhone 14 Pro";
 NSString *const kGIPDeviceGenerationiPhone14ProMax = @"iPhone 14 Pro Max";
+NSString *const kGIPDeviceGenerationiPhone15 = @"iPhone 15";
+NSString *const kGIPDeviceGenerationiPhone15Plus = @"iPhone 15 Plus";
+NSString *const kGIPDeviceGenerationiPhone15Pro = @"iPhone 15 Pro";
+NSString *const kGIPDeviceGenerationiPhone15ProMax = @"iPhone 15 Pro Max";
 
 // iPod touch Generations.
 NSString *const kGIPDeviceGenerationiPodTouch7thGen = @"iPod touch (7th generation)";
@@ -132,6 +136,10 @@ CGFloat getDpi() {
     @"iPhone14,8" : kGIPDeviceGenerationiPhone14Plus,
     @"iPhone15,2" : kGIPDeviceGenerationiPhone14Pro,
     @"iPhone15,3" : kGIPDeviceGenerationiPhone14ProMax,
+    @"iPhone15,4" : kGIPDeviceGenerationiPhone15,
+    @"iPhone15,5" : kGIPDeviceGenerationiPhone15Plus,
+    @"iPhone16,1" : kGIPDeviceGenerationiPhone15Pro,
+    @"iPhone16,2" : kGIPDeviceGenerationiPhone15ProMax,
     @"iPod9,1" : kGIPDeviceGenerationiPodTouch7thGen,
   };
   NSString *model = models[modelName];
@@ -177,6 +185,10 @@ CGFloat getDpi() {
     kGIPDeviceGenerationiPhone14Plus : @(kIPhoneOledDpi),
     kGIPDeviceGenerationiPhone14Pro : @(kIPhone12Dpi),
     kGIPDeviceGenerationiPhone14ProMax : @(kIPhone12Dpi),
+    kGIPDeviceGenerationiPhone15 : @(kIPhone12Dpi),
+    kGIPDeviceGenerationiPhone15Plus : @(kIPhone12Dpi),
+    kGIPDeviceGenerationiPhone15Pro : @(kIPhone12Dpi),
+    kGIPDeviceGenerationiPhone15ProMax : @(kIPhone12Dpi),
     kGIPDeviceGenerationiPodTouch7thGen : @(kDefaultDpi),
   };
 
