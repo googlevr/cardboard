@@ -23,6 +23,7 @@
 
 #include "sensors/accelerometer_data.h"
 #include "sensors/gyroscope_data.h"
+#include "util/constants.h"
 #include "util/logging.h"
 
 // Workaround to avoid the inclusion of "android_native_app_glue.h.
@@ -140,8 +141,7 @@ class SensorEventQueueReader {
 
 // This struct holds android gyroscope specific sensor information.
 struct DeviceGyroscopeSensor::SensorInfo {
-  SensorInfo()
-      : sensor_manager(nullptr), sensor(nullptr) {}
+  SensorInfo() : sensor_manager(nullptr), sensor(nullptr) {}
   ASensorManager* sensor_manager;
   const ASensor* sensor;
   std::unique_ptr<SensorEventQueueReader> reader;
@@ -149,8 +149,7 @@ struct DeviceGyroscopeSensor::SensorInfo {
 
 namespace {
 
-bool ParseGyroEvent(const ASensorEvent& event,
-                    GyroscopeData* sample) {
+bool ParseGyroEvent(const ASensorEvent& event, GyroscopeData* sample) {
   if (event.type == ASENSOR_TYPE_ADDITIONAL_INFO) {
     CARDBOARD_LOGI("ParseGyroEvent discarding additional info sensor event");
     return false;
@@ -181,7 +180,13 @@ bool ParseGyroEvent(const ASensorEvent& event,
 
 DeviceGyroscopeSensor::DeviceGyroscopeSensor()
     : sensor_info_(new SensorInfo()) {
+#if __ANDROID_MIN_SDK_VERSION__ >= 26
+  sensor_info_->sensor_manager =
+      ASensorManager_getInstanceForPackage(Constants::kCardboardSdkPackageName);
+#else
+  // TODO: b/314792983 - Remove deprecated NDK methods.
   sensor_info_->sensor_manager = ASensorManager_getInstance();
+#endif
   sensor_info_->sensor = InitSensor(sensor_info_->sensor_manager);
   if (!sensor_info_->sensor) {
     return;

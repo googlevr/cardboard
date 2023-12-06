@@ -9,7 +9,7 @@ blueprint_file = ::bluze::BlueprintFile(
 
   project_name = "third_party.unity.pluginapi",
   teams_product_id = 1134145041667,
-  tech_lead = ["jfinder"],
+  tech_lead = ["gunderwood", "squin"],
   dev_mailing_list = "arcore-build-infra@google.com",
   mdb_groups = ["third-party-tap-forge"],
   buganizer_component_ids = [437622],
