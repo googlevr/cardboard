@@ -17,8 +17,6 @@ android {
         // See the release notes for details.
         minSdkVersion 26
         targetSdkVersion 33
-        versionCode 1
-        versionName "1.23.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
@@ -44,7 +42,6 @@ android {
         main {
             manifest.srcFile 'qrcode/android/AndroidManifest.xml'
             java.srcDirs = ['qrcode/android/java', 'device_params/android/java', 'screen_params/android/java', 'java_utils/android/java']
-            jni.srcDirs = ['qrcode/android/jni']
             res.srcDirs = ['qrcode/android/res']
         }
         // Adds proto file and generated source files
@@ -52,6 +49,7 @@ android {
         main.proto.srcDirs = ["${project.rootDir}/proto"]
         main.proto.includes = ["cardboard_device.proto"]
     }
+    namespace 'com.google.cardboard.sdk'
 }
 
 protobuf {
@@ -71,7 +69,7 @@ protobuf {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     // Android Mobile Vision
     // TODO(b/217176538) Migrate to ML Kit.
     implementation 'com.google.android.gms:play-services-vision:20.1.3'

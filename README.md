@@ -105,3 +105,8 @@ Cardboard" mark.
 In addition to these guidelines, please ensure that you follow the trademark
 usage guidelines available here:
 https://www.google.com/permissions/logos-trademarks/.
+
+## Manufacturers
+The [Cardboard viewer
+specification](https://developers.google.com/cardboard/manufacturers) is
+open source and ready for you to start building.
