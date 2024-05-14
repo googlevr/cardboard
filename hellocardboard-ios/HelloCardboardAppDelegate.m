@@ -48,11 +48,12 @@
   return YES;
 }
 
-// Make the navigation controller defer the check of supported orientation to its topmost view
-// controller. This allows |CardboardViewController| to lock the orientation in VR mode.
+// Make the navigation controller defer the check of supported orientation to its visible view
+// controller. This allows |CardboardViewController| to lock the orientation in VR mode and allow
+// all orientations for QRScanViewController.
 - (UIInterfaceOrientationMask)navigationControllerSupportedInterfaceOrientations:
     (UINavigationController *)navigationController {
-  return [navigationController.topViewController supportedInterfaceOrientations];
+  return [navigationController.visibleViewController supportedInterfaceOrientations];
 }
 
 @end

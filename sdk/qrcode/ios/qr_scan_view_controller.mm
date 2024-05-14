@@ -278,6 +278,10 @@ static const CGFloat kGuidanceHeight = 116.0f;
   return [UIApplication sharedApplication].statusBarOrientation;
 }
 
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+  return UIInterfaceOrientationMaskAll;
+}
+
 - (AVCaptureVideoOrientation)videoOrientation {
   UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
   switch (orientation) {

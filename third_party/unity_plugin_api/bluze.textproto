@@ -34,3 +34,11 @@ buildable_unit: {
     on_demand_frequency: EVERY_4_HOURS
   }
 }
+continuous_tests: {
+  name: "third_party.unity.pluginapi"
+  buildable_unit_name: "third_party.unity.pluginapi"
+}
+continuous_tests: {
+  name: "third_party.unity.pluginapi.opt"
+  buildable_unit_name: "third_party.unity.pluginapi.opt"
+}

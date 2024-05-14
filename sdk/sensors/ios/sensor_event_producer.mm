@@ -34,17 +34,17 @@ template <typename T>
 struct DeviceSensor {};
 
 template <>
-struct cardboard::DeviceSensor<AccelerometerData> {
+struct DeviceSensor<AccelerometerData> {
   std::unique_ptr<DeviceAccelerometerSensor> value;
 };
 
 template <>
-struct cardboard::DeviceSensor<GyroscopeData> {
+struct DeviceSensor<GyroscopeData> {
   std::unique_ptr<DeviceGyroscopeSensor> value;
 };
 
 template <typename DataType>
-struct cardboard::SensorEventProducer<DataType>::EventProducer {
+struct SensorEventProducer<DataType>::EventProducer {
   EventProducer() : run_thread(false) {}
 
   // Sensor to poll for data.
