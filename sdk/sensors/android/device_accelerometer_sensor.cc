@@ -56,7 +56,7 @@ const ASensor* InitSensor(ASensorManager* sensor_manager) {
 
 bool PollLooper(int timeout_ms, int* num_events) {
   void* source = nullptr;
-  const int looper_id = ALooper_pollAll(timeout_ms, NULL, num_events,
+  const int looper_id = ALooper_pollOnce(timeout_ms, NULL, num_events,
                                         reinterpret_cast<void**>(&source));
   if (looper_id != LOOPER_ID_USER) {
     return false;

@@ -269,6 +269,13 @@ CardboardHeadTracker* CardboardHeadTracker_create() {
   return reinterpret_cast<CardboardHeadTracker*>(new cardboard::HeadTracker());
 }
 
+void CardboardHeadTracker_setLowPassFilter(CardboardHeadTracker* head_tracker, const int cutoff_frequency) {
+  if (CARDBOARD_IS_NOT_INITIALIZED()) {
+    return;
+  }
+  head_tracker->SetLowPassFilter(cutoff_frequency);
+}
+
 void CardboardHeadTracker_destroy(CardboardHeadTracker* head_tracker) {
   if (CARDBOARD_IS_NOT_INITIALIZED() || CARDBOARD_IS_ARG_NULL(head_tracker)) {
     return;

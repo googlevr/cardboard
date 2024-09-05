@@ -19,11 +19,13 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
+#include <memory>
 #include <mutex>  // NOLINT
 
 #include "sensors/accelerometer_data.h"
 #include "sensors/gyroscope_bias_estimator.h"
 #include "sensors/gyroscope_data.h"
+#include "sensors/lowpass_filter.h"
 #include "sensors/rotation_state.h"
 #include "util/matrix_3x3.h"
 #include "util/rotation.h"
@@ -87,6 +89,13 @@ class SensorFusionEkf {
   // @param rotation The Rotation that maps from the Sensor Space
   //                 frame to Start Space.
   void RotateSensorSpaceToStartSpaceTransformation(const Rotation& rotation);
+
+  // Sets the low pass filter of the head tracker with the given cut-off
+  // frequency.
+  //
+  // @param cutoff_frequency Cutoff frequency for the low-pass filter of the
+  // head tracker.
+  void SetLowPassFilter(int velocity_filter_cutoff_frequency);
 
  private:
   // Estimates the average timestep between gyroscope event.
@@ -179,6 +188,9 @@ class SensorFusionEkf {
 
   // Current bias estimate_;
   Vector3 gyroscope_bias_estimate_;
+
+  // Filter to smooth velocity vector
+  std::unique_ptr<LowpassFilter> velocity_filter_;
 
   SensorFusionEkf(const SensorFusionEkf&) = delete;
   SensorFusionEkf& operator=(const SensorFusionEkf&) = delete;

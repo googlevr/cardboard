@@ -180,6 +180,10 @@ void HeadTracker::Recenter() {
   sensor_fusion_->Reset();
 }
 
+void HeadTracker::SetLowPassFilter(const int cutoff_frequency) {
+  sensor_fusion_->SetLowPassFilter(cutoff_frequency);
+}
+
 void HeadTracker::RegisterCallbacks() {
   accel_sensor_->StartSensorPolling(&on_accel_callback_);
   gyro_sensor_->StartSensorPolling(&on_gyro_callback_);

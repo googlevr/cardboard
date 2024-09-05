@@ -20,6 +20,47 @@
 /// @brief XR interface for mesh generation and allocation of related data structures.
 /// @see IUnityXRMeshInterface
 
+/// A unique id assignable to a 'trackable', e.g. a plane or
+/// point cloud point. Although this id is 128 bits, it may
+/// not necessarily be globally unique; it just needs to be
+/// unique to a particular XR session.
+typedef struct UnityXRMeshId
+{
+    /// 128-bit id data
+    uint64_t idPart[2];
+} UnityXRMeshId;
+
+#ifdef __cplusplus
+inline bool operator==(const UnityXRMeshId& a, const UnityXRMeshId& b)
+{
+    return
+        (a.idPart[0] == b.idPart[0]) &&
+        (a.idPart[1] == b.idPart[1]);
+}
+
+inline bool operator!=(const UnityXRMeshId& a, const UnityXRMeshId& b)
+{
+    return
+        (a.idPart[0] != b.idPart[0]) ||
+        (a.idPart[1] != b.idPart[1]);
+}
+
+/// A comparator for UnityXRMeshId suitable for algorithms or containers that
+/// require ordered UnityXRMeshIds, e.g. std::map
+struct MeshIdLessThanComparator
+{
+    bool operator()(const UnityXRMeshId& lhs, const UnityXRMeshId& rhs) const
+    {
+        if (lhs.idPart[0] == rhs.idPart[0])
+        {
+            return lhs.idPart[1] < rhs.idPart[1];
+        }
+
+        return lhs.idPart[0] < rhs.idPart[0];
+    }
+};
+#endif // __cplusplus
+
 /// The format used for an index buffer
 typedef enum UnityXRIndexFormat
 {
@@ -68,6 +109,33 @@ typedef enum UnityXRMeshVertexAttributeFlags
     kUnityXRMeshVertexAttributeFlagsColors = 1 << 3
 } UnityXRMeshVertexAttributeFlags;
 
+/// Describes the transform associated with a particular mesh
+typedef struct UnityXRMeshTransform
+{
+    /// The session-unique identifier for the mesh.
+    UnityXRMeshId meshId;
+
+    /// The timestamp associated with this transform. This value is
+    /// provider-defined, but it should be consistent with the one provided
+    /// by the @a UnityXRMeshDescriptor. A larger value indicates a more recent time.
+    uint64_t timestamp;
+
+    /// The transform associated with the mesh.
+    UnityXRTrsTransform transform;
+} UnityXRMeshTransform;
+
+/// Flags representing @a UnityXRMeshDescriptor options
+typedef enum UnityXRMeshDescriptorFlags
+{
+    /// No flags are set.
+    kUnityXRMeshDescriptorFlagsNone = 0,
+
+    /// If set, the vertex data buffers in @a UnityXRMeshDescriptor are ignored.
+    /// This is useful if you wish to set a mesh's transform without changing
+    /// any of its vertex data.
+    kUnityXRMeshDescriptorFlagsIgnoreVertexData = 1 << 0
+} UnityXRMeshDescriptorFlags;
+
 /// Describes a single mesh, with buffers pointing to each vertex attribute.
 /// Note: Unity uses a left-handed coordinate system with clockwise triangle winding.
 /// +X is right
@@ -75,7 +143,7 @@ typedef enum UnityXRMeshVertexAttributeFlags
 /// +Z is forward
 typedef struct UnityXRMeshDescriptor
 {
-    /// Pointer to positions buffer. May not be null.
+    /// Pointer to positions buffer. May be null.
     UnityXRVector3* positions;
 
     /// Pointer to normals buffer. May be null.
@@ -109,51 +177,21 @@ typedef struct UnityXRMeshDescriptor
 
     /// The primitive type of the mesh data (e.g., points, lines, triangles, quads)
     UnityXRMeshTopology topology;
+
+    /// The session-space transform for this mesh.
+    UnityXRTrsTransform transform;
+
+    /// Flags associated with this mesh descriptor.
+    UnityXRMeshDescriptorFlags flags;
+
+    /// The timestamp associated with this mesh. The units are provider-defined but should
+    /// be consistent with the timestamp provided by @a UnityXRMeshTransform. A larger value
+    /// indicates a more recent time.
+    uint64_t timestamp;
 } UnityXRMeshDescriptor;
 
 /// Interface for allocating or setting mesh-related data
 typedef struct UnityXRMeshDataAllocator UnityXRMeshDataAllocator;
-
-/// A unique id assignable to a 'trackable', e.g. a plane or
-/// point cloud point. Although this id is 128 bits, it may
-/// not necessarily be globally unique; it just needs to be
-/// unique to a particular XREnvironment session.
-typedef struct UnityXRMeshId
-{
-    /// 128-bit id data
-    uint64_t idPart[2];
-} UnityXRMeshId;
-
-#ifdef __cplusplus
-inline bool operator==(const UnityXRMeshId& a, const UnityXRMeshId& b)
-{
-    return
-        (a.idPart[0] == b.idPart[0]) &&
-        (a.idPart[1] == b.idPart[1]);
-}
-
-inline bool operator!=(const UnityXRMeshId& a, const UnityXRMeshId& b)
-{
-    return
-        (a.idPart[0] != b.idPart[0]) ||
-        (a.idPart[1] != b.idPart[1]);
-}
-
-/// A comparator for UnityXRMeshId suitable for algorithms or containers that
-/// require ordered UnityXRMeshIds, e.g. std::map
-struct MeshIdLessThanComparator
-{
-    bool operator()(const UnityXRMeshId& lhs, const UnityXRMeshId& rhs) const
-    {
-        if (lhs.idPart[0] == rhs.idPart[0])
-        {
-            return lhs.idPart[1] < rhs.idPart[1];
-        }
-
-        return lhs.idPart[0] < rhs.idPart[0];
-    }
-};
-#endif // __cplusplus
 
 /// Information related to a mesh
 typedef struct UnityXRMeshInfo
@@ -171,6 +209,9 @@ typedef struct UnityXRMeshInfo
 
 /// An allocator for the @a UnityXRMeshInfo type.
 typedef struct UnityXRMeshInfoAllocator UnityXRMeshInfoAllocator;
+
+/// A list-like object for specifying mesh transforms.
+typedef struct UnityXRMeshTransformList UnityXRMeshTransformList;
 
 /// Enum describing the type of the bounding volume that will be passed
 /// into @a SetBoundingVolume.
@@ -296,7 +337,6 @@ typedef struct SUBSYSTEM_PROVIDER UnityXRMeshProvider
         void* userData,
         float density);
 
-
     /// Set the bounding volume to be used to restrict the space in which meshes will
     /// be generated and tracked.
     ///
@@ -317,6 +357,22 @@ typedef struct SUBSYSTEM_PROVIDER UnityXRMeshProvider
         UnitySubsystemHandle handle,
         void* userData,
         const UnityXRBoundingVolume* boundingVolume);
+
+    /// Invoked by Unity to get a list of updated mesh transforms. This is typically called
+    /// once per frame to ensure all meshes are correctly placed in the scene. It is not
+    /// necessary to provide transforms for meshes that have not changed since the last call
+    /// to this function.
+    ///
+    /// @param handle Handle obtained from UnityLifecycleProvider callbacks.
+    /// @param userData Value of userData field when provider was registered.
+    /// @param list An opaque pointer to a list-like object. Add transforms to
+    ///     it using the @a MeshTransformList_Add function in the @ IUnityXRMeshInterface.
+    /// @return A @a UnitySubsystemErrorCode indicating success or failure.
+    /// @a kUnitySubsystemErrorCodeSuccess Returned if everything is ok.
+    /// @a kUnitySubsystemErrorCodeNotSupported Returned if the provider does not
+    ///    support this API.
+    UnitySubsystemErrorCode(UNITY_INTERFACE_API * GetUpdatedTransforms)(
+        UnitySubsystemHandle handle, void* userData, UnityXRMeshTransformList * list);
 } UnityXRMeshProvider;
 
 
@@ -331,6 +387,14 @@ UNITY_DECLARE_INTERFACE(SUBSYSTEM_INTERFACE IUnityXRMeshInterface)
     /// @return An array of @a UnityXRMeshInfo which the caller should populate with mesh info.
     UnityXRMeshInfo* (UNITY_INTERFACE_API * MeshInfoAllocator_Allocate)(
         UnityXRMeshInfoAllocator * allocator, size_t count);
+
+    /// Adds a @a UnityXRMeshTransform to a list of transforms.
+    ///
+    /// @param list The list to add transforms to.
+    /// @param transforms An array of transforms to add to the list.
+    /// @param count The number of transforms contained in @a transforms
+    void(UNITY_INTERFACE_API * MeshTransformList_Add)(
+        UnityXRMeshTransformList * list, const UnityXRMeshTransform * transforms, size_t count);
 
     /// Allocates mesh data according to the attributes specified in @a attributes.
     /// Use this method if you want Unity to manage the mesh memory.
@@ -379,4 +443,4 @@ UNITY_DECLARE_INTERFACE(SUBSYSTEM_INTERFACE IUnityXRMeshInterface)
         const char* pluginName, const char* id, const UnityLifecycleProvider * provider);
 };
 
-UNITY_REGISTER_INTERFACE_GUID(0x3007fd5885a346efULL, 0x9eeb2c84aa0a9dd9ULL, IUnityXRMeshInterface)
+UNITY_REGISTER_INTERFACE_GUID(0xede929dfd83a492aULL, 0xb70be1f8ba304c69ULL, IUnityXRMeshInterface); // 2021.2.0a14 - 4/9/2021

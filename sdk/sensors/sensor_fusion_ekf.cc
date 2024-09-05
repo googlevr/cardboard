@@ -17,9 +17,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "sensors/accelerometer_data.h"
 #include "sensors/gyroscope_data.h"
+#include "sensors/lowpass_filter.h"
+
 #include "util/logging.h"
 #include "util/matrixutils.h"
 
@@ -109,6 +112,12 @@ SensorFusionEkf::SensorFusionEkf()
   ResetState();
 }
 
+void SensorFusionEkf::SetLowPassFilter(
+    const int velocity_filter_cutoff_frequency) {
+  velocity_filter_.reset(new LowpassFilter(velocity_filter_cutoff_frequency));
+  ResetState();
+}
+
 void SensorFusionEkf::Reset() {
   execute_reset_with_next_accelerometer_sample_ = true;
 }
@@ -148,6 +157,10 @@ void SensorFusionEkf::ResetState() {
   // Reset biases.
   gyroscope_bias_estimator_.Reset();
   gyroscope_bias_estimate_ = {0, 0, 0};
+
+  if (velocity_filter_ != nullptr) {
+    velocity_filter_->Reset();
+  }
 }
 
 // Here I am doing something wrong relative to time stamps. The state timestamps
@@ -219,12 +232,11 @@ void SensorFusionEkf::ProcessGyroscopeSample(const GyroscopeData& sample) {
 
     // Only integrate after receiving a accelerometer sample.
     if (is_aligned_with_gravity_) {
-      const Rotation rotation_from_gyroscope =
-          GetRotationFromGyroscope(
-              {sample.data[0] - gyroscope_bias_estimate_[0],
-               sample.data[1] - gyroscope_bias_estimate_[1],
-               sample.data[2] - gyroscope_bias_estimate_[2]},
-              current_timestep_s);
+      const Rotation rotation_from_gyroscope = GetRotationFromGyroscope(
+          {sample.data[0] - gyroscope_bias_estimate_[0],
+           sample.data[1] - gyroscope_bias_estimate_[1],
+           sample.data[2] - gyroscope_bias_estimate_[2]},
+          current_timestep_s);
       current_state_.sensor_from_start_rotation =
           rotation_from_gyroscope * current_state_.sensor_from_start_rotation;
       UpdateStateCovariance(RotationMatrixNH(rotation_from_gyroscope));
@@ -237,10 +249,22 @@ void SensorFusionEkf::ProcessGyroscopeSample(const GyroscopeData& sample) {
   // Saves gyroscope event for future prediction.
   current_state_.timestamp = sample.system_timestamp;
   current_gyroscope_sensor_timestamp_ns_ = sample.sensor_timestamp_ns;
-  current_state_.sensor_from_start_rotation_velocity.Set(
-      sample.data[0] - gyroscope_bias_estimate_[0],
-      sample.data[1] - gyroscope_bias_estimate_[1],
-      sample.data[2] - gyroscope_bias_estimate_[2]);
+
+  if (velocity_filter_ != nullptr) {
+    velocity_filter_->AddSample(sample.data - gyroscope_bias_estimate_,
+                                current_gyroscope_sensor_timestamp_ns_);
+
+    if (velocity_filter_->IsInitialized()) {
+      Vector3 filtered_velocity = velocity_filter_->GetFilteredData();
+      current_state_.sensor_from_start_rotation_velocity.Set(
+          filtered_velocity[0], filtered_velocity[1], filtered_velocity[2]);
+    }
+  } else {
+    current_state_.sensor_from_start_rotation_velocity.Set(
+        sample.data[0] - gyroscope_bias_estimate_[0],
+        sample.data[1] - gyroscope_bias_estimate_[1],
+        sample.data[2] - gyroscope_bias_estimate_[2]);
+  }
 }
 
 Vector3 SensorFusionEkf::ComputeInnovation(const Rotation& rotation_in) {

@@ -64,6 +64,8 @@ std::atomic<CardboardViewportOrientation>
 
 std::atomic<bool> CardboardInputApi::head_tracker_recenter_requested_(false);
 
+std::atomic<int> CardboardInputApi::new_lowpass_filter_cutoff_frequency_(0);
+
 void CardboardInputApi::InitHeadTracker() {
   if (head_tracker_ == nullptr) {
     head_tracker_.reset(CardboardHeadTracker_create());
@@ -101,6 +103,16 @@ void CardboardInputApi::GetHeadTrackerPose(float* position,
     return;
   }
 
+  // Checks whether a head tracker set low-pass filter has been requested.
+  // If it has been requested, the head tracker will reset with the velocity
+  // filter.
+  if (new_lowpass_filter_cutoff_frequency_ !=
+      lowpass_filter_cutoff_frequency_) {
+    lowpass_filter_cutoff_frequency_ = new_lowpass_filter_cutoff_frequency_;
+    CardboardHeadTracker_setLowPassFilter(head_tracker_.get(),
+                                          lowpass_filter_cutoff_frequency_);
+  }
+
   // Checks whether a head tracker recentering has been requested.
   if (head_tracker_recenter_requested_) {
     CardboardHeadTracker_recenter(head_tracker_.get());
@@ -119,6 +131,11 @@ void CardboardInputApi::SetViewportOrientation(
 
 void CardboardInputApi::SetHeadTrackerRecenterRequested() {
   head_tracker_recenter_requested_ = true;
+}
+
+void CardboardInputApi::SetHeadTrackerLowPassFilterRequested(
+    const int cutoff_frequency) {
+  new_lowpass_filter_cutoff_frequency_ = cutoff_frequency;
 }
 
 int64_t CardboardInputApi::GetBootTimeNano() {
@@ -170,6 +187,12 @@ void CardboardUnity_setViewportOrientation(
 
 void CardboardUnity_recenterHeadTracker() {
   cardboard::unity::CardboardInputApi::SetHeadTrackerRecenterRequested();
+}
+
+void CardboardUnity_setHeadTrackerLowPassFilter(
+    const int velocity_filter_cutoff_frequency) {
+  cardboard::unity::CardboardInputApi::SetHeadTrackerLowPassFilterRequested(
+      velocity_filter_cutoff_frequency);
 }
 
 #ifdef __cplusplus

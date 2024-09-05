@@ -1,5 +1,20 @@
 # Update Unity Plugin API
 
+TODO: b/349102234 - Update all headers to have the same version.
+
+The plugin API folder has a mix of headers from different Unity versions. Each interface is standalone and identified to the Unity engine with a GUID. The Unity engine supports all legacy interfaces. Unity has to support older interfaces working alongside newer ones because there may be a mix of old and new packages in a project. See each header to figure out which version it is. The version can be found at the end of the file e.g. in `IUnityXRMeshing.h`
+
+```UNITY_REGISTER_INTERFACE_GUID(0xede929dfd83a492aULL, 0xb70be1f8ba304c69ULL, IUnityXRMeshInterface); // 2021.2.0a14 - 4/9/2021```
+
+If there is not a version present then the version is `2020.3.25f1`.
+
+
+## Update IUnityXR* headers
+
+Coordinate with the [XR APIs team](https://g3doc.corp.google.com/company/teams/android-xr/openxr/index.md?cl=head#contact).
+
+## Update non-XR headers
+
 Follow these steps to update the Unity Plugin API in a gmac:
 
 1. Download last Unity version.

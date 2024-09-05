@@ -62,6 +62,9 @@ class CardboardInputApi {
   /// @brief Flags a head tracker recentering request.
   static void SetHeadTrackerRecenterRequested();
 
+  /// @brief Flags a set head tracker low pass filter request.
+  static void SetHeadTrackerLowPassFilterRequested(int cutoff_frequency);
+
  private:
   // @brief Custom deleter for HeadTracker.
   struct CardboardHeadTrackerDeleter {
@@ -90,6 +93,12 @@ class CardboardInputApi {
 
   // @brief Tracks head tracker recentering requests.
   static std::atomic<bool> head_tracker_recenter_requested_;
+
+  // @brief Current cut-off Frequency for low-pass filter.
+  int lowpass_filter_cutoff_frequency_;
+
+  // @brief New cut-off Frequency for low-pass filter.
+  static std::atomic<int> new_lowpass_filter_cutoff_frequency_;
 };
 
 #ifdef __cplusplus
@@ -103,6 +112,10 @@ void CardboardUnity_setViewportOrientation(
 
 /// @brief Flags a head tracker recentering request.
 void CardboardUnity_recenterHeadTracker();
+
+/// @brief Resets the head tracker with a low pass filter to stabilize the pose.
+void CardboardUnity_setHeadTrackerLowPassFilter(
+    int velocity_filter_cutoff_frequency);
 
 #ifdef __cplusplus
 }

@@ -52,6 +52,9 @@ class HeadTracker {
   // Recenters the head tracker.
   void Recenter();
 
+  // Sets low pass filter to the head tracker.
+  void SetLowPassFilter(int cutoff_frequency);
+
  private:
   // Function called when receiving AccelerometerData.
   //

@@ -442,8 +442,7 @@ CardboardUv CardboardLensDistortion_distortedUvForUndistortedUv(
 ///
 /// @param[in]      config                  Distortion renderer configuration.
 /// @return         Distortion renderer object pointer
-CardboardDistortionRenderer*
-CardboardOpenGlEs2DistortionRenderer_create(
+CardboardDistortionRenderer* CardboardOpenGlEs2DistortionRenderer_create(
     const CardboardOpenGlEsDistortionRendererConfig* config);
 
 /// Creates a new distortion renderer object. It uses OpenGL ES 3.0 as the
@@ -629,6 +628,18 @@ void CardboardHeadTracker_getPose(
 ///
 /// @param[in]      head_tracker            Head tracker object pointer.
 void CardboardHeadTracker_recenter(CardboardHeadTracker* head_tracker);
+
+/// Sets a low pass filter on the head tracker with the given cut-off frequency
+/// to filter out high-frequency noise that is not representative of head
+/// movements.
+/// Using the low-pass filter is optional, but it will provide a more stable
+/// pose prediction.
+
+/// @param[in]      head_tracker      Head tracker object pointer
+/// @param[in]      cutoff_frequency  Cutoff frequency for the low-pass filter
+/// of the head tracker.
+void CardboardHeadTracker_setLowPassFilter(CardboardHeadTracker* head_tracker,
+                                           int cutoff_frequency);
 
 /// @}
 

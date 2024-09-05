@@ -40,6 +40,9 @@ constexpr float kMaxTargetHeight = kMinTargetHeight + 3.0f;
 
 constexpr float kDefaultFloorHeight = -1.7f;
 
+// 6 Hz cutoff frequency for the velocity filter of the head tracker.
+constexpr int kVelocityFilterCutoffFrequency = 6;
+
 constexpr uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 
 // Angle threshold for determining whether the controller is pointing at the
@@ -104,6 +107,8 @@ HelloCardboardApp::HelloCardboardApp(JavaVM* vm, jobject obj,
 
   Cardboard_initializeAndroid(vm, obj);
   head_tracker_ = CardboardHeadTracker_create();
+  CardboardHeadTracker_setLowPassFilter(head_tracker_,
+                                        kVelocityFilterCutoffFrequency);
 }
 
 HelloCardboardApp::~HelloCardboardApp() {
