@@ -15,34 +15,42 @@
  */
 package com.google.cardboard.sdk.qrcode;
 
-import com.google.android.gms.vision.Tracker;
-import com.google.android.gms.vision.barcode.Barcode;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
+import zxingcpp.BarcodeReader;
 
 /**
  * QrCodeTracker is used for tracking or reading a QR code. This is used to receive newly detected
  * items, add a graphical representation to an overlay, update the graphics as the item changes, and
  * remove the graphics when the item goes away.
  */
-public class QrCodeTracker extends Tracker<Barcode> {
+public class QrCodeTracker {
   private final Listener listener;
+  private final HashSet<BarcodeReader.Result> lastData = new HashSet<>();
 
   /**
    * Consume the item instance detected from an Activity or Fragment level by implementing the
    * Listener interface method onQrCodeDetected.
    */
   public interface Listener {
-    void onQrCodeDetected(Barcode qrCode);
+    void onQrCodeDetected(BarcodeReader.Result qrCode);
   }
 
-  QrCodeTracker(Listener listener) {
+  public QrCodeTracker(Listener listener) {
     this.listener = listener;
   }
 
-  /** Start tracking the detected item instance. */
-  @Override
-  public void onNewItem(int id, Barcode item) {
-    if (item.displayValue != null) {
-      listener.onQrCodeDetected(item);
+  public void onItemsDetected(List<BarcodeReader.Result> data) {
+    for (BarcodeReader.Result result : data) {
+      if (lastData.stream().anyMatch(otherResult -> Arrays.equals(result.getBytes(), otherResult.getBytes()))) {
+        // This QR code already was detected in last frame, it's not new.
+        continue;
+      }
+      listener.onQrCodeDetected(result);
     }
+    lastData.clear();
+    lastData.addAll(data);
   }
 }
