@@ -18,9 +18,6 @@ android {
         minSdkVersion 26
         targetSdkVersion 33
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-        ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a'
-        }
         externalNativeBuild.cmake {
             arguments "-DANDROID_STL=c++_shared"
         }
