@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.22.1)
+project(cardboard_sdk VERSION 1.0.0 LANGUAGES CXX)
 
 # C++ flags.
 set(CMAKE_CXX_STANDARD 17)
@@ -101,6 +102,7 @@ add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 
 # Build
 target_link_libraries(GfxPluginCardboard
+    PUBLIC
     ${android-lib}
     ${GLESv2-lib}
     # #gles3 - Library is only needed if OpenGL ES 3.0 support is desired.
