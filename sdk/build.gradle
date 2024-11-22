@@ -46,6 +46,14 @@ android {
         main.proto.srcDirs = ["${project.rootDir}/proto"]
         main.proto.includes = ["cardboard_device.proto"]
     }
+    buildFeatures {
+        prefabPublishing true
+    }
+    prefab {
+        GfxPluginCardboard {
+            headers "include"
+        }
+    }
     namespace 'com.google.cardboard.sdk'
 }
 

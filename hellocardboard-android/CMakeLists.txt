@@ -26,22 +26,20 @@ find_library(GLESv2_LIB GLESv2)
 find_library(GLESv3_LIB GLESv3)
 find_library(LOG_LIB log)
 
-set(libs_dir ${CMAKE_CURRENT_SOURCE_DIR}/libraries)
+# Cardboard SDK prefab
+find_package(sdk REQUIRED CONFIG)
 
-set(CARDBOARD_LIB ${libs_dir}/jni/${ANDROID_ABI}/libGfxPluginCardboard.so)
-set(CARDBOARD_INCLUDE_DIR ${libs_dir})
 
 # === Cardboard Sample ===
 # Sources
 file(GLOB native_srcs "src/main/jni/*.cc")
 # Output binary
 add_library(cardboard_jni SHARED ${native_srcs})
-# Includes
-target_include_directories(cardboard_jni PRIVATE ${CARDBOARD_INCLUDE_DIR})
 # Build
 target_link_libraries(cardboard_jni
     ${ANDROID_LIB}
     ${GLESv2_LIB}
     ${GLESv3_LIB}
     ${LOG_LIB}
-    ${CARDBOARD_LIB})
+    # This also adds include directories
+    sdk::GfxPluginCardboard)
