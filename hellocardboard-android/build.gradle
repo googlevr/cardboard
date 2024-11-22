@@ -36,6 +36,9 @@ android {
     externalNativeBuild.cmake {
         path "CMakeLists.txt"
     }
+    buildFeatures {
+        prefab true
+    }
     namespace 'com.google.cardboard'
 }
 
@@ -49,27 +52,3 @@ dependencies {
     implementation 'com.google.protobuf:protobuf-javalite:3.19.4'
     implementation project(":sdk")
 }
-
-// The dependencies for NDK builds live inside the .aar files so they need to
-// be extracted before NDK targets can link against.
-task extractNdk(type: Copy)  {
-    if (file("${project.rootDir}/sdk/build/outputs/aar/sdk-release.aar").exists()) {
-        copy {
-            from zipTree("${project.rootDir}/sdk/build/outputs/aar/sdk-release.aar")
-            into "libraries/"
-            include "jni/**/libGfxPluginCardboard.so"
-        }
-        copy {
-            from "${project.rootDir}/sdk/include/cardboard.h"
-            into "libraries/"
-        }
-    }
-}
-
-task deleteNdk(type: Delete) {
-    delete "libraries/jni"
-    delete "libraries/cardboard.h"
-}
-
-build.dependsOn(extractNdk)
-clean.dependsOn(deleteNdk)

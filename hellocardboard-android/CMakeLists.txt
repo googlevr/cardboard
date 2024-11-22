@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 3.4.1)
+cmake_minimum_required(VERSION 3.22.1)
+project(hellocardboard_android VERSION 1.0.0 LANGUAGES CXX)
 
 # C++ flags.
 set(CMAKE_CXX_STANDARD 17)
@@ -20,24 +21,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_compile_options(-Wall -Wextra)
 
 # Standard Android dependencies
-find_library(android-lib android)
-find_library(GLESv2-lib GLESv2)
-find_library(GLESv3-lib GLESv3)
-find_library(log-lib log)
+find_library(ANDROID_LIB android)
+find_library(GLESv2_LIB GLESv2)
+find_library(GLESv3_LIB GLESv3)
+find_library(LOG_LIB log)
 
-set(libs_dir ${CMAKE_CURRENT_SOURCE_DIR}/libraries)
+# Cardboard SDK prefab
+find_package(sdk REQUIRED CONFIG)
+
 
 # === Cardboard Sample ===
 # Sources
 file(GLOB native_srcs "src/main/jni/*.cc")
 # Output binary
 add_library(cardboard_jni SHARED ${native_srcs})
-# Includes
-target_include_directories(cardboard_jni PRIVATE ${libs_dir})
 # Build
 target_link_libraries(cardboard_jni
-    ${android-lib}
-    ${GLESv2-lib}
-    ${GLESv3-lib}
-    ${log-lib}
-    ${libs_dir}/jni/${ANDROID_ABI}/libGfxPluginCardboard.so)
+    ${ANDROID_LIB}
+    ${GLESv2_LIB}
+    ${GLESv3_LIB}
+    ${LOG_LIB}
+    # This also adds include directories
+    sdk::GfxPluginCardboard)
