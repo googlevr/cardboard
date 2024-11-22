@@ -21,10 +21,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_compile_options(-Wall -Wextra)
 
 # Standard Android dependencies
-find_library(android-lib android)
-find_library(GLESv2-lib GLESv2)
-find_library(GLESv3-lib GLESv3)
-find_library(log-lib log)
+find_library(ANDROID_LIB android)
+find_library(GLESv2_LIB GLESv2)
+find_library(GLESv3_LIB GLESv3)
+find_library(LOG_LIB log)
 
 set(libs_dir ${CMAKE_CURRENT_SOURCE_DIR}/libraries)
 
@@ -37,8 +37,8 @@ add_library(cardboard_jni SHARED ${native_srcs})
 target_include_directories(cardboard_jni PRIVATE ${libs_dir})
 # Build
 target_link_libraries(cardboard_jni
-    ${android-lib}
-    ${GLESv2-lib}
-    ${GLESv3-lib}
-    ${log-lib}
+    ${ANDROID_LIB}
+    ${GLESv2_LIB}
+    ${GLESv3_LIB}
+    ${LOG_LIB}
     ${libs_dir}/jni/${ANDROID_ABI}/libGfxPluginCardboard.so)

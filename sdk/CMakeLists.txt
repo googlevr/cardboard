@@ -21,13 +21,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_compile_options(-Wall -Wextra)
 
 # Standard Android dependencies
-find_library(android-lib android)
-find_library(GLESv2-lib GLESv2)
-find_library(log-lib log)
+find_library(ANDROID_LIB android)
+find_library(GLESv2_LIB GLESv2)
+find_library(LOG_LIB log)
 
 # #gles3 - Library is only needed if OpenGL ES 3.0 support is desired. Remove
 # the following line if OpenGL ES 3.0 support is not needed.
-find_library(GLESv3-lib GLESv3)
+find_library(GLESv3_LIB GLESv3)
 
 include_directories(.)
 
@@ -51,8 +51,8 @@ file(GLOB screen_params_srcs "screen_params/android/*.cc")
 file(GLOB device_params_srcs "device_params/android/*.cc")
 # Rendering Sources
 file(GLOB rendering_opengl_srcs "rendering/opengl_*.cc")
-# #vulkan This is required for Vulkan rendering. Remove the following two lines
-# if Vulkan rendering is not needed.
+# #vulkan This is required for Vulkan rendering. Remove the following two lines
+# if Vulkan rendering is not needed.
 file(GLOB rendering_vulkan_srcs "rendering/android/*.cc")
 file(GLOB rendering_vulkan_wrapper_srcs "rendering/android/vulkan/*.cc")
 
@@ -97,20 +97,20 @@ target_include_directories(GfxPluginCardboard
     PRIVATE ../third_party/unity_plugin_api)
 
 # #vulkan This is required for Vulkan rendering. Remove the following line if
-# Vulkan rendering is not needed.
+# Vulkan rendering is not needed.
 add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
 
 # Build
 target_link_libraries(GfxPluginCardboard
     PUBLIC
-    ${android-lib}
-    ${GLESv2-lib}
+    ${ANDROID_LIB}
+    ${GLESv2_LIB}
     # #gles3 - Library is only needed if OpenGL ES 3.0 support is desired.
     # Remove the following line if OpenGL ES 3.0 support is not needed.
-    ${GLESv3-lib}
-    ${log-lib}
+    ${GLESv3_LIB}
+    ${LOG_LIB}
     # #vulkan - This is required for Vulkan rendering (it is required to load
     # libvulkan.so at runtime). Remove the following line if Vulkan rendering
-    # is not needed
+    # is not needed
     dl
 )
