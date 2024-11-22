@@ -112,3 +112,16 @@ target_link_libraries(GfxPluginCardboard
     # is not needed
     dl
 )
+
+set_property(
+    TARGET GfxPluginCardboard
+    APPEND_STRING
+    PROPERTY
+        LINK_FLAGS
+        " -Wl,--version-script=\"${CMAKE_CURRENT_SOURCE_DIR}/cardboard_api.lds\""
+)
+set_property(
+    TARGET GfxPluginCardboard
+    APPEND
+    PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/cardboard_api.lds"
+)
