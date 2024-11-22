@@ -20,6 +20,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_compile_options(-Wall -Wextra)
 
+# If these are already defined, the existing value is used, rather then the default here.
+option(CARDBOARDSDK_RENDERING_GLESv3 "Enable rendering with GLESv3" ON)
+option(CARDBOARDSDK_RENDERING_VULKAN "Enable rendering with Vulkan" ON)
+option(CARDBOARDSDK_UNITY_PLUGIN "Enable use as a Unity plugin" ON)
+
 # Standard Android dependencies
 find_library(ANDROID_LIB android)
 find_library(GLESv2_LIB GLESv2)
@@ -27,7 +32,9 @@ find_library(LOG_LIB log)
 
 # #gles3 - Library is only needed if OpenGL ES 3.0 support is desired. Remove
 # the following line if OpenGL ES 3.0 support is not needed.
-find_library(GLESv3_LIB GLESv3)
+if(CARDBOARDSDK_RENDERING_GLESv3)
+    find_library(GLESv3_LIB GLESv3)
+endif()
 
 include_directories(.)
 
@@ -51,22 +58,27 @@ file(GLOB screen_params_srcs "screen_params/android/*.cc")
 file(GLOB device_params_srcs "device_params/android/*.cc")
 # Rendering Sources
 file(GLOB rendering_opengl_srcs "rendering/opengl_*.cc")
-# #vulkan This is required for Vulkan rendering. Remove the following two lines
-# if Vulkan rendering is not needed.
-file(GLOB rendering_vulkan_srcs "rendering/android/*.cc")
-file(GLOB rendering_vulkan_wrapper_srcs "rendering/android/vulkan/*.cc")
 
-# === Cardboard Unity JNI ===
-file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")
+if(CARDBOARDSDK_RENDERING_VULKAN)
+    # #vulkan This is required for Vulkan rendering. Remove the following two lines
+    # if Vulkan rendering is not needed.
+    file(GLOB rendering_vulkan_srcs "rendering/android/*.cc")
+    file(GLOB rendering_vulkan_wrapper_srcs "rendering/android/vulkan/*.cc")
+endif()
 
-# === Cardboard Unity Wrapper ===
-file(GLOB cardboard_xr_unity_srcs
-  "unity/xr_unity_plugin/*.cc"
-  "unity/xr_unity_plugin/vulkan/*.cc"
-)
+if(CARDBOARDSDK_UNITY_PLUGIN)
+    # === Cardboard Unity JNI ===
+    file(GLOB cardboard_unity_jni_srcs "unity/android/*.cc")
 
-# === Cardboard XR Provider for Unity ===
-file(GLOB cardboard_xr_provider_srcs "unity/xr_provider/*.cc")
+    # === Cardboard Unity Wrapper ===
+    file(GLOB cardboard_xr_unity_srcs
+    "unity/xr_unity_plugin/*.cc"
+    "unity/xr_unity_plugin/vulkan/*.cc"
+    )
+
+    # === Cardboard XR Provider for Unity ===
+    file(GLOB cardboard_xr_provider_srcs "unity/xr_provider/*.cc")
+endif()
 
 # Output binary
 add_library(GfxPluginCardboard SHARED
@@ -92,25 +104,41 @@ add_library(GfxPluginCardboard SHARED
     # Cardboard XR Provider for Unity sources
     ${cardboard_xr_provider_srcs})
 
-# Includes
-target_include_directories(GfxPluginCardboard
-    PRIVATE ../third_party/unity_plugin_api)
+if(CARDBOARDSDK_UNITY_PLUGIN)
+    # Includes
+    target_include_directories(GfxPluginCardboard
+        PRIVATE ../third_party/unity_plugin_api)
+endif()
 
-# #vulkan This is required for Vulkan rendering. Remove the following line if
-# Vulkan rendering is not needed.
-add_definitions(-DVK_USE_PLATFORM_ANDROID_KHR=1)
+if(CARDBOARDSDK_RENDERING_VULKAN)
+    # #vulkan This is required for Vulkan rendering. Remove the following line if
+    # Vulkan rendering is not needed.
+    target_compile_definitions(GfxPluginCardboard PUBLIC VK_USE_PLATFORM_ANDROID_KHR=1)
+endif()
 
 # Build
 target_link_libraries(GfxPluginCardboard
     PUBLIC
     ${ANDROID_LIB}
     ${GLESv2_LIB}
-    # #gles3 - Library is only needed if OpenGL ES 3.0 support is desired.
-    # Remove the following line if OpenGL ES 3.0 support is not needed.
-    ${GLESv3_LIB}
     ${LOG_LIB}
-    # #vulkan - This is required for Vulkan rendering (it is required to load
-    # libvulkan.so at runtime). Remove the following line if Vulkan rendering
-    # is not needed
-    dl
 )
+
+if(CARDBOARDSDK_RENDERING_VULKAN)
+    target_link_libraries(GfxPluginCardboard
+        PUBLIC
+        # #vulkan - This is required for Vulkan rendering (it is required to load
+        # libvulkan.so at runtime). Remove the following line if Vulkan rendering
+        # is not needed
+        dl
+    )
+endif()
+
+if(CARDBOARDSDK_RENDERING_GLESv3)
+    target_link_libraries(GfxPluginCardboard
+        PUBLIC
+        # #gles3 - Library is only needed if OpenGL ES 3.0 support is desired.
+        # Remove the following line if OpenGL ES 3.0 support is not needed.
+        ${GLESv3_LIB}
+    )
+endif()
