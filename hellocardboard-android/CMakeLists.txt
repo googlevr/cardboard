@@ -13,6 +13,7 @@
 # limitations under the License.
 
 cmake_minimum_required(VERSION 3.4.1)
+project(hellocardboard-android)
 
 # C++ flags.
 set(CMAKE_CXX_STANDARD 17)
