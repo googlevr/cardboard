@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <stdint.h>
+
 #include <array>
 #include <memory>
 #include <vector>
@@ -360,6 +362,10 @@ class VulkanRenderer : public Renderer {
 
   void RenderWidgets(const ScreenParams& screen_params,
                      const std::vector<WidgetParams>& widget_params) override {
+    if (skip_frame_) {
+      return;
+    }
+
     if (!VkSwapchainCache::IsCacheUpToDate(swapchain_version_)) {
       return;
     }
@@ -437,6 +443,10 @@ class VulkanRenderer : public Renderer {
       CardboardDistortionRenderer* renderer, const ScreenParams& screen_params,
       const CardboardEyeTextureDescription* left_eye,
       const CardboardEyeTextureDescription* right_eye) override {
+    if (skip_frame_) {
+      return;
+    }
+
     if (!VkSwapchainCache::IsCacheUpToDate(swapchain_version_)) {
       return;
     }
@@ -462,6 +472,11 @@ class VulkanRenderer : public Renderer {
   }
 
   void RunRenderingPreProcessing(const ScreenParams& screen_params) override {
+    skip_frame_ = (prev_image_index_ == image_index);
+    if (skip_frame_) {
+      return;
+    }
+
     if (!VkSwapchainCache::IsCacheUpToDate(swapchain_version_)) {
       return;
     }
@@ -544,9 +559,15 @@ class VulkanRenderer : public Renderer {
     cardboard::rendering::vkCmdBeginRenderPass(command_buffers_[image_index],
                                                &render_pass_begin_info,
                                                VK_SUBPASS_CONTENTS_INLINE);
+
+    prev_image_index_ = image_index;
   }
 
   void RunRenderingPostProcessing() override {
+    if (skip_frame_) {
+      return;
+    }
+
     if (!VkSwapchainCache::IsCacheUpToDate(swapchain_version_)) {
       return;
     }
@@ -777,6 +798,8 @@ class VulkanRenderer : public Renderer {
   // Variables created and maintained by the vulkan renderer.
   uint32_t swapchain_image_count_;
   uint32_t frames_to_update_count_;
+  uint32_t prev_image_index_{UINT32_MAX};
+  bool skip_frame_{false};
   VkRenderPass render_pass_;
   VkCommandPool command_pool_;
   std::vector<VkFence> fences_;
