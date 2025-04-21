@@ -27,10 +27,14 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.MultiProcessor;
@@ -72,6 +76,21 @@ public class QrCodeCaptureActivity extends AppCompatActivity
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
     setContentView(R.layout.qr_code_capture);
+
+    // Adds margins to the container to account for edge to edge:
+    // https://developer.android.com/develop/ui/views/layout/edge-to-edge
+    View container = findViewById(R.id.container);
+    ViewCompat.setOnApplyWindowInsetsListener(
+        container,
+        (v, windowInsets) -> {
+          Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+          ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+          mlp.leftMargin = insets.left;
+          mlp.bottomMargin = insets.bottom;
+          mlp.rightMargin = insets.right;
+          v.setLayoutParams(mlp);
+          return WindowInsetsCompat.CONSUMED;
+        });
 
     cameraSourcePreview = findViewById(R.id.preview);
   }
