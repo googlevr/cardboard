@@ -19,6 +19,7 @@
 
 #include <array>
 #include <atomic>
+#include <cstring>
 
 #include "jni_utils/android/jni_utils.h"
 
@@ -148,7 +149,7 @@ void saveDeviceParams(const uint8_t* uri, int size) {
 
   // Copy the uint8_t* to a jbyteArray
   jbyte* java_data_ptr = env->GetByteArrayElements(uri_jbyte_array, 0);
-  memcpy(java_data_ptr, uri, size);
+  std::memcpy(java_data_ptr, uri, size);
   env->SetByteArrayRegion(uri_jbyte_array, 0, size, java_data_ptr);
 
   // Get the Java class method to be called

@@ -16,6 +16,8 @@
 #ifndef CARDBOARD_SDK_SENSORS_GYROSCOPE_DATA_H_
 #define CARDBOARD_SDK_SENSORS_GYROSCOPE_DATA_H_
 
+#include <cstdint>
+
 #include "util/vector.h"
 
 namespace cardboard {

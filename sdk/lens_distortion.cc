@@ -15,8 +15,12 @@
  */
 #include "lens_distortion.h"
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstring>
+#include <memory>
+#include <vector>
 
 #include "include/cardboard.h"
 #include "screen_params.h"
