@@ -26,6 +26,7 @@
 #include "unity/xr_unity_plugin/cardboard_display_api.h"
 #include "unity/xr_unity_plugin/renderer.h"
 #include "unity/xr_unity_plugin/vulkan/vulkan_widgets_renderer.h"
+#include <vulkan/vulkan.h>
 // clang-format off
 #include "IUnityRenderingExtensions.h"
 #include "IUnityGraphicsVulkan.h"
@@ -273,6 +274,7 @@ class VulkanRenderer : public Renderer {
 
     // Create RenderPass
     const VkAttachmentDescription attachment_descriptions{
+        .flags = 0,
         .format = VK_FORMAT_R8G8B8A8_SRGB,
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -385,26 +387,26 @@ class VulkanRenderer : public Renderer {
 
   void CreateRenderTexture(RenderTexture* render_texture, int screen_width,
                            int screen_height) override {
-    VkImageCreateInfo imageInfo = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-        .flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
-        .imageType = VK_IMAGE_TYPE_2D,
-        .format = VK_FORMAT_R8G8B8A8_SRGB,
-        .extent =
-            {
-                .width = static_cast<uint32_t>(screen_width / 2),
-                .height = static_cast<uint32_t>(screen_height),
-                .depth = 1,
-            },
-        .mipLevels = 1,
-        .arrayLayers = 1,
-        .samples = VK_SAMPLE_COUNT_1_BIT,
-        .tiling = VK_IMAGE_TILING_OPTIMAL,
-        .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-    };
+    VkImageCreateInfo imageInfo {};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+    imageInfo.extent =
+      {
+          .width = static_cast<uint32_t>(screen_width / 2),
+          .height = static_cast<uint32_t>(screen_height),
+          .depth = 1,
+      },
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.usage =
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
     VkImage image;
     cardboard::rendering::vkCreateImage(logical_device_, &imageInfo, nullptr,
@@ -414,12 +416,11 @@ class VulkanRenderer : public Renderer {
     cardboard::rendering::vkGetImageMemoryRequirements(logical_device_, image,
                                                        &memRequirements);
 
-    VkMemoryAllocateInfo allocInfo{
-        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .allocationSize = memRequirements.size,
-        .memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits,
-                                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
-    };
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits,
+                                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     VkDeviceMemory texture_image_memory;
     cardboard::rendering::vkAllocateMemory(logical_device_, &allocInfo, nullptr,
@@ -505,6 +506,7 @@ class VulkanRenderer : public Renderer {
       VkFramebufferCreateInfo fb_create_info{
           .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
           .pNext = nullptr,
+          .flags = 0,
           .renderPass = render_pass_,
           .attachmentCount = 1,
           .pAttachments = attachments,
@@ -584,11 +586,15 @@ class VulkanRenderer : public Renderer {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     const VkSubmitInfo submit_info = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext = nullptr,
         .waitSemaphoreCount = 0,
         .pWaitSemaphores = wait_semaphores,
         .pWaitDstStageMask = wait_stages,
         .commandBufferCount = 1,
-        .pCommandBuffers = &command_buffers_[image_index]};
+        .pCommandBuffers = &command_buffers_[image_index],
+        .signalSemaphoreCount = 0,
+        .pSignalSemaphores = nullptr,
+    };
 
     UnityVulkanInstance vulkanInstance = vulkan_interface_->Instance();
 
@@ -702,22 +708,21 @@ class VulkanRenderer : public Renderer {
                              VkImageLayout new_layout) {
     VkCommandBuffer command_buffer = BeginSingleTimeCommands();
 
-    VkImageMemoryBarrier barrier{
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .oldLayout = old_layout,
-        .newLayout = new_layout,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = image,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-    };
+    VkImageMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = old_layout;
+    barrier.newLayout = new_layout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = image;
+    barrier.subresourceRange =
+        {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1,
+        };
 
     VkPipelineStageFlags source_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     VkPipelineStageFlags destination_stage =
@@ -739,6 +744,7 @@ class VulkanRenderer : public Renderer {
   VkCommandBuffer BeginSingleTimeCommands() {
     VkCommandBufferAllocateInfo alloc_info{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = nullptr,
         .commandPool = command_pool_,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1,
@@ -748,10 +754,9 @@ class VulkanRenderer : public Renderer {
     cardboard::rendering::vkAllocateCommandBuffers(logical_device_, &alloc_info,
                                                    &command_buffer);
 
-    VkCommandBufferBeginInfo begin_info{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-    };
+    VkCommandBufferBeginInfo begin_info {};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
     cardboard::rendering::vkBeginCommandBuffer(command_buffer, &begin_info);
 
@@ -767,11 +772,10 @@ class VulkanRenderer : public Renderer {
   void EndSingleTimeCommands(VkCommandBuffer command_buffer) {
     cardboard::rendering::vkEndCommandBuffer(command_buffer);
 
-    VkSubmitInfo submit_info{
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &command_buffer,
-    };
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &command_buffer;
 
     UnityVulkanInstance vulkan_instance = vulkan_interface_->Instance();
 

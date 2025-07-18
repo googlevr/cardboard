@@ -48,6 +48,7 @@
 		7B76813B24A3FA6B00E92050 /* display.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813524A3FA6B00E92050 /* display.cc */; };
 		7B76813C24A3FA6B00E92050 /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813624A3FA6B00E92050 /* main.cc */; };
 		7B76813D24A3FA6B00E92050 /* math_tools.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7B76813724A3FA6B00E92050 /* math_tools.cc */; };
+		C6BAF6162E2696240018EFED /* sdk_bundle_finder.mm in Sources */ = {isa = PBXBuildFile; fileRef = C6BAF6152E2696240018EFED /* sdk_bundle_finder.mm */; };
 		E01C984226B44A72001BB0E3 /* cardboard_display_api.cc in Sources */ = {isa = PBXBuildFile; fileRef = E01C984026B44A71001BB0E3 /* cardboard_display_api.cc */; };
 		E0DFCFED26B3474400F285A5 /* cardboard_input_api.cc in Sources */ = {isa = PBXBuildFile; fileRef = E0DFCFEC26B3474400F285A5 /* cardboard_input_api.cc */; };
 /* End PBXBuildFile section */
@@ -168,6 +169,8 @@
 		7B76815224A3FA8100E92050 /* IUnityXRInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityXRInput.h; sourceTree = "<group>"; };
 		7B76815324A3FA8100E92050 /* IUnityGraphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityGraphics.h; sourceTree = "<group>"; };
 		7B76815424A3FA8100E92050 /* IUnityGraphicsD3D9.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnityGraphicsD3D9.h; sourceTree = "<group>"; };
+		C6BAF6142E2696240018EFED /* sdk_bundle_finder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sdk_bundle_finder.h; sourceTree = "<group>"; };
+		C6BAF6152E2696240018EFED /* sdk_bundle_finder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = sdk_bundle_finder.mm; sourceTree = "<group>"; };
 		E01C984026B44A71001BB0E3 /* cardboard_display_api.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cardboard_display_api.cc; sourceTree = "<group>"; };
 		E01C984126B44A71001BB0E3 /* cardboard_display_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard_display_api.h; sourceTree = "<group>"; };
 		E0DFCFEB26B3474400F285A5 /* cardboard_input_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cardboard_input_api.h; sourceTree = "<group>"; };
@@ -252,6 +255,8 @@
 		0FD201F923575F3A00B3C342 /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				C6BAF6142E2696240018EFED /* sdk_bundle_finder.h */,
+				C6BAF6152E2696240018EFED /* sdk_bundle_finder.mm */,
 				0FD201FA23575F3A00B3C342 /* screen_params.mm */,
 			);
 			path = ios;
@@ -504,6 +509,7 @@
 				0FD2024B23575F3B00B3C342 /* device_gyroscope_sensor.mm in Sources */,
 				E0DFCFED26B3474400F285A5 /* cardboard_input_api.cc in Sources */,
 				0FD2024223575F3B00B3C342 /* matrixutils.cc in Sources */,
+				C6BAF6162E2696240018EFED /* sdk_bundle_finder.mm in Sources */,
 				0FD2025F2357613600B3C342 /* cardboard_device.pb.cc in Sources */,
 				0FD2024723575F3B00B3C342 /* median_filter.cc in Sources */,
 				0FD2024523575F3B00B3C342 /* head_tracker.cc in Sources */,

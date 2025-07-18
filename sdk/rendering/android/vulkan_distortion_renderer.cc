@@ -27,6 +27,7 @@
 #include "util/is_arg_null.h"
 #include "util/is_initialized.h"
 #include "util/logging.h"
+#include <vulkan/vulkan.h>
 
 // Vulkan call wrapper
 #define CALL_VK(func)                                                    \
@@ -183,22 +184,22 @@ class VulkanDistortionRenderer : public DistortionRenderer {
   void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
                     VkMemoryPropertyFlags properties, VkBuffer& buffer,
                     VkDeviceMemory& buffer_memory) {
-    VkBufferCreateInfo buffer_info{
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = size,
-        .usage = usage,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
+    VkBufferCreateInfo buffer_info{};
+    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size = size;
+    buffer_info.usage = usage;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     CALL_VK(vkCreateBuffer(logical_device_, &buffer_info, nullptr, &buffer));
 
     VkMemoryRequirements mem_requirements;
     vkGetBufferMemoryRequirements(logical_device_, buffer, &mem_requirements);
 
-    VkMemoryAllocateInfo alloc_info{
-        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .allocationSize = mem_requirements.size,
-        .memoryTypeIndex =
-            FindMemoryType(mem_requirements.memoryTypeBits, properties)};
+    VkMemoryAllocateInfo alloc_info{};
+    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+    alloc_info.allocationSize = mem_requirements.size,
+    alloc_info.memoryTypeIndex =
+        FindMemoryType(mem_requirements.memoryTypeBits, properties);
 
     CALL_VK(vkAllocateMemory(logical_device_, &alloc_info, nullptr,
                              &buffer_memory));
@@ -222,30 +223,30 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     };
     bindings[0] = sampler_layout_binding;
 
-    VkDescriptorSetLayoutCreateInfo layout_info = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .bindingCount = 1,
-        .pBindings = bindings,
-    };
+    VkDescriptorSetLayoutCreateInfo layout_info{};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = 1;
+    layout_info.pBindings = bindings;
+
     CALL_VK(vkCreateDescriptorSetLayout(logical_device_, &layout_info, nullptr,
                                         &descriptor_set_layout_));
 
     // Setup push constants.
     VkPushConstantRange push_constant_range = {
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-      .offset = 0,
-      .size = sizeof(PushConstantsObject),
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+        .offset = 0,
+        .size = sizeof(PushConstantsObject),
     };
 
     // Create Pipeline Layout
-    VkPipelineLayoutCreateInfo pipeline_layout_create_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pNext = nullptr,
-        .setLayoutCount = 1,
-        .pSetLayouts = &descriptor_set_layout_,
-        .pushConstantRangeCount = 1,
-        .pPushConstantRanges = &push_constant_range,
-    };
+    VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
+    pipeline_layout_create_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_create_info.pNext = nullptr;
+    pipeline_layout_create_info.setLayoutCount = 1;
+    pipeline_layout_create_info.pSetLayouts = &descriptor_set_layout_;
+    pipeline_layout_create_info.pushConstantRangeCount = 1;
+    pipeline_layout_create_info.pPushConstantRanges = &push_constant_range;
     CALL_VK(vkCreatePipelineLayout(logical_device_,
                                    &pipeline_layout_create_info, nullptr,
                                    &pipeline_layout_));
@@ -254,23 +255,22 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(physical_device_, &properties);
 
-    VkSamplerCreateInfo sampler = {
-        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .pNext = nullptr,
-        .magFilter = VK_FILTER_NEAREST,
-        .minFilter = VK_FILTER_NEAREST,
-        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
-        .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        .mipLodBias = 0.0f,
-        .maxAnisotropy = properties.limits.maxSamplerAnisotropy,
-        .compareOp = VK_COMPARE_OP_NEVER,
-        .minLod = 0.0f,
-        .maxLod = 0.0f,
-        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-        .unnormalizedCoordinates = VK_FALSE,
-    };
+    VkSamplerCreateInfo sampler{};
+    sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler.pNext = nullptr;
+    sampler.magFilter = VK_FILTER_NEAREST;
+    sampler.minFilter = VK_FILTER_NEAREST;
+    sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    sampler.mipLodBias = 0.0f;
+    sampler.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+    sampler.compareOp = VK_COMPARE_OP_NEVER;
+    sampler.minLod = 0.0f;
+    sampler.maxLod = 0.0f;
+    sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+    sampler.unnormalizedCoordinates = VK_FALSE;
 
     CALL_VK(
         vkCreateSampler(logical_device_, &sampler, nullptr, &texture_sampler_));
@@ -352,65 +352,63 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     };
 
     // Specify viewport info
-    VkPipelineViewportStateCreateInfo viewport_info{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .viewportCount = 1,
-        .pViewports = nullptr,
-        .scissorCount = 1,
-        .pScissors = nullptr,
-    };
+    VkPipelineViewportStateCreateInfo viewport_info{};
+    viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewport_info.pNext = nullptr;
+    viewport_info.viewportCount = 1;
+    viewport_info.pViewports = nullptr;
+    viewport_info.scissorCount = 1;
+    viewport_info.pScissors = nullptr;
 
     // Specify multisample info
     VkSampleMask sample_mask = ~0u;
-    VkPipelineMultisampleStateCreateInfo multisample_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-        .sampleShadingEnable = VK_FALSE,
-        .minSampleShading = 0,
-        .pSampleMask = &sample_mask,
-        .alphaToCoverageEnable = VK_FALSE,
-        .alphaToOneEnable = VK_FALSE,
-    };
+    VkPipelineMultisampleStateCreateInfo multisample_info{};
+    multisample_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisample_info.pNext = nullptr;
+    multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisample_info.sampleShadingEnable = VK_FALSE;
+    multisample_info.minSampleShading = 0;
+    multisample_info.pSampleMask = &sample_mask;
+    multisample_info.alphaToCoverageEnable = VK_FALSE;
+    multisample_info.alphaToOneEnable = VK_FALSE;
 
     // Specify color blend state
-    VkPipelineColorBlendAttachmentState attachment_states = {
-        .blendEnable = VK_FALSE,
-        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                          VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
-    };
-
-    VkPipelineColorBlendStateCreateInfo color_blend_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .logicOpEnable = VK_FALSE,
-        .logicOp = VK_LOGIC_OP_COPY,
-        .attachmentCount = 1,
-        .pAttachments = &attachment_states,
-    };
+    VkPipelineColorBlendAttachmentState attachment_states{};
+    attachment_states.blendEnable = VK_FALSE,
+    attachment_states.colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    VkPipelineColorBlendStateCreateInfo color_blend_info{};
+    color_blend_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    color_blend_info.pNext = nullptr;
+    color_blend_info.flags = 0;
+    color_blend_info.logicOpEnable = VK_FALSE;
+    color_blend_info.logicOp = VK_LOGIC_OP_COPY;
+    color_blend_info.attachmentCount = 1;
+    color_blend_info.pAttachments = &attachment_states;
 
     // Specify rasterizer info
-    VkPipelineRasterizationStateCreateInfo raster_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .depthClampEnable = VK_FALSE,
-        .rasterizerDiscardEnable = VK_FALSE,
-        .polygonMode = VK_POLYGON_MODE_FILL,
-        .cullMode = VK_CULL_MODE_NONE,
-        .frontFace = VK_FRONT_FACE_CLOCKWISE,
-        .depthBiasEnable = VK_FALSE,
-        .lineWidth = 1,
-    };
+    VkPipelineRasterizationStateCreateInfo raster_info{};
+    raster_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    raster_info.pNext = nullptr;
+    raster_info.depthClampEnable = VK_FALSE;
+    raster_info.rasterizerDiscardEnable = VK_FALSE;
+    raster_info.polygonMode = VK_POLYGON_MODE_FILL;
+    raster_info.cullMode = VK_CULL_MODE_NONE;
+    raster_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    raster_info.depthBiasEnable = VK_FALSE;
+    raster_info.lineWidth = 1;
 
     // Specify input assembler state
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
-        .primitiveRestartEnable = VK_FALSE,
-    };
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_info{};
+    input_assembly_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    input_assembly_info.pNext = nullptr;
+    input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    input_assembly_info.primitiveRestartEnable = VK_FALSE;
 
     // Specify vertex input state
     VkVertexInputBindingDescription vertex_input_bindings = {
@@ -433,33 +431,35 @@ class VulkanDistortionRenderer : public DistortionRenderer {
             .offset = sizeof(float) * 2,
         }};
 
-    VkPipelineVertexInputStateCreateInfo vertex_input_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .vertexBindingDescriptionCount = 1,
-        .pVertexBindingDescriptions = &vertex_input_bindings,
-        .vertexAttributeDescriptionCount = 2,
-        .pVertexAttributeDescriptions = vertex_input_attributes,
-    };
+    VkPipelineVertexInputStateCreateInfo vertex_input_info{};
+    vertex_input_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertex_input_info.pNext = nullptr;
+    vertex_input_info.vertexBindingDescriptionCount = 1;
+    vertex_input_info.pVertexBindingDescriptions = &vertex_input_bindings;
+    vertex_input_info.vertexAttributeDescriptionCount = 2;
+    vertex_input_info.pVertexAttributeDescriptions = vertex_input_attributes;
 
     VkDynamicState dynamic_state_enables[2] = {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
     };
 
-    VkPipelineDynamicStateCreateInfo dynamic_state_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .dynamicStateCount = 2,
-        .pDynamicStates = dynamic_state_enables};
+    VkPipelineDynamicStateCreateInfo dynamic_state_info{};
+    dynamic_state_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamic_state_info.pNext = nullptr;
+    dynamic_state_info.dynamicStateCount = 2;
+    dynamic_state_info.pDynamicStates = dynamic_state_enables;
 
-    VkPipelineDepthStencilStateCreateInfo depth_stencil = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-        .depthTestEnable = VK_TRUE,
-        .depthWriteEnable = VK_TRUE,
-        .depthCompareOp = VK_COMPARE_OP_LESS,
-        .depthBoundsTestEnable = VK_FALSE,
-        .stencilTestEnable = VK_FALSE};
+    VkPipelineDepthStencilStateCreateInfo depth_stencil{};
+    depth_stencil.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depth_stencil.depthTestEnable = VK_TRUE;
+    depth_stencil.depthWriteEnable = VK_TRUE;
+    depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depth_stencil.depthBoundsTestEnable = VK_FALSE;
+    depth_stencil.stencilTestEnable = VK_FALSE;
 
     // Create the pipeline
     VkPipelineShaderStageCreateInfo shader_stages[2] = {vertex_shader_state,
@@ -550,13 +550,15 @@ class VulkanDistortionRenderer : public DistortionRenderer {
       VkCommandBuffer command_buffer, uint32_t image_index, int x, int y,
       int width, int height) {
     // Update Push constants.
-    PushConstantsObject push_constants {
+    PushConstantsObject push_constants{
         .left_u = eye_description->left_u,
         .right_u = eye_description->right_u,
         .top_v = eye_description->top_v,
         .bottom_v = eye_description->bottom_v,
     };
-    vkCmdPushConstants(command_buffer, pipeline_layout_, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantsObject), &push_constants);
+    vkCmdPushConstants(command_buffer, pipeline_layout_,
+                       VK_SHADER_STAGE_VERTEX_BIT, 0,
+                       sizeof(PushConstantsObject), &push_constants);
 
     // Update image and view
     VkImage current_image = reinterpret_cast<VkImage>(eye_description->texture);
@@ -618,6 +620,7 @@ class VulkanDistortionRenderer : public DistortionRenderer {
                            .maxDepth = 1.0};
 
     VkRect2D scissor = {
+        .offset = {.x = 0, .y = 0},
         .extent = {.width = static_cast<uint32_t>(width / 2),
                    .height = static_cast<uint32_t>(height)},
     };

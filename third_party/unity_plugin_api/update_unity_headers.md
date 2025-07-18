@@ -8,16 +8,15 @@ The plugin API folder has a mix of headers from different Unity versions. Each i
 
 If there is not a version present then the version is `2020.3.25f1`.
 
+## Update Unity XR headers
 
-## Update IUnityXR* headers
-
-Coordinate with the [XR APIs team](https://g3doc.corp.google.com/company/teams/android-xr/openxr/index.md?cl=head#contact).
+Coordinate with the [XR APIs team](go/xrapis#contact).
 
 ## Update non-XR headers
 
 Follow these steps to update the Unity Plugin API in a gmac:
 
-1. Download last Unity version.
+1. Download the latest Unity version.
 
 1. Open a terminal and run:
 ```sh
