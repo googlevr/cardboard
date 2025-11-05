@@ -17,6 +17,7 @@
 #define CARDBOARD_SDK_SENSORS_LOWPASS_FILTER_H_
 
 #include <array>
+#include <cstdint>
 #include <memory>
 
 #include "util/vector.h"

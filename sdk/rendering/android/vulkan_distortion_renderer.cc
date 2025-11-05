@@ -553,8 +553,9 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     PushConstantsObject push_constants{
         .left_u = eye_description->left_u,
         .right_u = eye_description->right_u,
-        .top_v = eye_description->top_v,
-        .bottom_v = eye_description->bottom_v,
+        .top_v = eye_description->bottom_v,  // Swap top and bottom to match the
+                                            // texture coordinates.
+        .bottom_v = eye_description->top_v,
     };
     vkCmdPushConstants(command_buffer, pipeline_layout_,
                        VK_SHADER_STAGE_VERTEX_BIT, 0,
@@ -612,10 +613,12 @@ class VulkanDistortionRenderer : public DistortionRenderer {
     vkUpdateDescriptorSets(logical_device_, 1, descriptor_writes, 0, nullptr);
 
     // Update Viewport and scissor
+    // Swap the height to make the viewport bottom-left origin as expected by
+    // the distortion mesh.
     VkViewport viewport = {.x = static_cast<float>(x),
-                           .y = static_cast<float>(y),
+                           .y = static_cast<float>(y + height),
                            .width = static_cast<float>(width),
-                           .height = static_cast<float>(height),
+                           .height = -static_cast<float>(height),
                            .minDepth = 0.0,
                            .maxDepth = 1.0};
 
