@@ -28,7 +28,6 @@ namespace cardboard {
 namespace {
 
 JavaVM* vm_;
-jobject context_;
 jclass device_params_utils_class_;
 
 // TODO(b/180938531): Release this global reference.
@@ -47,9 +46,8 @@ DeviceParams::~DeviceParams() {
   env->DeleteGlobalRef(java_device_params_);
 }
 
-void DeviceParams::initializeAndroid(JavaVM* vm, jobject context) {
+void DeviceParams::initializeAndroid(JavaVM* vm, jobject /*context*/) {
   vm_ = vm;
-  context_ = context;
 
   JNIEnv* env;
   jni::LoadJNIEnv(vm_, &env);

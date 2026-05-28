@@ -53,8 +53,39 @@ void showQRScanViewController() {
 }
 
 void requestPermissionInSettings() {
-  NSURL *settingURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
-  [UIApplication.sharedApplication openURL:settingURL options:@{} completionHandler:nil];
+  dispatch_async(dispatch_get_main_queue(), ^{
+    UIViewController *presentingViewController = nil;
+    presentingViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+    while (presentingViewController.presentedViewController) {
+      presentingViewController = presentingViewController.presentedViewController;
+    }
+    if (presentingViewController.isBeingDismissed) {
+      presentingViewController = presentingViewController.presentingViewController;
+    }
+
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:@"Camera Permission Required"
+                         message:@"Please grant camera permissions in Settings to scan QR codes."
+                  preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction *settingsAction = [UIAlertAction
+        actionWithTitle:@"Settings"
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction *action) {
+                  (void)action;
+                  NSURL *settingURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
+                  [UIApplication.sharedApplication openURL:settingURL options:@{} completionHandler:nil];
+                }];
+
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel"
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:nil];
+
+    [alert addAction:settingsAction];
+    [alert addAction:cancelAction];
+
+    [presentingViewController presentViewController:alert animated:YES completion:nil];
+  });
 }
 
 void prerequestCameraPermissionForQRScan() {

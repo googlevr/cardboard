@@ -45,3 +45,6 @@ target_link_libraries(cardboard_jni
     ${GLESv3_LIB}
     ${LOG_LIB}
     ${CARDBOARD_LIB})
+
+target_link_options(cardboard_jni PRIVATE "-Wl,-z,max-page-size=16384")
+

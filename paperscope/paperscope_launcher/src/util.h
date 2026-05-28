@@ -1,0 +1,241 @@
+/*
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef PAPERSCOPE_LAUNCHER_SRC_UTIL_H_
+#define PAPERSCOPE_LAUNCHER_SRC_UTIL_H_
+
+#include <android/asset_manager.h>
+#include <jni.h>
+
+#include <array>
+#include <vector>
+
+#include <GLES2/gl2.h>
+
+#define LOG_TAG "HelloCardboardApp"
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#define CARDBOARDDEMO_CHECK(condition)                                     \
+  if (!(condition)) {                                                      \
+    LOGE("*** CHECK FAILED at %s:%d: %s", __FILE__, __LINE__, #condition); \
+    abort();                                                               \
+  }
+
+namespace cardboard_demo {
+/*
+ * A 4x4 matrix used to represent pose of objects in world space.
+ *
+ * The Coordinate system is right handed.
+ *
+ * When holding the device in portrait in front of the user and looking at the
+ * screen:
+ *
+ * X points to the right,
+ * Y points up,
+ * Z points towards the user, i.e. With reference to the user, +Z points
+ * backwards and -Z points forwards.
+ *
+ * Yaw is the clockwise rotation around the Y axis,
+ * Pitch is the clockwise rotation around the X axis,
+ * Roll is the clockwise rotation around the Z axis.
+ */
+class Matrix4x4 {
+ public:
+  float m[4][4];
+
+  // Multiplies two matrices.
+  Matrix4x4 operator*(const Matrix4x4& right) const;
+
+  // Multiplies a matrix with a vector.
+  std::array<float, 4> operator*(const std::array<float, 4>& vec);
+
+  // Converts a matrix to an array of floats suitable for passing to OpenGL.
+  std::array<float, 16> ToGlArray();
+};
+
+struct Quatf {
+  float x;
+  float y;
+  float z;
+  float w;
+
+  Quatf(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
+
+  Quatf() : x(0), y(0), z(0), w(1) {}
+
+  static Quatf FromXYZW(float q[4]) { return Quatf(q[0], q[1], q[2], q[3]); }
+
+  Matrix4x4 ToMatrix();
+};
+
+/**
+ * Converts an array of floats to a matrix.
+ *
+ * @param vec GL array
+ * @return Obtained matrix
+ */
+Matrix4x4 GetMatrixFromGlArray(float* vec);
+
+/**
+ * Construct a scale matrix.
+ *
+ * @param scale Scale array
+ * @return Obtained matrix
+ */
+Matrix4x4 GetScaleMatrix(const std::array<float, 3>& scale);
+
+/**
+ * Construct a translation matrix.
+ *
+ * @param translation Translation array
+ * @return Obtained matrix
+ */
+Matrix4x4 GetTranslationMatrix(const std::array<float, 3>& translation);
+
+/**
+ * Construct a yaw rotation matrix (Rotation around the y axis).
+ *
+ * @param yaw Yaw angle in degrees.
+ * @return Obtained matrix
+ */
+Matrix4x4 GetYawRotationMatrix(const float yaw_degrees);
+
+/**
+ * Construct a pitch rotation matrix (Rotation around the x axis).
+ *
+ * @param pitch Pitch angle in degrees.
+ * @return Obtained matrix
+ */
+Matrix4x4 GetPitchRotationMatrix(const float pitch_degrees);
+
+/**
+ * Construct a roll rotation matrix (Rotation around the z axis).
+ *
+ * @param roll Roll angle in degrees.
+ * @return Obtained matrix
+ */
+Matrix4x4 GetRollRotationMatrix(const float roll_degrees);
+
+/**
+ * Computes the angle between two vectors.
+ *
+ * @param vec1 First vector
+ * @param vec2 Second vector
+ * @return Angle between the vectors
+ */
+float AngleBetweenVectors(const std::array<float, 4>& vec1,
+                          const std::array<float, 4>& vec2);
+
+/**
+ * Gets system boot time in nanoseconds.
+ *
+ * @return System boot time in nanoseconds
+ */
+int64_t GetBootTimeNano();
+
+/**
+ * Generates a random floating point number between |min| and |max|.
+ *
+ * @param min Minimum range
+ * @param max Maximum range
+ * @return Random float number
+ */
+float RandomUniformFloat(float min, float max);
+
+/**
+ * Generates a random integer in the range [0, max_val).
+ *
+ * @param max_val Maximum range
+ * @return Random int number
+ */
+int RandomUniformInt(int max_val);
+
+/**
+ * Checks for OpenGL errors, and crashes if one has occurred.  Note that this
+ * can be an expensive call, so real applications should call this rarely.
+ *
+ * @param file File name
+ * @param line Line number
+ * @param label Error label
+ */
+void CheckGlError(const char* file, int line, const char* label);
+
+#define CHECKGLERROR(label) CheckGlError(__FILE__, __LINE__, label)
+
+/**
+ * Converts a string into an OpenGL ES shader.
+ *
+ * @param type The type of shader (GL_VERTEX_SHADER or GL_FRAGMENT_SHADER).
+ * @param shader_source The source code of the shader.
+ * @return The shader object handler, or 0 if there's an error.
+ */
+GLuint LoadGLShader(GLenum type, const char* shader_source);
+
+class TexturedMesh {
+ public:
+  TexturedMesh() = default;
+
+  // Initializes the mesh from a .obj file.
+  //
+  // @return True if initialization was successful.
+  bool Initialize(GLuint position_attrib, GLuint uv_attrib,
+                  const std::string& obj_file_path, AAssetManager* asset_mgr);
+
+  // Draws the mesh. The u_MVP uniform should be set before calling this using
+  // glUniformMatrix4fv(), and a texture should be bound to GL_TEXTURE0.
+  void Draw() const;
+
+ private:
+  // Clears all data related to current Mesh.
+  void ClearMesh();
+
+  std::vector<GLfloat> vertices_;
+  std::vector<GLfloat> uv_;
+  std::vector<GLushort> indices_;
+  GLuint position_attrib_{0};
+  GLuint uv_attrib_{0};
+};
+
+class Texture {
+ public:
+  Texture() = default;
+
+  ~Texture();
+
+  // Initializes the texture.
+  //
+  // After this is called the texture will be bound, replacing any previously
+  // bound texture.
+  //
+  // @return True if initialization was successful.
+  // TODO(b/138789810): Share some parts of the code between Android and iOS
+  // samples.
+  bool Initialize(JNIEnv* env, jobject java_asset_mgr,
+                  const std::string& texture_path);
+
+  // Binds the texture, replacing any previously bound texture.
+  void Bind() const;
+
+  GLuint get_texture_id() const { return texture_id_; }
+  void set_texture_id(GLuint texture_id) { texture_id_ = texture_id; }
+
+ private:
+  GLuint texture_id_{0};
+};
+
+}  // namespace cardboard_demo
+
+#endif  // PAPERSCOPE_LAUNCHER_SRC_UTIL_H_

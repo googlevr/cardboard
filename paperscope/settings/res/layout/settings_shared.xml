@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <TextView android:id="@+id/headset_presentation"
+              style="@style/SettingsHeadsetLabel"
+              android:text="@string/headset_presentation"
+              android:padding="32dp"
+              android:lineSpacingExtra="8sp"
+              android:gravity="center_vertical|center_horizontal"/>
+
+    <TextView android:id="@+id/headset_model"
+              style="@style/SettingsHeadsetModel"
+              android:gravity="center_vertical|center_horizontal"/>
+
+    <TextView android:id="@+id/headset_vendor"
+              style="@style/SettingsHeadsetVendor"
+              android:gravity="center_vertical|center_horizontal"
+              android:paddingBottom="30dp"/>
+
+    <Button
+            android:id="@+id/switch_headset"
+            style="@style/SettingsActionButton"
+            android:layout_height="36dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/roundcorner"
+            android:text="@string/register_headset_button"
+            android:textAllCaps="true"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_gravity="center_horizontal"/>
+</LinearLayout>

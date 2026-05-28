@@ -1,0 +1,197 @@
+/*
+ * cardboard.strings
+ *
+ * Guidelines:
+ *
+ * 1/ Write keys as CamelCase. In the code, this will be prefixed with kStr: kStrThisIsAKey.
+ *
+ * 2/ For descriptions, use 100-column limit and align multiple lines on the first character.
+ *    For strings, do not break lines.
+ *
+ * 3/ Write a meaningful description, so the translator can know what exactly you are talking about.
+ *
+ * 4/ Without context, a single word is hard to translate. For instance, the word "search" can be a
+ *    noun or a verb and they have different translations in other languages. Add the grammar
+ *    class, the verb tense or any other information to distinguish between homonyms.
+ *
+ * 5/ Supply the maximum number of characters for strings in the comment. For example:
+ *   /# Button label which starts warp (i.e. faster than light travel) mode. (30 chars) #/
+ *   "WarpModeButtonLabel" = "Warp Speed";
+ *
+ * 6/ For accessibility items, include "ACCESSIBILITY" in the key and comments. Generally
+ *    accessibility strings do not have a limit, because they are spoken. Indicate this with (no
+ *    limit).
+ */
+
+/* Title of tutorial demo. (30 chars) */
+"TutorialDemoTitle" = "Навчальний посібник";
+
+/* Title of welcome video that is shown to the user the first time they use Cardboard. (30 chars) */
+"WelcomeVideoTitle" = "Привітальне відео";
+
+/* Title of explorer demo. (30 chars) */
+"ExplorerDemoTitle" = "Дослідник";
+
+/* Title of exhibit demo. (30 chars) */
+"ExhibitDemoTitle" = "Виставка";
+
+/* Title of urban hike demo. (30 chars) */
+"UrbanHikeDemoTitle" = "Прогулянка містом";
+
+/* Title of exhibit demo. (30 chars) */
+"KaleidoscopeDemoTitle" = "Калейдоскоп";
+
+/* Title of demo that is a collection of scenes set in an arctic landscape. (30 chars) */
+"ArcticJourneyDemoTitle" = "Арктична подорож";
+
+/* Message shown to the user if there is a problem connecting to the server. (80 chars) */
+"ConnectionErrorMessage" = "Не вдається з’єднатися із сервером\nперевірте з’єднання з Інтернетом";
+
+/* Message shown to the user if there was some generic error. (80 chars) */
+"GenericErrorMessage" = "Сталася помилка, повторіть спробу пізніше";
+
+/* Tutorial caption text asking the user to click the Cardboard button. (60 chars) */
+"TutorialClickCaption" = "Натисніть кнопку\n";
+
+/* Tutorial caption text asking the user to tilt Cardboard to go home to the launcher.
+   (60 chars) */
+"TutorialTiltCaption" = "Нахиліть окуляри,\nщоб повернутися на початок";
+
+/* Name of 'Hawk Rattle' mask, with copyright attribution to Rande Cook. (50 chars) */
+"HawkRattle" = "Брязкальце-яструб\n© Ренді Кук";
+
+/* Name of 'Vatican' mask, with copyright attribution to Rande Cook. (50 chars) */
+"VaticanMask" = "Ватиканська маска\n© Ренді Кук";
+
+/* Name of 'Chiefs' mask, with copyright attribution to Rande Cook. (50 chars) */
+"ChiefsMask" = "Маска вождя\n© Ренді Кук";
+
+/* Name of 'Visionary' mask, with copyright attribution to Rande Cook. (50 chars) */
+"TheVisionary" = "Провидець\n© Ренді Кук";
+
+/* Name of 'Beethoven' mask, with copyright attribution to Rande Cook. (50 chars) */
+"Beethoven" = "Бетховен\n© Ренді Кук";
+
+/*
+ * Title shown for sample panorama inside the American Museum of Natural History.
+ * (No limit)
+ */
+"AmericanMuseumNaturalHistory" = "Американський музей природознавства\nзразок експедиції";
+
+/*
+ * Title shown for sample panorama inside the Frontiers of Flight museum in Dallas, TX.
+ * (No limit)
+ */
+"FrontiersOfFlight" = "Музей Frontiers of Flight";
+
+/* Title shown for sample panorama of the Endeavour Space Shuttle. (No limit) */
+"EndeavourSpaceShuttle" = "Космічний корабель \"Індевор\"";
+
+/*
+ * Title shown for sample panorama inside 'Cueva del Indio,' a cave located in Puerto Rico.
+ * (No limit)
+ */
+"CuevaDelIndio" = "Куева дель Індіо\nПуерто-Рико";
+
+/* Title shown for sample panorama of a hot springs located in Gunnuhver, Iceland. (No limit) */
+"GunnuhverHotSprings" = "Термальні джерела Гуннухвер\nІсландія";
+
+/* Title shown for sample panorama taken form the Mars rover 'Spirit'. (No limit) */
+"MarsSpiritRover" = "Марсохід \"Спіріт\"\nЗображення NASA/JPL";
+
+/*
+ * Label that reports the user's current location with an addtional prompt to go to the next
+ * location. The first parameter is the current location, the second parameter is the next
+ * location. (No limit)
+ */
+"UrbanHikeCurrentLocation" = "%1$s\n(Натисніть, щоб перейти до об’єкта \"%2$s\")";
+
+/* Location name referencing Paris France in the Urban Hike demo. (No limit) */
+"UrbanHikeParis" = "Париж";
+
+/* Location name referencing Tokyo Japan in the Urban Hike demo. (No limit) */
+"UrbanHikeTokyo" = "Токіо";
+
+/* Location name referencing Venice Italy in the Urban Hike demo. (No limit) */
+"UrbanHikeVenice" = "Венеція";
+
+/* Location name referencing New York, NY in the Urban Hike demo. (No limit) */
+"UrbanHikeNewYork" = "Нью-Йорк";
+
+/* Location name referencing Rome Italy in the Urban Hike demo. (No limit) */
+"UrbanHikeRome" = "Рим";
+
+/* Location name referencing Jerusalem Israel in the Urban Hike demo. (No limit) */
+"UrbanHikeJerusalem" = "Єрусалим";
+
+/*
+ * Location name referencing the administrative area in the Principality of Monaco, Monte Carlo,
+ * in the Urban Hike demo. (No limit)
+*/
+"UrbanHikeMonteCarlo" = "Монте-Карло";
+
+/* Location name referencing London England in the Urban Hike demo. (No limit) */
+"UrbanHikeLondon" = "Лондон";
+
+/*
+ * Location name referencing the Great Barrier Reef (the coral reef in Queensland, Australia)
+ * in the Urban Hike demo. (No limit)
+ */
+"UrbanHikeGreatBarrierReef" = "Великий бар’єрний риф";
+
+/*
+ * Title of 'Google Earth' demo inside Cardboard Android app. (30 chars)
+ * 'Earth' should be the translated the same way as the official 'Google Earth' product.
+ */
+"EarthAndroidDemoTitle" = "Планета Земля";
+
+ * Title of 'Tour Guide' demo inside Cardboard Android app. 'Tour Guide' acts as a virtual tour
+ * guide around Versailles. (30 chars)
+ */
+"TourGuideAndroidDemoTitle" = "Путівник";
+
+/*
+ * Title of 'My Videos' demo inside Cardboard Android app. 'My Videos' allows the user to view all
+ * of their local videos in Cardboard as if viewing them on a large screen in front of them.
+ * (30 chars)
+ */
+"MyVideosAndroidDemoTitle" = "Мої відео";
+
+/*
+ * Title of 'Photo Sphere' demo inside Cardboard Android app. 'Photo Sphere' shows all personal and
+ * locally stored photo spheres to the user. 'Photo Sphere' corresponds to the offical
+ * Google Photo Sphere product name. (30 chars)
+ */
+"PhotoSphereAndroidDemoTitle" = "Photo Sphere";
+
+/*
+ * Title of 'Windy Day' demo inside Cardboard Android app. 'Windy Day' is a Google spotlight story
+ * where a hat is blown around by the wind. It should be considered a product name, and should
+ * be kept in English for languages that normally keep Google product names in English. (30 chars)
+ */
+"WindyDayAndroidDemoTitle" = "Windy Day";
+
+/* Title of button exit VR. (20 chars) */
+"Exit" = "ВИЙТИ";
+
+/* Title of button to go back to the Cardboard demos. (20 chars) */
+"BackToDemos" = "ДО ДЕМО-РОЛИКІВ";
+
+/* Message telling the user that they can tilt their phone to go back.
+   (no limit) */
+"RotateToGoBack" = "Оберніть телефон, щоб повернутися до меню";
+
+/* Message telling the user to take their phone out of their viewer to exit the demos. (no limit) */
+"TakeYourPhoneOutToExitDemos" = "Вийміть телефон з окулярів, щоб вийти з режиму демонстрації";
+
+* Title of button for user to click to go to next step. (10 chars) */
+"Next" = "ДАЛІ";
+
+/* Message telling the user to press the button on the viewer to click a button. (no limit) */
+"PressTheButtonOnYourViewer" = "Натисніть кнопку, щоб вибрати.";
+
+/* Message telling the user to rotate the viewer to navigate back. (no limit) */
+"RotateYourViewer" = "Оберніть окуляри, щоб повернутися назад.";
+
+/* Message telling the user to try rotating the view now. (no limit) */
+"TryItOutNow" = "Спробуйте зараз!";

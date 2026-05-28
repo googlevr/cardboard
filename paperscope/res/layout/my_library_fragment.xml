@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/sc_spots"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:fillViewport="true" >
+    <com.google.vr.cardboard.paperscope.demo.AppGridView
+      android:id="@+id/gridview"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:columnWidth="100dp"
+      android:numColumns="3"
+      android:verticalSpacing="14dp"
+      android:stretchMode="spacingWidthUniform"
+      android:paddingTop="16dp"
+      android:paddingBottom="16dp"
+      android:clipToPadding="false"/>
+</androidx.core.widget.NestedScrollView>

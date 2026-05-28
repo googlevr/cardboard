@@ -1,0 +1,4 @@
+This is a cut-down, modified copy of the google3 Lightcycle code
+(see go/panoramas) used by the paperscope project.
+
+TODO(dcoz): merge changes back into the original LightCycle lib.

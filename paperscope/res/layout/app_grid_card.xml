@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_gravity="center"
+    android:layout_width="100dp"
+    android:layout_height="148dp"
+    card_view:cardCornerRadius="0dp"
+    card_view:cardBackgroundColor="@color/white"
+    >
+
+    <ImageView
+        android:id="@+id/app_icon"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:padding="4dp"
+        />
+
+    <TextView
+        style="@style/MyLibAppNameText"
+        android:id="@+id/app_name"
+        android:lines="2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginBottom="10dp"
+        />
+    <!-- This view is just to display the touch effect. We need the effect on the entire card. -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:attr/selectableItemBackground"
+        />
+</androidx.cardview.widget.CardView>

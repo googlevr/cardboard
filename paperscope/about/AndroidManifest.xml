@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="%PACKAGE_NAME%">
+
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="35" />
+
+    <application>
+        <activity android:name="com.google.vr.cardboard.paperscope.demo.about.AboutActivity"
+            android:label="@string/about"
+            android:screenOrientation="portrait"
+            android:exported="false">
+        </activity>
+    </application>
+</manifest>

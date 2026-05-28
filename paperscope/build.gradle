@@ -1,0 +1,104 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdk = 35
+    lintOptions {
+        abortOnError = false
+    }
+    defaultConfig {
+        applicationId "com.google.cardboard.paperscope"
+        // #gles3 #vulkan - You can reduce minSdkVersion down to 16 depending
+        // on rendering APIs supported:
+        //
+        // OpenGL ES 2.0 - Requires 16 or higher
+        // OpenGL ES 3.0 - Requires 18 or higher
+        // Vulkan        - Requires 24 or higher
+        //
+        // See the release notes for details.
+        minSdkVersion = 26
+        targetSdkVersion = 35
+        versionCode 1
+        versionName "1.33.0"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+        externalNativeBuild.cmake {
+            arguments "-DANDROID_STL=c++_shared"
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild.cmake {
+        path "CMakeLists.txt"
+    }
+    namespace = 'com.google.vr.cardboard.paperscope.demo'
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = [
+                    'about',
+                    'common',
+                    'core',
+                    'exhibit',
+                    'magicwindow',
+                    'myvideos',
+                    'photosphere',
+                    'settings',
+            ]
+            res.srcDirs = ['res', 'about/res', 'common/res', 'myvideos/res', 'settings/res', 'magicwindow/res']
+            assets.srcDirs = ['assets', 'photosphere/assets', 'exhibit/assets']
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    // Android Mobile Vision
+    // TODO(b/213613345) Migrate to ML Kit.
+    implementation 'com.google.android.gms:play-services-vision:20.1.3'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'com.google.protobuf:protobuf-javalite:4.34.1'
+    implementation "com.google.flogger:flogger:0.9"
+    implementation 'com.google.flogger:flogger-system-backend:0.9'
+    implementation 'com.google.guava:guava:33.5.0-android'
+    implementation 'com.adobe.xmp:xmpcore:5.1.3'
+    implementation 'androidx.palette:palette:1.0.0'
+    implementation project(":sdk")
+}
+
+// The dependencies for NDK builds live inside the .aar files so they need to
+// be extracted before NDK targets can link against.
+task extractNdk {
+    dependsOn ':sdk:assembleRelease'
+    doLast {
+        copy {
+            from zipTree("${project.rootDir}/sdk/build/outputs/aar/sdk-release.aar")
+            into "libraries/"
+            include "jni/**/libGfxPluginCardboard.so"
+        }
+        copy {
+            from "${project.rootDir}/sdk/include/cardboard.h"
+            into "libraries/"
+        }
+    }
+}
+
+task deleteNdk(type: Delete) {
+    delete "libraries/jni"
+    delete "libraries/cardboard.h"
+}
+
+preBuild.dependsOn(extractNdk)
+clean.dependsOn(deleteNdk)

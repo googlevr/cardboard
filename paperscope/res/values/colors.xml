@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="color_accent">#2979ff</color>
+    <color name="color_primary">#2979ff</color>
+    <color name="color_primary_dark">#2962ff</color>
+    <color name="darker_gray">#555</color>
+    <color name="tab_indicator_color">#FFEA00</color>
+    <color name="alignment_marker_color">#b4b4b4</color>
+    <color name="transparent">@android:color/transparent</color>
+    <color name="white">@android:color/white</color>
+    <color name="white_transparent">#4cFFFFFF</color>
+    <color name="orange">#ff6e40</color>
+    <color name="red">#ff0000</color>
+    <color name="grey">#d8000000</color>
+    <color name="tab_unselected_text_color">#B2FFFFFF</color>
+    <color name="darker_text_color">#DD000000</color>
+</resources>

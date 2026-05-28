@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Default CardboardUi layout that assumes landscape orientation !-->
+    <!-- The ui and settings button holders are 84dp. This is twice the size -->
+    <!-- of the button itself after padding (24dp image, 9dp padding twice). -->
+    <ImageButton
+        style="@style/UiButton"
+        android:id="@+id/ui_back_button"
+        android:contentDescription="@strings/back_button_description"
+        android:src="@drawable/cardboard_oss_quantum_ic_close_white_24"
+        android:layout_gravity="start|top"
+        android:layout_width="84dp"
+        android:layout_height="84dp"/>
+
+    <FrameLayout
+        android:id="@+id/ui_alignment_marker"
+        android:layout_width="@dimen/alignment_marker_thickness"
+        android:layout_height="@dimen/alignment_marker_height"
+        android:layout_gravity="center_horizontal|bottom"
+        android:background="@color/alignment_marker_color">
+    </FrameLayout>
+
+    <ImageButton
+        style="@style/UiButton"
+        android:id="@+id/ui_settings_button"
+        android:contentDescription="@strings/back_button_description"
+        android:src="@drawable/cardboard_oss_quantum_ic_settings_white_24"
+        android:layout_gravity="end|top"
+        android:layout_width="84dp"
+        android:layout_height="84dp"/>
+</FrameLayout>

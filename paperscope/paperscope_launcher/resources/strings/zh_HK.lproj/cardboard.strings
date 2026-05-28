@@ -1,0 +1,197 @@
+/*
+ * cardboard.strings
+ *
+ * Guidelines:
+ *
+ * 1/ Write keys as CamelCase. In the code, this will be prefixed with kStr: kStrThisIsAKey.
+ *
+ * 2/ For descriptions, use 100-column limit and align multiple lines on the first character.
+ *    For strings, do not break lines.
+ *
+ * 3/ Write a meaningful description, so the translator can know what exactly you are talking about.
+ *
+ * 4/ Without context, a single word is hard to translate. For instance, the word "search" can be a
+ *    noun or a verb and they have different translations in other languages. Add the grammar
+ *    class, the verb tense or any other information to distinguish between homonyms.
+ *
+ * 5/ Supply the maximum number of characters for strings in the comment. For example:
+ *   /# Button label which starts warp (i.e. faster than light travel) mode. (30 chars) #/
+ *   "WarpModeButtonLabel" = "Warp Speed";
+ *
+ * 6/ For accessibility items, include "ACCESSIBILITY" in the key and comments. Generally
+ *    accessibility strings do not have a limit, because they are spoken. Indicate this with (no
+ *    limit).
+ */
+
+/* Title of tutorial demo. (30 chars) */
+"TutorialDemoTitle" = "教學課程";
+
+/* Title of welcome video that is shown to the user the first time they use Cardboard. (30 chars) */
+"WelcomeVideoTitle" = "歡迎使用影片";
+
+/* Title of explorer demo. (30 chars) */
+"ExplorerDemoTitle" = "探險家";
+
+/* Title of exhibit demo. (30 chars) */
+"ExhibitDemoTitle" = "展覽館";
+
+/* Title of urban hike demo. (30 chars) */
+"UrbanHikeDemoTitle" = "都市行腳";
+
+/* Title of exhibit demo. (30 chars) */
+"KaleidoscopeDemoTitle" = "萬花筒";
+
+/* Title of demo that is a collection of scenes set in an arctic landscape. (30 chars) */
+"ArcticJourneyDemoTitle" = "北極之旅";
+
+/* Message shown to the user if there is a problem connecting to the server. (80 chars) */
+"ConnectionErrorMessage" = "無法連線到伺服器\n請檢查您的網際網路連線";
+
+/* Message shown to the user if there was some generic error. (80 chars) */
+"GenericErrorMessage" = "發生錯誤，請稍後再試";
+
+/* Tutorial caption text asking the user to click the Cardboard button. (60 chars) */
+"TutorialClickCaption" = "按下按鈕\n";
+
+/* Tutorial caption text asking the user to tilt Cardboard to go home to the launcher.
+   (60 chars) */
+"TutorialTiltCaption" = "將 Cardboard 傾斜即可\n回到啟動器主畫面";
+
+/* Name of 'Hawk Rattle' mask, with copyright attribution to Rande Cook. (50 chars) */
+"HawkRattle" = "Hawk Rattle\n© Rande Cook";
+
+/* Name of 'Vatican' mask, with copyright attribution to Rande Cook. (50 chars) */
+"VaticanMask" = "Vatican Mask\n© Rande Cook";
+
+/* Name of 'Chiefs' mask, with copyright attribution to Rande Cook. (50 chars) */
+"ChiefsMask" = "Chief's Mask\n© Rande Cook";
+
+/* Name of 'Visionary' mask, with copyright attribution to Rande Cook. (50 chars) */
+"TheVisionary" = "The Visionary\n© Rande Cook";
+
+/* Name of 'Beethoven' mask, with copyright attribution to Rande Cook. (50 chars) */
+"Beethoven" = "Beethoven\n© Rande Cook";
+
+/*
+ * Title shown for sample panorama inside the American Museum of Natural History.
+ * (No limit)
+ */
+"AmericanMuseumNaturalHistory" = "美國自然史博物館\n探險考察樣品";
+
+/*
+ * Title shown for sample panorama inside the Frontiers of Flight museum in Dallas, TX.
+ * (No limit)
+ */
+"FrontiersOfFlight" = "飛行里程碑博物館";
+
+/* Title shown for sample panorama of the Endeavour Space Shuttle. (No limit) */
+"EndeavourSpaceShuttle" = "奮進號太空梭";
+
+/*
+ * Title shown for sample panorama inside 'Cueva del Indio,' a cave located in Puerto Rico.
+ * (No limit)
+ */
+"CuevaDelIndio" = "印第安岩洞\n波多黎各";
+
+/* Title shown for sample panorama of a hot springs located in Gunnuhver, Iceland. (No limit) */
+"GunnuhverHotSprings" = "格奴弗爾溫泉\n冰島";
+
+/* Title shown for sample panorama taken form the Mars rover 'Spirit'. (No limit) */
+"MarsSpiritRover" = "精神號火星探測車\n圖片來源：NASA/JPL";
+
+/*
+ * Label that reports the user's current location with an addtional prompt to go to the next
+ * location. The first parameter is the current location, the second parameter is the next
+ * location. (No limit)
+ */
+"UrbanHikeCurrentLocation" = "%1$s\n(按一下即可前往 %2$s)";
+
+/* Location name referencing Paris France in the Urban Hike demo. (No limit) */
+"UrbanHikeParis" = "巴黎";
+
+/* Location name referencing Tokyo Japan in the Urban Hike demo. (No limit) */
+"UrbanHikeTokyo" = "東京";
+
+/* Location name referencing Venice Italy in the Urban Hike demo. (No limit) */
+"UrbanHikeVenice" = "威尼斯";
+
+/* Location name referencing New York, NY in the Urban Hike demo. (No limit) */
+"UrbanHikeNewYork" = "紐約";
+
+/* Location name referencing Rome Italy in the Urban Hike demo. (No limit) */
+"UrbanHikeRome" = "羅馬";
+
+/* Location name referencing Jerusalem Israel in the Urban Hike demo. (No limit) */
+"UrbanHikeJerusalem" = "耶路撒冷";
+
+/*
+ * Location name referencing the administrative area in the Principality of Monaco, Monte Carlo,
+ * in the Urban Hike demo. (No limit)
+*/
+"UrbanHikeMonteCarlo" = "蒙地卡羅";
+
+/* Location name referencing London England in the Urban Hike demo. (No limit) */
+"UrbanHikeLondon" = "倫敦";
+
+/*
+ * Location name referencing the Great Barrier Reef (the coral reef in Queensland, Australia)
+ * in the Urban Hike demo. (No limit)
+ */
+"UrbanHikeGreatBarrierReef" = "大堡礁";
+
+/*
+ * Title of 'Google Earth' demo inside Cardboard Android app. (30 chars)
+ * 'Earth' should be the translated the same way as the official 'Google Earth' product.
+ */
+"EarthAndroidDemoTitle" = "地球";
+
+ * Title of 'Tour Guide' demo inside Cardboard Android app. 'Tour Guide' acts as a virtual tour
+ * guide around Versailles. (30 chars)
+ */
+"TourGuideAndroidDemoTitle" = "導覽";
+
+/*
+ * Title of 'My Videos' demo inside Cardboard Android app. 'My Videos' allows the user to view all
+ * of their local videos in Cardboard as if viewing them on a large screen in front of them.
+ * (30 chars)
+ */
+"MyVideosAndroidDemoTitle" = "我的影片";
+
+/*
+ * Title of 'Photo Sphere' demo inside Cardboard Android app. 'Photo Sphere' shows all personal and
+ * locally stored photo spheres to the user. 'Photo Sphere' corresponds to the offical
+ * Google Photo Sphere product name. (30 chars)
+ */
+"PhotoSphereAndroidDemoTitle" = "Photo Sphere 全景相片";
+
+/*
+ * Title of 'Windy Day' demo inside Cardboard Android app. 'Windy Day' is a Google spotlight story
+ * where a hat is blown around by the wind. It should be considered a product name, and should
+ * be kept in English for languages that normally keep Google product names in English. (30 chars)
+ */
+"WindyDayAndroidDemoTitle" = "Windy Day";
+
+/* Title of button exit VR. (20 chars) */
+"Exit" = "離開";
+
+/* Title of button to go back to the Cardboard demos. (20 chars) */
+"BackToDemos" = "返回示範影片";
+
+/* Message telling the user that they can tilt their phone to go back.
+   (no limit) */
+"RotateToGoBack" = "旋轉您的手機以返回選單";
+
+/* Message telling the user to take their phone out of their viewer to exit the demos. (no limit) */
+"TakeYourPhoneOutToExitDemos" = "將手機從觀影盒中取出，即可退出示範模式";
+
+* Title of button for user to click to go to next step. (10 chars) */
+"Next" = "下一步";
+
+/* Message telling the user to press the button on the viewer to click a button. (no limit) */
+"PressTheButtonOnYourViewer" = "按下按鈕以選取。";
+
+/* Message telling the user to rotate the viewer to navigate back. (no limit) */
+"RotateYourViewer" = "旋轉您的檢視器即可返回。";
+
+/* Message telling the user to try rotating the view now. (no limit) */
+"TryItOutNow" = "立即體驗。";

@@ -1,0 +1,96 @@
+# Keep methods in Activity that could be used in the XML attribute onClick
+-keepclassmembers class * extends android.app.Activity {
+   public void *(android.view.View);
+}
+
+# Keep setters in Views so that animations can still work.
+-keepclassmembers public class * extends android.view.View {
+    public <init>(android.content.Context);
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+
+# Keep classes and class members annotated with UsedByReflection.
+-keep @com.google.android.apps.common.proguard.UsedByReflection class *
+-keepclassmembers class * {
+    @com.google.android.apps.common.proguard.UsedByReflection *;
+}
+
+# Keep CardboardView from the toolkit. Used in some demo layouts.
+-keepnames public class com.google.vrtoolkit.cardboard.CardboardView
+
+# Keep carton and demo activities, including native VrApps.
+-keepnames public class com.google.vr.cardboard.paperscope.carton.* extends android.app.Activity
+-keepnames public class com.google.vr.cardboard.paperscope.*.*Demo extends android.app.Activity
+-keepnames public class com.google.vr.app.*.* extends android.app.Activity
+
+# Keep the Android support library.
+# Removed to fix b/79094005
+# -keep class android.support.** { *; }
+
+# Keep HudController and its inner classes and references in the maps demo.
+-keep class com.google.vr.cardboard.paperscope.maps.HudController* { *; }
+-keep class com.google.vr.cardboard.paperscope.maps.CameraManager { *; }
+
+# Whitelist classes that call Java from native code in Mirth.
+-keep public class com.google.geo.render.mirth.MirthDisplay { *; }
+
+# Whitelist for the Windy Day demo.
+-keep class com.motorola.moxie.common.* { *; }
+-keep class com.motorola.windyday.JNI* { *; }
+
+# Whitelist for the Barhopper api.
+-keep class com.google.android.libraries.barhopper.* { *; }
+
+# Whitelist for Picasso.
+-dontwarn com.squareup.okhttp.**
+-keep class com.squareup.okhttp.** { *; }
+-keep interface com.squareup.okhttp.** { *; }
+
+# Whitelist for Volley
+-dontwarn com.google.android.volley.AndroidHttpClient
+
+# Silence a myriad of warnings and notes.
+-dontwarn android.annotation.**
+-dontwarn android.support.**
+-dontwarn com.google.common.**
+-dontwarn com.google.android.apps.lightcycle.**
+-dontwarn com.google.geo.render.mirth.**
+-dontwarn com.motorola.avatar.**
+-dontwarn org.ejml.ops.**
+
+-dontnote android.annotation.**
+-dontnote android.support.**
+-dontnote com.google.android.apps.analytics.**
+-dontnote com.google.android.apps.lightcycle.**
+-dontnote com.google.common.**
+-dontnote com.google.geo.render.mirth.**
+-dontnote com.motorola.avatar.**
+-dontnote com.motorola.moxie.**
+-dontnote org.ejml.ops.**
+
+# android.app.Notification.setLatestEventInfo() was removed in MNC, but is
+# still referenced (safely) by the following code - make sure it doesn't break
+# the build.
+-dontwarn com.google.android.gms.common.GooglePlayServicesUtil
+-dontwarn com.google.android.gms.gcm.**
+
+# Unity
+-dontwarn com.unity3d.**
+-dontwarn org.fmod.**
+-keep class com.unity3d.** { *; }
+-keep class org.fmod.** { *; }
+-keep class com.EasyMovieTexture.** { *; }
+-keep class com.google.vr.platform.unity.** { *; }
+
+# These should be in a Cardboard SDK proguard.cfg file: b/28384324
+-keep public class com.google.vr.sdk.widgets.pano.VrPanoramaEventListener { *; }
+-keep public class com.google.vr.sdk.widgets.pano.VrPanoramaView$Options { *; }
+
+# Needed to work around a bug causing a crash in ReleaseStartupUiTest when
+# calling any public method from ScanlineRacingRenderer.onDrawFrame
+-keep class com.google.vr.cardboard.ScanlineRacingRenderer { *; }
+
+
+# Needed with GmsCore v16.
+-keep class com.google.android.gms.measurement.AppMeasurement { *; }
+-dontwarn com.google.android.gms.measurement.AppMeasurement

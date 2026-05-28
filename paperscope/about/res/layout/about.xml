@@ -1,0 +1,64 @@
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+    <LinearLayout 
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical">
+
+        <!-- Some padding at the top -->
+        <View
+                android:layout_height="12dp"
+                android:layout_width="fill_parent"/>
+
+        <TextView
+                android:id="@+id/rate_the_app"
+                style="@style/AboutItem"
+                android:background="?android:attr/selectableItemBackground"
+                android:text="@string/rate_the_app"/>
+
+
+        <TextView
+                android:id="@+id/terms_of_service"
+                style="@style/AboutItem"
+                android:background="?android:attr/selectableItemBackground"
+                android:text="@string/terms_of_service"/>
+
+
+        <TextView
+            android:id="@+id/product_safety"
+            style="@style/AboutItem"
+            android:background="?android:attr/selectableItemBackground"
+            android:text="@string/product_safety"/>
+
+        <TextView
+                android:id="@+id/licenses"
+                style="@style/AboutItem"
+                android:background="?android:attr/selectableItemBackground"
+                android:text="@string/licenses"/>
+
+        <RelativeLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground">
+            <!-- We use alignParentStart instead of alignParentLeft to properly
+                 handle RTL languages like Hebrew. -->
+            <TextView
+                    android:id="@+id/app_version_label"
+                    style="@style/AboutItem"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/app_version"
+                    android:layout_width="wrap_content"
+                    android:text="@string/app_version"/>
+            <TextView
+                    style="@style/AboutItem"
+                    android:id="@+id/app_version"
+                    android:textColor="@color/darker_gray"
+                    android:layout_width="wrap_content"
+                    android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
+    </LinearLayout>
+</ScrollView>

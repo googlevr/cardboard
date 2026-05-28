@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TODO(376437689): Migrate localization to the new Cardboard app. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name"
+            description="Application name. [CHAR_LIMIT=30]">
+            Cardboard</string>
+
+    <!-- Strings present in 'VR' activity -->
+    <string name="title_activity_vr"
+            description="VR activity title. [CHAR_LIMIT=30]">
+            Cardboard</string>
+
+    <string name="app_name_dev"
+            description="Short (max 20 charaters) text for the application
+                name for dev builds. [CHAR_LIMIT=50]">Cardboard Dev</string>
+
+    <!-- Name of the prod app released to external users. -->
+    <string name="app_name_prod"
+            description="Short (max 20 charaters) text for the application
+                         name. [CHAR_LIMIT=30]">
+            Cardboard</string>
+
+    <!-- Name of the dogfood app released internally. -->
+    <string name="app_name_dogfood"
+            description="Short (max 20 charaters) text for the application
+                         name for dogfood builds. [CHAR_LIMIT=30]">
+            Cardboard</string>
+
+    <!-- Strings present in 'Settings' menu -->
+    <string name="switch_viewer"
+            description="Short text shown on the settings menu to let the user switch viewer.
+                         [CHAR_LIMIT=30]">
+            Switch Cardboard viewer</string>
+
+    <string name="welcome_pair"
+            description="Welcome message prompting the user that they will need to pair their viewer [CHAR LIMIT=80]">
+            Pair your phone with your viewer for the best experience.</string>
+
+    <string name="setup_device"
+            description="Short text (max 50 chars) displayed as a label to
+                         invite the user to start pairing their Cardboard
+                         viewer with their phone.">
+            Let\'s get you set up</string>
+
+    <string name="yes"
+            description="Short text (less than 10 chars) confirming that the
+                         current viewer is correct.">
+            YES!</string>
+
+    <string name="get_cardboard"
+            description="Short text (less than 15 chars) displayed on a button next to
+                         the no_viewer text.  A call to action to get a Cardboard viewer.">
+            GET ONE</string>
+
+    <string name="no_cardboard"
+            description="Short text (less than 30 chars) asking if the user has a
+                         cardboard viewer.">
+            No Cardboard viewer?</string>
+
+    <string name="app_grid_view_name"
+            description="Displayed on the tab of My Library page">
+            MY LIBRARY</string>
+
+    <string name="bundled_demos_label"
+            description="Short text (max 30 chars) shown on button to start the
+                         demos that are bundled with the Cardboard application,
+                         such as Windy Day, Tour Guide, etc">
+            Cardboard Demos</string>
+
+    <string name="error_opening_app"
+            description="Error message shown when unable to launch another app from Cardboard">
+            Unable to open app</string>
+
+    <string name="help"
+            description="Short text (less than 30 chars) for menu item in the
+                         Settings menu, to get help about the app.">
+            Help and Feedback</string>
+
+    <string name="about"
+            description="Short text (less than 30 chars) for menu item in the
+                         Settings menu, to know more about the app.">
+            About</string>
+
+    <string name="privacy_policy"
+            description="Short text (less than 30 chars) for menu item in the
+                         Settings menu, to know more about the app.">
+            Privacy Policy</string>
+
+    <string name="contact_us"
+            description="Short text (less than 30 chars) for menu item in the
+                         Settings menu, to contact the app. [CHAR_LIMIT=50]">
+            Contact Us</string>
+
+    <string name="view_web_page_failed"
+            description="Short text (less than 30 chars) for menu item in the
+                         Settings menu, to know more about the app. [CHAR_LIMIT=50]">
+            Could not open the requested web page.</string>
+
+    <string name="switch_viewer_action"
+            description="Text which when pressed, takes the user to the view that allows them to switch their Cardboard
+                         compatible viewer.
+                         [CHAR LIMIT=10]">
+            Switch</string>
+    <string name="switch_viewer_prompt"
+            description="Prompt asking if the user wants to switch their Cardboard compatible viewer. [CHAR LIMIT=45]">
+            Using a different viewer?</string>
+    <string name="place_your_phone_into_cardboard"
+            description="Message asking the user to place their phone into Cardboard. This is a generic message used in the
+                         absence of knowing the current viewer. [CHAR LIMIT=50]">
+            Place your phone into your Cardboard viewer</string>
+    <string name="register_headset_button"
+            description="Short text (max 30 chars) shown on menu and button
+                         to let the user pair their phone to another Cardboard
+                         compatible viewer. Once the viewer is paired, all
+                         applications that use our SDK will be optimized for
+                         this viewer.">
+            Switch viewer</string>
+    <string name="headset_presentation"
+            description="Text (max 60 chars) shown in the settings page that
+                         explains which Cardboard-compatible viewer is currently
+                         paired with the user's phone.">
+            Your phone is configured for the following viewer:</string>
+    <string name="default_headset_model"
+            description="Short text (max 30 chars) that is shown when the
+                         Cardboard viewer currently paired is the default one.">
+            Default Viewer</string>
+    <string name="settings_activity_title">Settings</string>
+
+    <!-- TODO: b/502291753 - Update these strings to be used in the new Cardboard app. -->
+    <string name="headset_vendor_prefix"
+            description="Short text displayed when describing
+                        the Cardboard viewer currently paired. It is placed
+                        before displaying the name of the viewer manufacturer,
+                        as in 'Cardboard v1 *from* Google LLC' or
+                        'ViewerMaster *from* Mattel, Inc.'.
+                        [CHAR_LIMIT=10]">
+        "from "</string>
+    <string name="unknown_headset_info"
+            description="Short text for label when the Cardboard
+                         viewer currently paired with the phone is unknown.
+                         [CHAR_LIMIT=14]">
+            Unknown</string>
+
+    <!-- Strings present in 'Magic Window' demo. -->
+    <string name="read_media_permission_rationale"
+            description="Text displayed in the permission rationale dialog. It explains that we
+                         need access to storage in order to load images and videos for the
+                         Photosphere and MyVideos demo experiences, respectively.
+                         [CHAR LIMIT=NONE]">
+            Storage permission is required to load images and videos for the Photosphere and
+            MyVideos demo experiences, respectively.</string>
+
+    <!-- Strings present in 'My Videos' demo. -->
+    <string name="no_video_notice"
+            description="Text (max 100 characters) in 'My Videos' demo shown when
+                         the user doesn't have any videos on their phone. [CHAR LIMIT=140]">
+            Take videos with your phone and watch them here</string>
+    <string name="playing_video"
+            description="Small Text (max 20 characters) in 'My Videos' demo shown
+                         on top of a video thumbnail to indicate that this particular
+                         video is being played on the main screen. [CHAR LIMIT=30]">
+            Playing</string>
+
+    <!-- Strings present in 'About' page. -->
+    <string name="rate_the_app"
+        description="Short text for menu item in the About page, to rate the Cardboard
+                        application on its Play Store page.
+                        [CHAR_LIMIT=24]">
+        Rate the app</string>
+
+    <string name="terms_of_service"
+        description="Short text for menu item in the About page, to see the terms of service.
+                        [CHAR_LIMIT=32]">
+        Terms of service</string>
+
+            <string name="product_safety"
+            description="Short text for menu item in the About page, to link out to the product
+                         safety information page (google.com/get/cardboard/product-safety/).
+                         [CHAR_LIMIT=28]">
+            Product safety</string>
+    <string name="licenses"
+            description="Short text for menu item in the About page, to see the open source licenses
+                         and copyrights.
+                         [CHAR_LIMIT=16]">
+            Licenses</string>
+    <string name="app_version"
+            description="Short text for menu item in the About page, to specify the app's current
+                         version.
+                         [CHAR_LIMIT=22]">
+            App version</string>
+
+</resources>

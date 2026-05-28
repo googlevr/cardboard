@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="back_button_description" translatable="false">back</string>
+    <string name="settings_button_description" translatable="false">settings</string>
+</resources>

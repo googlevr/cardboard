@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/coordinator"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:id="@+id/container">
+
+      <FrameLayout
+        android:id="@+id/frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bottom">
+
+        <android.opengl.GLSurfaceView
+          android:id="@+id/surface_view"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_gravity="top"/>
+
+        <ImageView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginLeft="24dp"
+          android:layout_marginTop="90dp"
+          android:src="@drawable/logo"/>
+      </FrameLayout>
+
+      <!-- TODO(causaranonunez): This is where the small "i" floating button should go.
+        It is embedded in VrWidgetView which VrPanoramaView extends. -->
+
+      <LinearLayout
+        android:id="@+id/bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:background="@color/footer_light_grey">
+
+        <TextView
+          android:id="@+id/header_text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="24dp"
+          android:layout_marginLeft="24dp"
+          style="@style/text_20sp_sans_serif_medium"
+          android:textColor="#DE000000"
+          android:text="@string/setup_device"/>
+        <TextView
+          android:id="@+id/instructions"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:layout_marginBottom="24dp"
+          android:layout_marginLeft="24dp"
+          android:layout_marginRight="24dp"
+          style="@style/text_16sp_sans_serif"
+          android:textColor="#8A000000"
+          android:lineSpacingExtra="4dp"
+          android:text="@string/welcome_pair"/>
+
+        <LinearLayout
+          android:id="@+id/cardboard_not_configured"
+          android:layout_width="match_parent"
+          android:layout_height="56dp"
+          android:orientation="horizontal"
+          android:background="@color/footer_medium_grey">
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingLeft="24dp"
+            android:gravity="center_vertical"
+            style="@style/text_14sp_sans_serif"
+            android:textColor="#8A000000"
+            android:text="@string/no_cardboard"/>
+          <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+          <View
+            style="@style/VerticalDivider"
+            android:id="@+id/divider"
+            android:background="#1F000000"
+            android:layout_width="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"/>
+          <TextView
+            android:id="@+id/get_cardboard"
+            android:textColor="@color/darker_gray"
+            style="@style/text_14sp_sans_serif_medium"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:gravity="center_vertical"
+            android:text="@string/get_cardboard"
+            android:background="?android:attr/selectableItemBackground"/>
+        </LinearLayout>
+      </LinearLayout>
+
+    </RelativeLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    android:id="@+id/next"
+    android:layout_width="56dp"
+    android:layout_height="56dp"
+    android:layout_marginEnd="24dp"
+    android:src="@drawable/ic_arrow_forward"
+    app:layout_anchor="@id/frame"
+    app:layout_anchorGravity="bottom|right"
+    app:backgroundTint="@color/orange"
+    app:borderWidth="0dp"
+    app:fabSize="normal"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
