@@ -23,6 +23,7 @@
 
 #include <array>
 #include <cmath>
+#include <functional>
 #include <random>
 #include <sstream>
 #include <string>

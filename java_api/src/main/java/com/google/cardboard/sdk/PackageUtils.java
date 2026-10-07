@@ -19,23 +19,27 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
+import com.google.android.gms.common.GoogleSignatureVerifier;
+
 /**
  * Helper class for querying Android package properties.
  */
 public class PackageUtils {
-  private static final String GOOGLE_PACKAGE_PREFIX = "com.google.";
-
   /** Class only contains static methods. */
   private PackageUtils() {}
 
   /**
-   * Reports whether a given package is a "Google" package.
+   * Reports whether a given package is a "Google" package by checking if it is Google-signed.
    *
+   * @param context The current Context. It is generally an Activity instance or wraps one.
    * @param packageName the name of the package in question
    * @return whether the specified package is a "Google" package
    */
-  public static boolean isGooglePackage(String packageName) {
-    return packageName != null && packageName.startsWith(GOOGLE_PACKAGE_PREFIX);
+  public static boolean isGooglePackage(Context context, String packageName) {
+    if (context == null || packageName == null) {
+      return false;
+    }
+    return GoogleSignatureVerifier.getInstance(context).isPackageGoogleSigned(packageName);
   }
 
   /**

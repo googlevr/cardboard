@@ -23,6 +23,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <string>
 
 #include "cardboard.h"
 #include "util/matrix_4x4.h"

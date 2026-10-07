@@ -593,7 +593,7 @@ public class CardboardViewApi {
     Intent settingsIntent = new Intent();
     settingsIntent.setAction(CARDBOARD_CONFIGURE_ACTION).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-    // Grab the settings intent handlers whose package begins with 'com.google.'
+    // Grab the settings intent handlers that are Google-signed.
     // Note that the result should be ordered by *descending* priority, but we make
     // no such assumption.
     // TODO: b/441496226 - Add <queries> declaration to manifest.
@@ -602,7 +602,7 @@ public class CardboardViewApi {
     Integer highestGoogleIntentPriority = null;
     for (ResolveInfo info : resolveInfos) {
       String pkgName = info.activityInfo.packageName;
-      if (!PackageUtils.isGooglePackage(pkgName)) {
+      if (!PackageUtils.isGooglePackage(context, pkgName)) {
         continue;
       }
 

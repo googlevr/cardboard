@@ -49,6 +49,7 @@ void showQRScanViewController() {
       }];
 
   qrViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+  qrViewController.modalPresentationStyle = UIModalPresentationFullScreen;
   [presentingViewController presentViewController:qrViewController animated:YES completion:nil];
 }
 

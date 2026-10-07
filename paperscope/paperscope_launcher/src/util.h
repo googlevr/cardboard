@@ -20,6 +20,8 @@
 #include <jni.h>
 
 #include <array>
+#include <cstdlib>
+#include <string>
 #include <vector>
 
 #include <GLES2/gl2.h>

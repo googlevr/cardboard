@@ -182,6 +182,7 @@ static const CGFloat kGuidanceHeight = 116.0f;
   UILabel *findLabel = [[UILabel alloc] init];
   findLabel.text = @"Find this Cardboard symbol on your viewer";
   findLabel.font = [UIFont systemFontOfSize:16];
+  findLabel.textColor = [UIColor grayColor];
   [findLabel sizeToFit];
   frame = findLabel.frame;
   frame.origin.x = 64;

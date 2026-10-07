@@ -17,6 +17,7 @@
 #include <android/log.h>
 #include <jni.h>
 #include <stdint.h>
+#include <time.h>
 
 #include <memory>
 
